@@ -385,7 +385,7 @@ namespace ScpControl
                     data2[i] = 0x0;
                 }
 
-                data2[0] = (byte)17;
+                data2[0] = 0x11;
                 data2[1] = 128;
                 data2[3] = 0xff;
 
