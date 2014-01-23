@@ -33,6 +33,9 @@ namespace ScpControl
         private byte ledFlash = 0;
         private HidDevice hid_device;
         private ledColor m_LedColor;
+        private byte[] inputData = new byte[64];
+        private byte[] outputData;
+        private bool isDirty = true;
 
         public HidDevice Device
         {
@@ -47,7 +50,7 @@ namespace ScpControl
                     boosted = 255;
                 return (byte)boosted; 
             }
-            set { smallRumble = value; }
+            set { smallRumble = value; isDirty = true; }
         }
 
         public byte BigRumble
@@ -59,7 +62,7 @@ namespace ScpControl
                     boosted = 255;
                 return (byte)boosted;
             }
-            set { bigRumble = value; }
+            set { bigRumble = value; isDirty = true; }
         }
 
         public byte RumbleBoost
@@ -80,18 +83,19 @@ namespace ScpControl
             m_LedColor.red = red;
             m_LedColor.green = green;
             m_LedColor.blue = blue;
+            isDirty = true;
         }
 
         public ledColor LedColor
         {
             get { return m_LedColor; }
-            set { m_LedColor = value; }
+            set { m_LedColor = value; isDirty = true; }
         }
 
         public byte FlashLed
         {
             get { return ledFlash; }
-            set { ledFlash = value; }
+            set { ledFlash = value; isDirty = true; }
         }
 
         public DS4Device(HidDevice device, int controllerID)
@@ -99,6 +103,10 @@ namespace ScpControl
             hid_device = device;
             deviceNum = controllerID;
             isUSB = Device.Capabilities.InputReportByteLength == 64;
+            if (isUSB)
+                outputData = new byte[Device.Capabilities.OutputReportByteLength];
+            else
+                outputData = new byte[78];
             isTouchEnabled = Global.getTouchEnabled(deviceNum);
         }
 
@@ -106,43 +114,41 @@ namespace ScpControl
         {
             if (!isUSB)
             {
-                byte[] data64 = null;
-                byte[] data = new byte[Device.Capabilities.InputReportByteLength];
-                if ( Device.ReadWithFileStream(data,16) == HidDevice.ReadStatus.Success)
+                byte[] btInputData = new byte[Device.Capabilities.InputReportByteLength];
+                if (Device.ReadWithFileStream(btInputData, 16) == HidDevice.ReadStatus.Success)
                 {
-                    data64 = new byte[Device.Capabilities.InputReportByteLength];
-                    Array.Copy(data, 2, data64, 0, 64);
-                    bool touchPressed = (data64[7] & (1 << 2 - 1)) != 0 ? true : false;
-                    toggleTouchpad(data64[8], data64[9], touchPressed);
-                    updateBatteryStatus(data64[30], isUSB);
+                    Array.Copy(btInputData, 2, inputData, 0, 64);
+                    bool touchPressed = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
+                    toggleTouchpad(inputData[8], inputData[9], touchPressed);
+                    updateBatteryStatus(inputData[30], isUSB);
 
                     byte[] touchData = new byte[4];
-                    Array.Copy(data64, 35, touchData, 0, 4);
+                    Array.Copy(inputData, 35, touchData, 0, 4);
                     if (isTouchEnabled)
                     {
                         HandleTouchpad(touchData);
-                        permormMouseClick(data64[6]);
+                        permormMouseClick(inputData[6]);
                     }
                 }
                 Device.flush_Queue();
-                return mapButtons(data64);
+                return mapButtons(inputData);
                
 
             }
             else
             {
-                byte[] data = new byte[Device.Capabilities.InputReportByteLength];
-                if ( Device.ReadWithFileStream(data, 8) == HidDevice.ReadStatus.Success)
+
+                if (Device.ReadWithFileStream(inputData, 8) == HidDevice.ReadStatus.Success)
                 {
-                    bool touchPressed = (data[7] & (1 << 2 - 1)) != 0 ? true : false;
-                    toggleTouchpad(data[8], data[9], touchPressed);
-                    updateBatteryStatus(data[30], isUSB);
+                    bool touchPressed = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
+                    toggleTouchpad(inputData[8], inputData[9], touchPressed);
+                    updateBatteryStatus(inputData[30], isUSB);
                     byte[] touchData = new byte[4];
-                    Array.Copy(data, 35, touchData, 0, 4);
+                    Array.Copy(inputData, 35, touchData, 0, 4);
                     if (isTouchEnabled)
                     {
                         HandleTouchpad(touchData);
-                        permormMouseClick(data[6]);
+                        permormMouseClick(inputData[6]);
                     }
                 }
                 else
@@ -150,7 +156,7 @@ namespace ScpControl
                     return null;
                 }
                 Device.flush_Queue();
-                return mapButtons(data);
+                return mapButtons(inputData);
             }
         }
 
@@ -373,56 +379,45 @@ namespace ScpControl
             }
         }
 
+
         public void sendOutputReport()
         {
-            if (!isUSB)
+
+            if (isDirty)
             {
-
-                byte[] data2 = new byte[78];
-
-                for (int i = 0; i < data2.Length; i++)
+                if (!isUSB)
                 {
-                    data2[i] = 0x0;
+                    outputData[0] = 0x11;
+                    outputData[1] = 128;
+                    outputData[3] = 0xff;
+                    outputData[6] = BigRumble; //motor
+                    outputData[7] = SmallRumble; //motor
+                    outputData[8] = LedColor.red; //red
+                    outputData[9] = LedColor.green; //green
+                    outputData[10] = LedColor.blue; //blue
+                    outputData[11] = FlashLed; //flash;
+                    outputData[12] = FlashLed; //flash;
+
+                    if (Device.WriteOutputReportViaControl(outputData))
+                    {
+                        isDirty = false;
+                    }
                 }
-
-                data2[0] = 0x11;
-                data2[1] = 128;
-                data2[3] = 0xff;
-
-                data2[6] = BigRumble; //motor
-                data2[7] = SmallRumble; //motor
-
-                data2[8] = LedColor.red; //red
-                data2[9] = LedColor.green; //green
-                data2[10] = LedColor.blue; //blue
-                data2[11] = FlashLed; //flash;
-                data2[12] = FlashLed; //flash;
-
-                if (Device.WriteOutputReportViaControl(data2))
+                else
                 {
-                    //success
-                }
-            }
-            else
-            {
-                byte[] data = new byte[Device.Capabilities.OutputReportByteLength];
-
-
-                data[0] = 0x5;
-                data[1] = 0xFF;
-                data[4] = BigRumble; //motor
-                data[5] = SmallRumble; //motor
-
-                data[6] = LedColor.red; //red
-                data[7] = LedColor.green; //green
-                data[8] = LedColor.blue; //blue
-                data[9] = FlashLed; //flash;
-                data[10] = FlashLed; //flash;
-
-
-                if (Device.WriteOutputReportViaInterrupt(data,8))
-                {
-                    //success
+                    outputData[0] = 0x5;
+                    outputData[1] = 0xFF;
+                    outputData[4] = BigRumble; //motor
+                    outputData[5] = SmallRumble; //motor
+                    outputData[6] = LedColor.red; //red
+                    outputData[7] = LedColor.green; //green
+                    outputData[8] = LedColor.blue; //blue
+                    outputData[9] = FlashLed; //flash;
+                    outputData[10] = FlashLed; //flash;
+                    if (Device.WriteOutputReportViaInterrupt(outputData, 8))
+                    {
+                        isDirty = false;
+                    }
                 }
             }
         }
@@ -437,7 +432,6 @@ namespace ScpControl
 
                 int currentX = data[1] + ((data[2] & 0xF) * 255);
                 int currentY = ((data[2] & 0xF0) >> 4) + (data[3] * 16);
-
                 if (lastIsActive != _isActive)
                 {
                     lastPoint = new Point(currentX, currentY);

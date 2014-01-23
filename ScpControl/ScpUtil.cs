@@ -133,6 +133,18 @@ namespace ScpControl
 
         }
 
+        public static bool getUseExclusiveMode()
+        {
+            return m_Config.useExclusiveMode;
+
+        }
+
+        public static void setUseExclusiveMode(bool exlusive)
+        {
+            m_Config.useExclusiveMode = exlusive;
+
+        }
+
         public static void Load() 
         {
             m_Config.Load();
@@ -196,6 +208,8 @@ namespace ScpControl
         public bool[] flashLedLowBattery = { false, false, false, false };
         public Byte[] touchSensitivity = { 100, 100, 100, 100 };
         public bool[] touchEnabled = { false, false, false, false };
+        public bool useExclusiveMode = false;
+
         public Boolean Load() 
         {
             Boolean Loaded = true;
@@ -234,6 +248,8 @@ namespace ScpControl
                      catch { }
                 }
 
+                try { Item = m_Xdoc.SelectSingleNode("/ScpControl/useExclusiveMode"); Boolean.TryParse(Item.InnerText, out useExclusiveMode); }
+                catch { }
             }
             catch { Loaded = false; }
             
@@ -260,6 +276,7 @@ namespace ScpControl
                 m_Xdoc.AppendChild(Node);
 
                 Node = m_Xdoc.CreateNode(XmlNodeType.Element, "ScpControl", null);
+                XmlNode xmlUseExclNode = m_Xdoc.CreateNode(XmlNodeType.Element, "useExclusiveMode", null); xmlUseExclNode.InnerText = useExclusiveMode.ToString(); Node.AppendChild(xmlUseExclNode);
 
                 XmlNode cNode1 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller1", null);  Node.AppendChild(cNode1);
                 XmlNode cNode2 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller2", null); Node.AppendChild(cNode2);

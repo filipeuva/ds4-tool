@@ -55,6 +55,9 @@ namespace ScpServer
             Pad[1] = rbPad_2;
             Pad[2] = rbPad_3;
             Pad[3] = rbPad_4;
+           
+
+            
         }
 
         protected void Form_Load(object sender, EventArgs e) 
@@ -62,7 +65,9 @@ namespace ScpServer
             Icon = Properties.Resources.Scp_All;
             tmrUpdate.Enabled = true;
             Global.Load();
-            btnStart_Click(sender, e);
+            hideDS4CheckBox.Checked = Global.getUseExclusiveMode();
+            if(btnStart.Enabled)
+                btnStart_Click(sender, e);
         }
 
         protected void Form_Close(object sender, FormClosingEventArgs e) 
@@ -179,6 +184,14 @@ namespace ScpServer
         {
             Hotkeys hotkeysForm = new Hotkeys();
             hotkeysForm.ShowDialog();
+        }
+
+        private void hideDS4CheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Global.setUseExclusiveMode(hideDS4CheckBox.Checked);
+            btnStop_Click(sender, e);
+            btnStart_Click(sender, e);
+            Global.Save();
         }
     }
 

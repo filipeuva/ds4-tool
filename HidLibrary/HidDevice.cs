@@ -44,7 +44,7 @@ namespace HidLibrary
 
             try
             {
-                var hidHandle = OpenHandle(_devicePath, true);
+                var hidHandle = OpenHandle(_devicePath, false);
 
                 _deviceAttributes = GetDeviceAttributes(hidHandle);
                 _deviceCapabilities = GetDeviceCapabilities(hidHandle);
@@ -86,13 +86,13 @@ namespace HidLibrary
                                 _devicePath);
         }
 
-        public void OpenDevice()
+        public void OpenDevice(bool isExclusive)
         {
             if (IsOpen) return;
             try
             {
                 if (safeReadHandle == null)
-                    safeReadHandle = OpenHandle(_devicePath, true);
+                    safeReadHandle = OpenHandle(_devicePath, isExclusive);
             }
             catch (Exception exception)
             {
@@ -154,7 +154,7 @@ namespace HidLibrary
 
         private void DeviceEventMonitorInserted()
         {
-            if (IsOpen) OpenDevice();
+            if (IsOpen) OpenDevice(false);
             if (Inserted != null) Inserted();
         }
 
@@ -315,19 +315,19 @@ namespace HidLibrary
 
         }
 
-        private SafeFileHandle OpenHandle(String devicePathName, Boolean readAndWrite)
+        private SafeFileHandle OpenHandle(String devicePathName, Boolean isExclusive)
         {
             SafeFileHandle hidHandle;
 
             try
             {
-                if (readAndWrite)
+                if (isExclusive)
                 {
                     hidHandle = NativeMethods.CreateFile(devicePathName, NativeMethods.GENERIC_READ | NativeMethods.GENERIC_WRITE, 0, IntPtr.Zero, NativeMethods.OpenExisting, 0, 0);
                 }
                 else
                 {
-                    hidHandle = NativeMethods.CreateFile(devicePathName, 0, 0, IntPtr.Zero, NativeMethods.OpenExisting, 0, 0);
+                    hidHandle = NativeMethods.CreateFile(devicePathName, NativeMethods.GENERIC_READ | NativeMethods.GENERIC_WRITE, NativeMethods.FILE_SHARE_READ | NativeMethods.FILE_SHARE_WRITE, IntPtr.Zero, NativeMethods.OpenExisting, 0, 0);
                 }
             }
             catch (Exception)

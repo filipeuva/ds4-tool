@@ -110,7 +110,7 @@ namespace ScpControl
                     foreach (HidDevice device in devices)
                     {
                         LogDebug("Found Controller: VID:" + device.Attributes.VendorHexId + " PID:" + device.Attributes.ProductHexId);
-                        device.OpenDevice();
+                        device.OpenDevice(Global.getUseExclusiveMode());
                         if (device.IsOpen)
                         {
                             DS4Controllers[ind] = new DS4Device(device, ind);
@@ -161,11 +161,11 @@ namespace ScpControl
                     {
                         lock (DS4Controllers[i - 1])
                         {
-                            LogDebug("Stopping cotroller " + i);
+                            LogDebug("Stopping controller " + i);
                             Unplug(i);
                             DS4Controllers[i - 1].Device.CloseDevice();
                             DS4Controllers[i - 1] = null;
-                            LogDebug("Cotroller " + i + " has stopped");
+                            LogDebug("Controller " + i + " has stopped");
                         }
                     }
                 }

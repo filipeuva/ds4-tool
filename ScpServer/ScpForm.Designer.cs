@@ -42,6 +42,8 @@
             this.pnlDebug = new System.Windows.Forms.Panel();
             this.pnlStatus = new System.Windows.Forms.Panel();
             this.gpPads = new System.Windows.Forms.GroupBox();
+            this.hideDS4CheckBox = new System.Windows.Forms.CheckBox();
+            this.hotkeysButton = new System.Windows.Forms.Button();
             this.optionsButton = new System.Windows.Forms.Button();
             this.rbPad_4 = new System.Windows.Forms.RadioButton();
             this.rbPad_3 = new System.Windows.Forms.RadioButton();
@@ -49,7 +51,6 @@
             this.rbPad_1 = new System.Windows.Forms.RadioButton();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.rootHub = new ScpControl.BusDevice(this.components);
-            this.hotkeysButton = new System.Windows.Forms.Button();
             this.pnlButton.SuspendLayout();
             this.pnlDebug.SuspendLayout();
             this.pnlStatus.SuspendLayout();
@@ -163,6 +164,7 @@
             // 
             this.gpPads.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.gpPads.Controls.Add(this.hideDS4CheckBox);
             this.gpPads.Controls.Add(this.hotkeysButton);
             this.gpPads.Controls.Add(this.optionsButton);
             this.gpPads.Controls.Add(this.rbPad_4);
@@ -174,6 +176,27 @@
             this.gpPads.Size = new System.Drawing.Size(763, 117);
             this.gpPads.TabIndex = 1;
             this.gpPads.TabStop = false;
+            // 
+            // hideDS4CheckBox
+            // 
+            this.hideDS4CheckBox.AutoSize = true;
+            this.hideDS4CheckBox.Location = new System.Drawing.Point(632, 94);
+            this.hideDS4CheckBox.Name = "hideDS4CheckBox";
+            this.hideDS4CheckBox.Size = new System.Drawing.Size(119, 17);
+            this.hideDS4CheckBox.TabIndex = 13;
+            this.hideDS4CheckBox.Text = "Hide DS4 Controller";
+            this.hideDS4CheckBox.UseVisualStyleBackColor = true;
+            this.hideDS4CheckBox.CheckedChanged += new System.EventHandler(this.hideDS4CheckBox_CheckedChanged);
+            // 
+            // hotkeysButton
+            // 
+            this.hotkeysButton.Location = new System.Drawing.Point(676, 50);
+            this.hotkeysButton.Name = "hotkeysButton";
+            this.hotkeysButton.Size = new System.Drawing.Size(75, 23);
+            this.hotkeysButton.TabIndex = 12;
+            this.hotkeysButton.Text = "Hotkeys";
+            this.hotkeysButton.UseVisualStyleBackColor = true;
+            this.hotkeysButton.Click += new System.EventHandler(this.hotkeysButton_Click);
             // 
             // optionsButton
             // 
@@ -249,16 +272,6 @@
             // 
             this.rootHub.Debug += new System.EventHandler<ScpControl.DebugEventArgs>(this.On_Debug);
             // 
-            // hotkeysButton
-            // 
-            this.hotkeysButton.Location = new System.Drawing.Point(676, 50);
-            this.hotkeysButton.Name = "hotkeysButton";
-            this.hotkeysButton.Size = new System.Drawing.Size(75, 23);
-            this.hotkeysButton.TabIndex = 12;
-            this.hotkeysButton.Text = "Hotkeys";
-            this.hotkeysButton.UseVisualStyleBackColor = true;
-            this.hotkeysButton.Click += new System.EventHandler(this.hotkeysButton_Click);
-            // 
             // ScpForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -269,7 +282,7 @@
             this.Controls.Add(this.pnlStatus);
             this.MinimumSize = new System.Drawing.Size(775, 550);
             this.Name = "ScpForm";
-            this.Text = "DS4 to XInput Mapper 1.1 Beta 3";
+            this.Text = "DS4 to XInput Mapper 1.1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Close);
             this.Load += new System.EventHandler(this.Form_Load);
             this.Resize += new System.EventHandler(this.Form_Resize);
@@ -305,6 +318,7 @@
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private ScpControl.BusDevice rootHub;
         private System.Windows.Forms.Button hotkeysButton;
+        private System.Windows.Forms.CheckBox hideDS4CheckBox;
     }
 }
 
