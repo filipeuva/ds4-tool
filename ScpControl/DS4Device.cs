@@ -36,6 +36,8 @@ namespace ScpControl
         private byte[] inputData = new byte[64];
         private byte[] outputData;
         private bool isDirty = true;
+        private byte[] Report = new byte[64];
+        private byte[] btInputData;
 
         public HidDevice Device
         {
@@ -106,6 +108,7 @@ namespace ScpControl
             if (isUSB)
                 outputData = new byte[Device.Capabilities.OutputReportByteLength];
             else
+                btInputData = new byte[Device.Capabilities.InputReportByteLength];
                 outputData = new byte[78];
             isTouchEnabled = Global.getTouchEnabled(deviceNum);
         }
@@ -114,19 +117,15 @@ namespace ScpControl
         {
             if (!isUSB)
             {
-                byte[] btInputData = new byte[Device.Capabilities.InputReportByteLength];
                 if (Device.ReadWithFileStream(btInputData, 16) == HidDevice.ReadStatus.Success)
                 {
                     Array.Copy(btInputData, 2, inputData, 0, 64);
                     bool touchPressed = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
                     toggleTouchpad(inputData[8], inputData[9], touchPressed);
                     updateBatteryStatus(inputData[30], isUSB);
-
-                    byte[] touchData = new byte[4];
-                    Array.Copy(inputData, 35, touchData, 0, 4);
                     if (isTouchEnabled)
                     {
-                        HandleTouchpad(touchData);
+                        HandleTouchpad(inputData,35);
                         permormMouseClick(inputData[6]);
                     }
                 }
@@ -137,17 +136,14 @@ namespace ScpControl
             }
             else
             {
-
                 if (Device.ReadWithFileStream(inputData, 8) == HidDevice.ReadStatus.Success)
                 {
                     bool touchPressed = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
                     toggleTouchpad(inputData[8], inputData[9], touchPressed);
                     updateBatteryStatus(inputData[30], isUSB);
-                    byte[] touchData = new byte[4];
-                    Array.Copy(inputData, 35, touchData, 0, 4);
                     if (isTouchEnabled)
                     {
-                        HandleTouchpad(touchData);
+                        HandleTouchpad(inputData, 35);
                         permormMouseClick(inputData[6]);
                     }
                 }
@@ -166,7 +162,6 @@ namespace ScpControl
             {
                 return null;
             }
-            byte[] Report = new byte[64];
 
             Report[1] = 0x02;
             Report[2] = 0x05;
@@ -422,16 +417,16 @@ namespace ScpControl
             }
         }
 
-        private void HandleTouchpad(byte[] data)
+        private void HandleTouchpad(byte[] data, int offset)
         {
             Cursor c = new Cursor(Cursor.Current.Handle);
+            int touchID = data[0 + offset] & 0xF0;
 
-            bool _isActive = (data[0] >> 7) != 0 ? false : true;
+            bool _isActive = (data[0 + offset] >> 7) != 0 ? false : true;
             if (_isActive)
             {
-
-                int currentX = data[1] + ((data[2] & 0xF) * 255);
-                int currentY = ((data[2] & 0xF0) >> 4) + (data[3] * 16);
+                int currentX = data[1 + offset] + ((data[2 + offset] & 0xF) * 255);
+                int currentY = ((data[2 + offset] & 0xF0) >> 4) + (data[3 + offset] * 16);
                 if (lastIsActive != _isActive)
                 {
                     lastPoint = new Point(currentX, currentY);

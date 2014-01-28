@@ -31,6 +31,21 @@ namespace ScpControl
         }
     }
 
+    public class MappingDoneEventArgs : EventArgs
+    {
+        protected int deviceNum = -1;
+
+        public MappingDoneEventArgs(int DeviceID)
+        {
+            deviceNum = DeviceID;
+        }
+
+        public int DeviceID
+        {
+            get { return deviceNum; }
+        }
+    }
+
     public class ReportEventArgs  : EventArgs 
     {
         protected Ds3PadId m_Pad = Ds3PadId.None;

@@ -15,11 +15,17 @@ namespace ScpControl
 
         protected DS4Device[] DS4Controllers = new DS4Device[4];
         protected UInt32 m_Packet = 0;
+        private class DS4Data
+        {
+            public byte[] parsedData = new byte[28];
+            public byte[] output = new byte[8];
+        }
+        private DS4Data[] processingData = new DS4Data[4];
         protected ReportEventArgs m_ReportArgs = new ReportEventArgs();
         public event EventHandler<DebugEventArgs> Debug = null;
+        public event EventHandler<MappingDoneEventArgs> MappingDone = null;
         public const String BUS_CLASS_GUID = "{F679F562-3164-42CE-A4DB-E7DDBE723909}";
-        private BackgroundWorker[] workers = new BackgroundWorker[4];
-        protected Task workersStatus = null;
+        private Thread[] workers = new Thread[4];
         protected bool isWorkersShouldRun = false;
 
         protected virtual Int32 Scale(Int32 Value, Boolean Flip) 
@@ -36,45 +42,25 @@ namespace ScpControl
         public BusDevice() : base(BUS_CLASS_GUID) 
         {
             InitializeComponent();
-            workers[0] = new BackgroundWorker();
-            workers[1] = new BackgroundWorker();
-            workers[2] = new BackgroundWorker();
-            workers[3] = new BackgroundWorker();
-            workers[0].DoWork += Worker1;
-            workers[1].DoWork += Worker2;
-            workers[2].DoWork += Worker3;
-            workers[3].DoWork += Worker4;
+            Initialize();
         }
 
         public BusDevice(IContainer container) : base(BUS_CLASS_GUID) 
         {
             container.Add(this);
-            InitializeComponent();
-            workers[0] = new BackgroundWorker();
-            workers[1] = new BackgroundWorker();
-            workers[2] = new BackgroundWorker();
-            workers[3] = new BackgroundWorker();
-            workers[0].DoWork += Worker1;
-            workers[1].DoWork += Worker2;
-            workers[2].DoWork += Worker3;
-            workers[3].DoWork += Worker4;
+            Initialize();
         }
 
-
-        private void timerCallback(object state)
+        public void Initialize()
         {
-            for (int i=0; i<DS4Controllers.Length; i++)
+            InitializeComponent();
+            MappingDone = new EventHandler<MappingDoneEventArgs>(this.On_MappingIsDone);
+            for (int i = 0; i < 4; i++)
             {
-                if (DS4Controllers[i] != null)
-                {
-                    if (!workers[i].IsBusy)
-                    {
-                        workers[i].RunWorkerAsync();
-                    }
-                }
-              
+                int t = i;
+                processingData[i] = new DS4Data();
+                workers[i] = new Thread(() => { ProcessData(t); });
             }
-          
         }
 
         public override Boolean Open(int Instance = 0) 
@@ -118,6 +104,10 @@ namespace ScpControl
                             DS4Controllers[ind].LedColor = color;
                             DS4Controllers[ind].sendOutputReport();
                             Plugin(ind + 1);
+                            int t = ind;
+                            if(workers[ind].ThreadState==System.Threading.ThreadState.Aborted || workers[ind].ThreadState==System.Threading.ThreadState.Stopped)
+                                workers[ind] = new Thread(() => { ProcessData(t); });
+                            workers[ind].Start();
                             LogDebug("Controller " + (ind + 1) + " ready to use");
                         }
                         else
@@ -136,8 +126,6 @@ namespace ScpControl
                         LogDebug("No controllers found");
                     }
                     isWorkersShouldRun = true;
-                    workersStatus = new Task(() => updateWorkers());
-                    workersStatus.Start();
                 }
                 catch (Exception e)
                 {
@@ -151,6 +139,7 @@ namespace ScpControl
 
         public override Boolean Stop()  
         {
+            Monitor.Enter(this);
             if (IsActive)
             {
                 isWorkersShouldRun = false;
@@ -159,24 +148,23 @@ namespace ScpControl
 
                     if (DS4Controllers[i - 1] != null)
                     {
-                        lock (DS4Controllers[i - 1])
-                        {
                             LogDebug("Stopping controller " + i);
+                            workers[i].Abort();
                             Unplug(i);
                             DS4Controllers[i - 1].Device.CloseDevice();
                             DS4Controllers[i - 1] = null;
                             LogDebug("Controller " + i + " has stopped");
-                        }
                     }
                 }
                 Unplug(0);                 
             }
-
+            Monitor.Exit(this);
             return base.Stop();
         }
 
         public override Boolean Close() 
         {
+            Monitor.Enter(this);
             if (IsActive)
             {
                 isWorkersShouldRun = false;
@@ -184,16 +172,15 @@ namespace ScpControl
                 {
                     if (DS4Controllers[i - 1] != null)
                     {
-                        lock (DS4Controllers[i - 1])
-                        {
+                            workers[i].Abort();
                             Unplug(i);
                             DS4Controllers[i - 1].Device.CloseDevice();
                             DS4Controllers[i - 1] = null;
-                        }
                     }
                     Unplug(0);               
                }               
             }
+            Monitor.Exit(this);
             return base.Close();
         }
 
@@ -301,66 +288,20 @@ namespace ScpControl
             return false;
         }
 
-        public void updateWorkers()
-        {
-            LogDebug("Started xinput mapping");
-            while (isWorkersShouldRun)
-            {
-                for (int i = 0; i < DS4Controllers.Length; i++)
-                {                    
-                    if (DS4Controllers[i] != null)
-                    {
-                        if (!workers[i].IsBusy)
-                        {
-                          workers[i].RunWorkerAsync();
-                        }
-                    }
-                }
-                Thread.Sleep(1);
-            }
-            LogDebug("Stopped xinput mapping");
-        }
-
-        public void Worker1(object sender, DoWorkEventArgs e)
-        {
-            ProcessData(0);
-        }
-
-        public void Worker2(object sender, DoWorkEventArgs e)
-        {
-            ProcessData(1);
-        }
-
-        public void Worker3(object sender, DoWorkEventArgs e)
-        {
-            ProcessData(2);
-        }
-
-        public void Worker4(object sender, DoWorkEventArgs e)
-        {
-            ProcessData(3);
-        }
-
         public void ProcessData(int device)
         {
             if (DS4Controllers[device] != null)
             {
-                lock (DS4Controllers[device])
+                byte[] data = DS4Controllers[device].retrieveData();
+                if (data != null)
                 {
-                    if (DS4Controllers[device] != null)
-                    {
-                        byte[] data = DS4Controllers[device].retrieveData();
-                        if (data != null)
-                        {
-                            data[0] = (byte)device;
-                            byte[] parsedData = new byte[28];
-                            Parse(data, parsedData);
-                            byte[] ouput = new byte[8];
-                            Report(parsedData, ouput);
-                        }
-                    }
+                    data[0] = (byte)device;
+                    Parse(data, processingData[device].parsedData);
+                    Report(processingData[device].parsedData, processingData[device].output);
                 }
             }
+
+            MappingDone(this, new MappingDoneEventArgs(device));
             
         }
 
@@ -394,8 +335,9 @@ namespace ScpControl
                     DS4Controllers[deviceInd].SmallRumble = Small;
                     DS4Controllers[deviceInd].BigRumble = Big;
                 }
-                Task sendReportTask = new Task(() => DS4Controllers[deviceInd].sendOutputReport());
-                sendReportTask.Start();
+                //Task sendReportTask = new Task(() => DS4Controllers[deviceInd].sendOutputReport());
+                //sendReportTask.Start();
+                DS4Controllers[deviceInd].sendOutputReport();
                 return result;
 
             }
@@ -414,6 +356,19 @@ namespace ScpControl
         protected virtual void On_Debug(object sender, DebugEventArgs e)
         {
             if (Debug != null) Debug(sender, e);
+        }
+
+        protected virtual void On_MappingIsDone(object sender, MappingDoneEventArgs e)
+        {
+            Monitor.Enter(this);
+            if (isWorkersShouldRun)
+            {
+                int t = e.DeviceID;
+                workers[t] = new Thread(() => { ProcessData(t); });
+                workers[t].Start();
+                Console.WriteLine(DateTime.Now.Millisecond + " " + t);
+            }
+            Monitor.Exit(this);
         }
 
         public void sendUpdateReport(int device)

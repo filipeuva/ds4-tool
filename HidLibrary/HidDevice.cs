@@ -198,8 +198,7 @@ namespace HidLibrary
 
         public ReadStatus ReadWithFileStream(byte[] inputBuffer, int timeout)
         {
-
-                try
+               try
                 {
                     if (safeReadHandle == null)
                         safeReadHandle = OpenHandle(_devicePath, true);
@@ -290,18 +289,8 @@ namespace HidLibrary
                 }
                 if (fileStream != null && fileStream.CanWrite && !safeReadHandle.IsInvalid)
                 {
-
-                    Task<bool> writeFileTask = new Task<bool>(() => WriteOutputReportViaInterruptTask(outputBuffer));
-                    writeFileTask.Start();
-                    bool success = writeFileTask.Wait(timeout);
-                    if (success)
-                    {
-                        return writeFileTask.Result;
-                    }
-                    else
-                    {
-                        return false;
-                    }
+                    fileStream.Write(outputBuffer, 0, outputBuffer.Length);
+                    return true;
                 }
                 else
                 {
