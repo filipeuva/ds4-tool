@@ -38,6 +38,8 @@ namespace ScpControl
         private bool isDirty = true;
         private byte[] Report = new byte[64];
         private byte[] btInputData;
+        private byte[] green = { 0, 255, 0 };
+        private byte[] red = { 255, 0, 0 };
 
         public HidDevice Device
         {
@@ -52,7 +54,10 @@ namespace ScpControl
                     boosted = 255;
                 return (byte)boosted; 
             }
-            set { smallRumble = value; isDirty = true; }
+            set { if (value == bigRumble) return;
+                smallRumble = value;
+                isDirty = true;
+            }
         }
 
         public byte BigRumble
@@ -64,7 +69,10 @@ namespace ScpControl
                     boosted = 255;
                 return (byte)boosted;
             }
-            set { bigRumble = value; isDirty = true; }
+            set { if (value == bigRumble) return;
+                bigRumble = value;
+                isDirty = true;
+            }
         }
 
         public byte RumbleBoost
@@ -81,23 +89,37 @@ namespace ScpControl
 
         public void setLedColor(byte red, byte green, byte blue)
         {
-            m_LedColor = new ledColor();
-            m_LedColor.red = red;
-            m_LedColor.green = green;
-            m_LedColor.blue = blue;
-            isDirty = true;
+            if (m_LedColor.red != red || m_LedColor.green != green || m_LedColor.blue != blue)
+            {
+                m_LedColor.red = red;
+                m_LedColor.green = green;
+                m_LedColor.blue = blue;
+                isDirty = true;
+            }
         }
 
         public ledColor LedColor
         {
             get { return m_LedColor; }
-            set { m_LedColor = value; isDirty = true; }
+            set {
+                if (m_LedColor.red != value.red || m_LedColor.green != value.green || m_LedColor.blue != value.blue)
+                {
+                    m_LedColor = value;
+                    isDirty = true;
+                }
+            }
         }
 
         public byte FlashLed
         {
             get { return ledFlash; }
-            set { ledFlash = value; isDirty = true; }
+            set {
+                if (ledFlash != value)
+                {
+                    ledFlash = value;
+                    isDirty = true;
+                }
+            }
         }
 
         public DS4Device(HidDevice device, int controllerID)
@@ -117,7 +139,7 @@ namespace ScpControl
         {
             if (!isUSB)
             {
-                if (Device.ReadWithFileStream(btInputData, 16) == HidDevice.ReadStatus.Success)
+                if (Device.ReadWithFileStream(btInputData,16) == HidDevice.ReadStatus.Success)
                 {
                     Array.Copy(btInputData, 2, inputData, 0, 64);
                     bool touchPressed = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
@@ -128,6 +150,10 @@ namespace ScpControl
                         HandleTouchpad(inputData,35);
                         permormMouseClick(inputData[6]);
                     }
+                }
+                else
+                {
+                    return null;
                 }
                 Device.flush_Queue();
                 return mapButtons(inputData);
@@ -342,12 +368,8 @@ namespace ScpControl
             this.charge = (short) battery;
             if (Global.getLedAsBatteryIndicator(deviceNum))
             {
-                byte[] green = { 0, 255, 0 };
-                byte[] red = { 255, 0, 0 };
-
                 uint ratio = (uint)battery;
-                ledColor color = Global.getTransitionedColor(red, green, ratio);
-                LedColor = color;
+                LedColor =  Global.getTransitionedColor(red, green, ratio);
 
 
             }

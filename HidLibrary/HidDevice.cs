@@ -195,6 +195,32 @@ namespace HidLibrary
                 return ReadStatus.ReadError;
             }
         }
+        public ReadStatus ReadFile(byte[] inputBuffer)
+        {
+            if (safeReadHandle == null)
+                safeReadHandle = OpenHandle(_devicePath, true);
+            try
+            {
+                uint bytesRead;
+
+                if (NativeMethods.ReadFile(safeReadHandle.DangerousGetHandle(), inputBuffer, (uint)inputBuffer.Length, out bytesRead, IntPtr.Zero))
+                {
+                    return ReadStatus.Success;
+                }
+                else
+                {
+                    return ReadStatus.NoDataRead;
+                }
+            }
+            catch (Exception)
+            {
+                return ReadStatus.ReadError;
+            }
+                            
+
+
+            
+        }
 
         public ReadStatus ReadWithFileStream(byte[] inputBuffer, int timeout)
         {
