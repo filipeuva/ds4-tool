@@ -54,7 +54,7 @@ namespace ScpControl
                     boosted = 255;
                 return (byte)boosted; 
             }
-            set { if (value == bigRumble) return;
+            set { if (value == smallRumble) return;
                 smallRumble = value;
                 isDirty = true;
             }
