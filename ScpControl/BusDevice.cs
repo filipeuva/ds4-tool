@@ -23,10 +23,10 @@ namespace ScpControl
         private DS4Data[] processingData = new DS4Data[4];
         protected ReportEventArgs m_ReportArgs = new ReportEventArgs();
         public event EventHandler<DebugEventArgs> Debug = null;
-        public event EventHandler<MappingDoneEventArgs> MappingDone = null;
         public const String BUS_CLASS_GUID = "{F679F562-3164-42CE-A4DB-E7DDBE723909}";
         private Thread[] workers = new Thread[4];
         protected bool isWorkersShouldRun = false;
+        private object[] ds4locks = new object[4];
 
         protected virtual Int32 Scale(Int32 Value, Boolean Flip) 
         {
@@ -54,11 +54,11 @@ namespace ScpControl
         public void Initialize()
         {
             InitializeComponent();
-            MappingDone = new EventHandler<MappingDoneEventArgs>(this.On_MappingIsDone);
             for (int i = 0; i < 4; i++)
             {
                 int t = i;
                 processingData[i] = new DS4Data();
+                ds4locks[i] = new object();
                 workers[i] = new Thread(() => { ProcessData(t); });
             }
         }
@@ -104,6 +104,7 @@ namespace ScpControl
                             DS4Controllers[ind].LedColor = color;
                             DS4Controllers[ind].sendOutputReport();
                             Plugin(ind + 1);
+                            isWorkersShouldRun = true;
                             int t = ind;
                             if(workers[ind].ThreadState==System.Threading.ThreadState.Aborted || workers[ind].ThreadState==System.Threading.ThreadState.Stopped)
                                 workers[ind] = new Thread(() => { ProcessData(t); });
@@ -125,7 +126,6 @@ namespace ScpControl
                     {
                         LogDebug("No controllers found");
                     }
-                    isWorkersShouldRun = true;
                 }
                 catch (Exception e)
                 {
@@ -139,26 +139,25 @@ namespace ScpControl
 
         public override Boolean Stop()  
         {
-            Monitor.Enter(this);
             if (IsActive)
             {
                 isWorkersShouldRun = false;
                 for (int i = 1; i <= 4; i++)
                 {
-
-                    if (DS4Controllers[i - 1] != null)
+                    lock (ds4locks[i-1])
                     {
+                        if (DS4Controllers[i - 1] != null)
+                        {
                             LogDebug("Stopping controller " + i);
-                            workers[i].Abort();
                             Unplug(i);
                             DS4Controllers[i - 1].Device.CloseDevice();
                             DS4Controllers[i - 1] = null;
                             LogDebug("Controller " + i + " has stopped");
+                        }
                     }
                 }
                 Unplug(0);                 
             }
-            Monitor.Exit(this);
             return base.Stop();
         }
 
@@ -170,15 +169,17 @@ namespace ScpControl
                 isWorkersShouldRun = false;
                 for (int i = 1; i <= 4; i++)
                 {
-                    if (DS4Controllers[i - 1] != null)
+                    lock (ds4locks[i-1])
                     {
-                            workers[i].Abort();
+                        if (DS4Controllers[i - 1] != null)
+                        {
                             Unplug(i);
                             DS4Controllers[i - 1].Device.CloseDevice();
                             DS4Controllers[i - 1] = null;
-                    }
-                    Unplug(0);               
-               }               
+                        }
+                    }              
+               }
+               Unplug(0); 
             }
             Monitor.Exit(this);
             return base.Close();
@@ -290,18 +291,24 @@ namespace ScpControl
 
         public void ProcessData(int device)
         {
-            if (DS4Controllers[device] != null)
+            while (isWorkersShouldRun)
             {
-                byte[] data = DS4Controllers[device].retrieveData();
-                if (data != null)
+                lock (ds4locks[device])
                 {
-                    data[0] = (byte)device;
-                    Parse(data, processingData[device].parsedData);
-                    Report(processingData[device].parsedData, processingData[device].output);
+                    DS4Device d = DS4Controllers[device];
+                    if (d == null)
+                    {
+                        return;
+                    }
+                    byte[] data = d.retrieveData();
+                    if (data != null)
+                    {
+                        data[0] = (byte)device;
+                        Parse(data, processingData[device].parsedData);
+                        Report(processingData[device].parsedData, processingData[device].output);
+                    }
                 }
             }
-
-            MappingDone(this, new MappingDoneEventArgs(device));
             
         }
 
@@ -356,19 +363,6 @@ namespace ScpControl
         protected virtual void On_Debug(object sender, DebugEventArgs e)
         {
             if (Debug != null) Debug(sender, e);
-        }
-
-        protected virtual void On_MappingIsDone(object sender, MappingDoneEventArgs e)
-        {
-            Monitor.Enter(this);
-            if (isWorkersShouldRun)
-            {
-                int t = e.DeviceID;
-                workers[t] = new Thread(() => { ProcessData(t); });
-                workers[t].Start();
-                Console.WriteLine(DateTime.Now.Millisecond + " " + t);
-            }
-            Monitor.Exit(this);
         }
 
         public void sendUpdateReport(int device)

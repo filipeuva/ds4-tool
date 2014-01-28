@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 namespace ScpControl
 {
     public struct ledColor
@@ -139,7 +140,7 @@ namespace ScpControl
         {
             if (!isUSB)
             {
-                if (Device.ReadWithFileStream(btInputData,16) == HidDevice.ReadStatus.Success)
+                if (Device.ReadFile(btInputData) == HidDevice.ReadStatus.Success)
                 {
                     Array.Copy(btInputData, 2, inputData, 0, 64);
                     bool touchPressed = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
@@ -162,7 +163,7 @@ namespace ScpControl
             }
             else
             {
-                if (Device.ReadWithFileStream(inputData, 8) == HidDevice.ReadStatus.Success)
+                if (Device.ReadFile(inputData) == HidDevice.ReadStatus.Success)
                 {
                     bool touchPressed = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
                     toggleTouchpad(inputData[8], inputData[9], touchPressed);
