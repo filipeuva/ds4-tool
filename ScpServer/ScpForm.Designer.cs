@@ -282,7 +282,7 @@
             this.Controls.Add(this.pnlStatus);
             this.MinimumSize = new System.Drawing.Size(775, 550);
             this.Name = "ScpForm";
-            this.Text = "DS4 to XInput Mapper 1.1";
+            this.Text = "DS4 to XInput Mapper 1.2";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Close);
             this.Load += new System.EventHandler(this.Form_Load);
             this.Resize += new System.EventHandler(this.Form_Resize);

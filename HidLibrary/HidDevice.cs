@@ -11,6 +11,9 @@ namespace HidLibrary
         public event InsertedEventHandler Inserted;
         public event RemovedEventHandler Removed;
 
+        public event EventHandler<EventArgs> Insert;
+        public event EventHandler<EventArgs> Remove;
+
         public delegate void InsertedEventHandler();
         public delegate void RemovedEventHandler();
 
@@ -162,6 +165,7 @@ namespace HidLibrary
         {
             if (IsOpen) CloseDevice();
             if (Removed != null) Removed();
+            if (Remove != null) Remove(this, new EventArgs());
         }
 
         public void Dispose()
@@ -350,6 +354,11 @@ namespace HidLibrary
                 throw;
             }
             return hidHandle;
+        }
+
+        public bool readFeatureData(byte[] inputBuffer )
+        {
+            return NativeMethods.HidD_GetFeature(safeReadHandle.DangerousGetHandle(), inputBuffer, inputBuffer.Length);
         }
     }
 }

@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ScpControl")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Sony DualShock 4 to Microsoft Xinput controller mapper")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Scarlet.Crush Productions")]
+[assembly: AssemblyCompany("DS4Tool")]
 [assembly: AssemblyProduct("ScpControl")]
-[assembly: AssemblyCopyright("Copyright © Scarlet.Crush Productions 2012, 2013")]
+[assembly: AssemblyCopyright("Copyright © Scarlet.Crush Productions 2012, 2013; Copyright © InhexSTER, electrobrains 2013, 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

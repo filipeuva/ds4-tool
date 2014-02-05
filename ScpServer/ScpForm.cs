@@ -139,12 +139,20 @@ namespace ScpServer
 
         protected void tmrUpdate_Tick(object sender, EventArgs e) 
         {
+            bool optionsEnabled = false;
+            int controllers = 0;
             for (Int32 Index = 0; Index < Pad.Length; Index++)
             {
                 Pad[Index].Text    = rootHub.getControllerInfo(Index);
                 if (Pad[Index].Text != null && Pad[Index].Text != "")
                 {
                     Pad[Index].Enabled = true;
+                    controllers++;
+                    if (Pad[Index].Checked == true)
+                    {
+                        optionsEnabled = true;
+                    }
+                    
                 }
                 else {
                     Pad[Index].Text = "Disconnected";
@@ -152,6 +160,13 @@ namespace ScpServer
                     Pad[Index].Checked = false;
                 }
             }
+            if (controllers > 0 && !optionsEnabled)
+            {
+                // at least one controller present but none checked
+                // select the first
+                Pad[0].Checked = true;
+            }
+            optionsButton.Enabled = optionsEnabled;
             btnClear.Enabled = lvDebug.Items.Count > 0;
         }
 

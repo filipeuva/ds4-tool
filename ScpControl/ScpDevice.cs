@@ -428,7 +428,7 @@ namespace ScpControl
 
                         if (SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref DeviceInterfaceData, detailDataBuffer, bufferSize, ref bufferSize, ref da))
                         {
-                            IntPtr pDevicePathName = new IntPtr(IntPtr.Size == 4 ? detailDataBuffer.ToInt32() : detailDataBuffer.ToInt64() + 4);
+                            IntPtr pDevicePathName = new IntPtr(IntPtr.Size == 4 ? detailDataBuffer.ToInt32() + 4: detailDataBuffer.ToInt64() + 4);
 
                             Path = Marshal.PtrToStringAuto(pDevicePathName).ToUpper();
                             Marshal.FreeHGlobal(detailDataBuffer);
@@ -481,7 +481,7 @@ namespace ScpControl
 
                         if (SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref DeviceInterfaceData, detailDataBuffer, bufferSize, ref bufferSize, ref da))
                         {
-                            IntPtr pDevicePathName = new IntPtr(IntPtr.Size == 4 ? detailDataBuffer.ToInt32() : detailDataBuffer.ToInt64() + 4);
+                            IntPtr pDevicePathName = new IntPtr(IntPtr.Size == 4 ? detailDataBuffer.ToInt32() + 4 : detailDataBuffer.ToInt64() + 4);
 
                             String Current = Marshal.PtrToStringAuto(pDevicePathName).ToUpper();
                             Marshal.FreeHGlobal(detailDataBuffer);

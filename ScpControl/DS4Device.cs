@@ -24,10 +24,7 @@ namespace ScpControl
         private bool isUSB = true;
         private int deviceNum = 0;
         private bool m_isTouchEnabled = false;
-        private bool lastIsActive = false;
-        private Point lastPoint = new Point(0, 0);
-        private byte lastL1Value = 0;
-        private byte lastL2Value = 0;
+        private Point lastPoint = new Point(0, 0); 
         private byte rumbleBoost = 100;
         private byte smallRumble = 0;
         private byte bigRumble = 0;
@@ -41,7 +38,8 @@ namespace ScpControl
         private byte[] btInputData;
         private byte[] green = { 0, 255, 0 };
         private byte[] red = { 255, 0, 0 };
-
+        private string MACAddr;
+ 
         public HidDevice Device
         {
             get { return hid_device; }
@@ -134,6 +132,11 @@ namespace ScpControl
                 btInputData = new byte[Device.Capabilities.InputReportByteLength];
                 outputData = new byte[78];
             isTouchEnabled = Global.getTouchEnabled(deviceNum);
+
+            byte[] buffer = new byte[16];
+            buffer[0] = 18;
+            Device.readFeatureData(buffer);
+            MACAddr = String.Format("{0:X02}:{1:X}:{2:X02}:{3:X02}:{4:X02}:{5:X02}",buffer[6],buffer[5],buffer[4],buffer[3],buffer[2],buffer[1]);
         }
 
         public byte[] retrieveData()
@@ -148,8 +151,7 @@ namespace ScpControl
                     updateBatteryStatus(inputData[30], isUSB);
                     if (isTouchEnabled)
                     {
-                        HandleTouchpad(inputData,35);
-                        permormMouseClick(inputData[6]);
+                        Touchpad.handleTouchpad(inputData, touchPressed);
                     }
                 }
                 else
@@ -170,8 +172,7 @@ namespace ScpControl
                     updateBatteryStatus(inputData[30], isUSB);
                     if (isTouchEnabled)
                     {
-                        HandleTouchpad(inputData, 35);
-                        permormMouseClick(inputData[6]);
+                        Touchpad.handleTouchpad(inputData, touchPressed);
                     }
                 }
                 else
@@ -440,57 +441,9 @@ namespace ScpControl
             }
         }
 
-        private void HandleTouchpad(byte[] data, int offset)
-        {
-            Cursor c = new Cursor(Cursor.Current.Handle);
-            int touchID = data[0 + offset] & 0xF0;
-
-            bool _isActive = (data[0 + offset] >> 7) != 0 ? false : true;
-            if (_isActive)
-            {
-                int currentX = data[1 + offset] + ((data[2 + offset] & 0xF) * 255);
-                int currentY = ((data[2 + offset] & 0xF0) >> 4) + (data[3 + offset] * 16);
-                if (lastIsActive != _isActive)
-                {
-                    lastPoint = new Point(currentX, currentY);
-                }
-
-                int deltax = currentX - lastPoint.X;
-                int deltay = currentY - lastPoint.Y;
-                float sensitivity = Global.getTouchSensitivity(deviceNum)/(float)100;
-                deltax =(int)( (float)deltax * sensitivity);
-                deltay = (int)((float)deltay * sensitivity);
-                Cursor.Position = new Point(Cursor.Position.X + deltax, Cursor.Position.Y + deltay);
-                lastPoint = new Point(currentX, currentY);
-
-            }
-            lastIsActive = _isActive;
-
-        }
-
-        private void permormMouseClick(byte data)
-        {
-
-            if (data == 1 && lastL1Value != data)
-            {
-                mouse_event(0x8000 | 0x0002 | 0x0004, (uint)Cursor.Position.X, (uint)Cursor.Position.Y, 0, 0);
-
-            }
-            if (data == 2 && lastL2Value != data)
-            {
-                mouse_event(0x8000 | 0x0008 | 0x0010, (uint)Cursor.Position.X, (uint)Cursor.Position.Y, 0, 0);
-
-            }
-            lastL1Value = data;
-            lastL2Value = data;
-        }
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
-
         public String toString()
         {
-            return "Controller " + (deviceNum + 1) + ": " + "Battery = "+charge+"%," +" Touchpad Enabled = " + isTouchEnabled + (isUSB ? " (USB)" : " (BT)");
+            return "Controller " + (deviceNum + 1) + ": " + "Battery = "+charge+"%," +" Touchpad Enabled = " + isTouchEnabled + (isUSB ? " (USB) " : " (BT) ");
         }
 
     }
