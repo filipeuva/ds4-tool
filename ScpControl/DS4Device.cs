@@ -129,8 +129,10 @@ namespace ScpControl
             if (isUSB)
                 outputData = new byte[Device.Capabilities.OutputReportByteLength];
             else
+            {
                 btInputData = new byte[Device.Capabilities.InputReportByteLength];
                 outputData = new byte[78];
+            }
             isTouchEnabled = Global.getTouchEnabled(deviceNum);
 
             byte[] buffer = new byte[16];
