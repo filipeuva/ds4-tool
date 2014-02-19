@@ -28,16 +28,8 @@ namespace HidLibrary
         private void DeviceEventMonitor()
         {
             _device.Tick();
-            var isConnected = _device.IsConnected;
-            if (isConnected != _wasConnected)
-            {
-
-                if (isConnected && Inserted != null) Inserted();
-                else if (!isConnected && Removed != null)
-                { Removed(); _device.MonitorDeviceEvents = false; }
-                _wasConnected = isConnected;
-
-            }
+            if ((!_device.IsConnected || _device.IsTimedOut) && Removed != null)
+                Removed();
 
             Thread.Sleep(500);
 

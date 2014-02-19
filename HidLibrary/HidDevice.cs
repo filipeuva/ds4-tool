@@ -64,7 +64,7 @@ namespace HidLibrary
         public SafeFileHandle safeReadHandle { get; private set; }
         public FileStream fileStream { get; private set; }
         public bool IsOpen { get; private set; }
-        public bool IsConnected { get { return HidDevices.IsConnected(_devicePath) && idleTicks<=5; } }
+        public bool IsConnected { get { return HidDevices.IsConnected(_devicePath); } }
         public bool IsTimedOut { get { return idleTicks > 5; } }
         public string Description { get { return _description; } }
         public HidDeviceCapabilities Capabilities { get { return _deviceCapabilities; } }
@@ -183,8 +183,7 @@ namespace HidLibrary
 
         public void Tick()
         {
-            idleTicks++;
-            Console.WriteLine(idleTicks);
+            idleTicks++;;
         }
 
         public void Dispose()
