@@ -75,7 +75,6 @@ namespace ScpControl
     public class Global 
     {
         protected static BackingStore m_Config = new BackingStore();
-
         protected static Int32 m_IdleTimeout = 600000;
 
         public static ledColor loadColor(int device)
@@ -86,10 +85,21 @@ namespace ScpControl
            color.blue = m_Config.m_Leds[device][2];
            return color;
         }
+        public static void saveColor(int device, byte red, byte green, byte blue)
+        {
+            m_Config.m_Leds[device][0] = red;
+            m_Config.m_Leds[device][1] = green;
+            m_Config.m_Leds[device][2] = blue;
+        }
 
         public static byte loadRumbleBoost(int device)
         {
             return m_Config.m_Rumble[device];
+        }
+        public static void saveRumbleBoost(int device, byte boost)
+        {
+            m_Config.m_Rumble[device] = boost;
+
         }
 
         public static byte getTouchSensitivity(int device)
@@ -99,19 +109,6 @@ namespace ScpControl
         public static void setTouchSensitivity(int device, byte sen)
         {
              m_Config.touchSensitivity[device] = sen;
-        }
-        public static void saveColor(int device, byte red, byte green, byte blue)
-        {
-            m_Config.m_Leds[device][0] = red;
-            m_Config.m_Leds[device][1] = green;
-            m_Config.m_Leds[device][2] = blue;
-        }
-
-
-        public static void saveRumbleBoost(int device, byte boost)
-        {
-            m_Config.m_Rumble[device] = boost;
-
         }
 
         public static void setFlashWhenLowBattery(int device, bool flash)
@@ -125,7 +122,6 @@ namespace ScpControl
 
         }
 
-
         public static void setLedAsBatteryIndicator(int device, bool ledAsBattery)
         {
             m_Config.ledAsBattery[device] = ledAsBattery;
@@ -133,8 +129,7 @@ namespace ScpControl
         }
         public static bool getLedAsBatteryIndicator(int device)
         {
-            return m_Config.ledAsBattery[device];
-
+            return m_Config.ledAsBattery[device];     
         }
 
         public static void setTouchEnabled(int device, bool touchEnabled)
@@ -148,28 +143,169 @@ namespace ScpControl
 
         }
 
+        public static void setUseExclusiveMode(bool exclusive)
+        {
+            m_Config.useExclusiveMode = exclusive;
+        }
         public static bool getUseExclusiveMode()
         {
             return m_Config.useExclusiveMode;
-
         }
-
-        public static void setUseExclusiveMode(bool exlusive)
+        
+        // New settings
+        public static void saveLowColor(int device, byte red, byte green, byte blue)
         {
-            m_Config.useExclusiveMode = exlusive;
-
+            m_Config.m_LowLeds[device][0] = red;
+            m_Config.m_LowLeds[device][1] = green;
+            m_Config.m_LowLeds[device][2] = blue;
         }
+        public static ledColor loadLowColor(int device)
+        {
+            ledColor color = new ledColor();
+            color.red = m_Config.m_LowLeds[device][0];
+            color.green = m_Config.m_LowLeds[device][1];
+            color.blue = m_Config.m_LowLeds[device][2];
+            return color;
+        }
+        public static void setTapSensitivity(int device, byte sen)
+        {
+            m_Config.tapSensitivity[device] = sen;
+        }
+        public static byte getTapSensitivity(int device)
+        {
+            return m_Config.tapSensitivity[device];
+        }
+        public static void setScrollSensitivity(int device, byte sen)
+        {
+            m_Config.scrollSensitivity[device] = sen;
+        }
+        public static byte getScrollSensitivity(int device)
+        {
+            return m_Config.scrollSensitivity[device];
+        }
+        public static void setTwoFingerRC(int device, bool twoFingerRC)
+        {
+            m_Config.twoFingerRC[device] = twoFingerRC;
+        }
+        public static bool getTwoFingerRC(int device)
+        {
+            return m_Config.twoFingerRC[device];
+        }
+        public static void setStartMinimized(bool startMinimized)
+        {
+            m_Config.startMinimized = startMinimized;
+        }
+        public static bool getStartMinimized()
+        {
+            return m_Config.startMinimized;
+        }
+        public static void setFormWidth(int size)
+        {
+            m_Config.formWidth = size;
+        }
+        public static int getFormWidth()
+        {
+            return m_Config.formWidth;
+        }
+        public static void setFormHeight(int size)
+        {
+            m_Config.formHeight = size;
+        }
+        public static int getFormHeight()
+        {
+            return m_Config.formHeight;
+        }
+        public static void setCustomMap(int device, string customMap)
+        {
+            m_Config.customMapPath[device] = customMap;
+        }
+        public static string getCustomMap(int device)
+        {
+            return m_Config.customMapPath[device];
+        }
+        public static bool saveCustomMapping(string customMapPath, System.Windows.Forms.Control[] buttons)
+        {
+            return m_Config.SaveCustomMapping(customMapPath, buttons);
+        }
+        public static bool loadCustomMapping(string customMapPath, System.Windows.Forms.Control[] buttons)
+        {
+            return m_Config.LoadCustomMapping(customMapPath, buttons);
+        }
+        public static bool loadCustomMapping(int device)
+        {
+            return m_Config.LoadCustomMapping(getCustomMap(device));
+        }
+        public static ushort getCustomKey(string controlName)
+        {
+            return m_Config.GetCustomKey(controlName);
+        }
+        public static string getCustomButton(string controlName)
+        {
+            return m_Config.GetCustomButton(controlName);
+        }
+        public static bool getHasCustomKeysorButtons(int device)
+        {
+            return m_Config.customMapButtons.Count > 0 || m_Config.customMapKeys.Count > 0;
+        }
+        public static Dictionary<string, string> getCustomButtons()
+        {
+            return new Dictionary<string,string>(m_Config.customMapButtons);
+        }
+        public static Dictionary<string, ushort> getCustomKeys()
+        {
+            return new Dictionary<string, ushort>(m_Config.customMapKeys);
+        }
+        #region watch sixaxis data
+        static List<SixaxisObserver> observers = new List<SixaxisObserver>();
+        static List<DisposableSixaxisObserver> unregisteringObservers = new List<DisposableSixaxisObserver>();
+        public interface SixaxisObserver
+        {
+            void Update(byte[] data);
+        }
+        public interface DisposableSixaxisObserver : SixaxisObserver
+        {
+            void InvokeClose();
+        }
+        public static void registerForSixaxisData(SixaxisObserver observer)
+        {
+            observers.Add(observer);
+        }
+        public static bool unregisterForSixaxisData(DisposableSixaxisObserver observer)
+        {
+            if (!observers.Contains(observer))
+                return false;
+            unregisteringObservers.Add(observer);
+            return true;
+        }
+        public static bool unregisterForSixaxisData(SixaxisObserver observer)
+        {
+            return observers.Remove(observer);
+        }
+        public static bool setSixaxisData(byte[] data)
+        {
+            for (int i = observers.Count -1; i >= 0; i--)
+                observers[i].Update(data);
+
+            if (unregisteringObservers.Count > 0)
+            {
+                DisposableSixaxisObserver observer = unregisteringObservers[0];
+                unregisteringObservers.Remove(observer);
+                observers.Remove(observer);
+                observer.InvokeClose();
+                return false;
+            }
+            return true;
+        }
+        #endregion
 
         public static void Load() 
         {
             m_Config.Load();
         }
-
         public static void Save() 
         {
             m_Config.Save();
         }
-
 
         private static byte applyRatio(byte b1, byte b2, uint r)
         {
@@ -183,7 +319,6 @@ namespace ScpControl
             byte bdif = (byte)(bmax - bmin);
             return (byte)(bmin + (bdif * ratio / 100));
         }
-
         public static ledColor getTransitionedColor(byte[] c1, byte[] c2, uint ratio)
         {
             ledColor color = new ledColor();
@@ -223,54 +358,231 @@ namespace ScpControl
         public bool[] flashLedLowBattery = { false, false, false, false };
         public Byte[] touchSensitivity = { 100, 100, 100, 100 };
         public bool[] touchEnabled = { false, false, false, false };
+
         public bool useExclusiveMode = false;
+
+        // Add new settings
+        public String[] customMapPath = { String.Empty, String.Empty, String.Empty, String.Empty };
+        public Dictionary<String, UInt16> customMapKeys = new Dictionary<String, UInt16>();
+        public Dictionary<String, String> customMapButtons = new Dictionary<String, String>();
+        public Int32 formWidth = 782;
+        public Int32 formHeight = 550;
+        public Boolean startMinimized = false;
+        public Boolean[] twoFingerRC = { false, false, false, false };
+        public Byte[] tapSensitivity = { 0, 0, 0, 0 };
+        public Byte[] scrollSensitivity = { 0, 0, 0, 0 };
+        public Byte[][] m_LowLeds = new Byte[][]
+        {
+            // Default low light for low battery
+            new Byte[] {0,0,0},
+            new Byte[] {0,0,0},
+            new Byte[] {0,0,0},
+            new Byte[] {0,0,0}
+        };
+        public String GetCustomButton(String controlName)
+        {
+            if (customMapButtons.ContainsKey(controlName))
+                return customMapButtons[controlName];
+            else return String.Empty;
+        }
+        public UInt16 GetCustomKey(String controlName)
+        {
+            if (customMapKeys.ContainsKey(controlName))
+                return customMapKeys[controlName];
+            else return 0;
+        }
+        public Boolean LoadCustomMapping(String customMapPath)
+        {
+            Boolean Loaded = true;
+            customMapButtons.Clear();
+            customMapKeys.Clear();
+            try
+            {
+                if (customMapPath != string.Empty && File.Exists(customMapPath))
+                {
+                    m_Xdoc.Load(customMapPath);
+                    UInt16 wvk;
+                    foreach (XmlNode Item in m_Xdoc.SelectSingleNode("/Control").ChildNodes)
+                        try
+                        {
+                            if (UInt16.TryParse(Item.InnerText, out wvk))
+                                customMapKeys.Add(Item.Name, wvk);
+                            else customMapButtons.Add(Item.Name, Item.InnerText);
+                        }
+                        catch
+                        {
+
+                        } 
+                }
+            }
+            catch
+            {
+                Loaded = false;
+            }
+            return Loaded;
+        }
+        public Boolean LoadCustomMapping(String customMapPath, System.Windows.Forms.Control[] buttons)
+        {
+            Boolean Loaded = true;
+            customMapButtons.Clear();
+            customMapKeys.Clear();
+            try
+            {
+                if (customMapPath != string.Empty && File.Exists(customMapPath))
+                {
+                    XmlNode Item;
+                    m_Xdoc.Load(customMapPath);
+                    UInt16 wvk;
+                    foreach (var button in buttons)
+                        try
+                        {
+                            Item = m_Xdoc.SelectSingleNode(String.Format("/Control/{0}", button.Name));
+                            if (Item != null)
+                                if (UInt16.TryParse(Item.InnerText, out wvk))
+                                {
+                                    button.Tag = wvk;
+                                    button.Text = ((System.Windows.Forms.Keys)wvk).ToString();
+                                    customMapKeys.Add(button.Name, wvk);
+                                }
+                                else
+                                {
+                                    button.Tag = Item.InnerText;
+                                    button.Text = Item.InnerText;
+                                    customMapButtons.Add(button.Name, Item.InnerText);
+                                }
+                        }
+                        catch
+                        {
+
+                        }
+                }
+            }
+            catch 
+            { 
+                Loaded = false; 
+            }
+            return Loaded;
+        }
+        public Boolean SaveCustomMapping(String customMapPath, System.Windows.Forms.Control[] buttons)
+        {
+            Boolean Saved = true;
+
+            try
+            {
+                XmlNode Node;
+                m_Xdoc.RemoveAll();
+                Node = m_Xdoc.CreateXmlDeclaration("1.0", "utf-8", String.Empty);
+                m_Xdoc.AppendChild(Node);
+                Node = m_Xdoc.CreateComment(String.Format(" Custom Control Mapping Data. {0} ", DateTime.Now));
+                m_Xdoc.AppendChild(Node);
+                Node = m_Xdoc.CreateWhitespace("\r\n");
+                m_Xdoc.AppendChild(Node);
+                Node = m_Xdoc.CreateNode(XmlNodeType.Element, "Control", null);
+                
+                foreach (var button in buttons)
+                    try
+                    {
+                        // Save even if string (for xbox controller buttons)
+                        //if (button.Tag is int)
+                        //if ((int)button.Tag < 256 && (int)button.Tag >= 0)
+                        if (button.Tag != null)
+                        {
+                            XmlNode buttonNode = m_Xdoc.CreateNode(XmlNodeType.Element, button.Name, null);
+                            buttonNode.InnerText = button.Tag.ToString(); 
+                            Node.AppendChild(buttonNode);
+                        }
+                    }
+                    catch
+                    {
+                        Saved = false;
+                    }
+                m_Xdoc.AppendChild(Node);
+                m_Xdoc.Save(customMapPath);
+            }
+            catch 
+            { 
+                Saved = false; 
+            }
+
+            return Saved;
+        }
 
         public Boolean Load() 
         {
             Boolean Loaded = true;
+            Boolean missingSetting = false;
 
             try
             {
-                XmlNode Item;
-
-                m_Xdoc.Load(m_File);
-
-
-                for (int i=0; i<4; i++)
+                if (File.Exists(m_File))
                 {
-                    try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/Red"); Byte.TryParse(Item.InnerText, out m_Leds[i][0]); }
-                     catch { }
+                    XmlNode Item;
 
-                    try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/Green"); Byte.TryParse(Item.InnerText, out m_Leds[i][1]); }
-                     catch { }
+                    m_Xdoc.Load(m_File);
 
-                     try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/Blue"); Byte.TryParse(Item.InnerText, out m_Leds[i][2]); }
-                     catch { }
 
-                     try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/RumbleBoost"); Byte.TryParse(Item.InnerText, out m_Rumble[i]); }
-                     catch { }
+                    for (int i = 0; i < 4; i++)
+                    {
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/Red"); Byte.TryParse(Item.InnerText, out m_Leds[i][0]); }
+                        catch { missingSetting = true; }
 
-                     try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/ledAsBatteryIndicator"); Boolean.TryParse(Item.InnerText, out ledAsBattery[i]); }
-                     catch { }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/Green"); Byte.TryParse(Item.InnerText, out m_Leds[i][1]); }
+                        catch { missingSetting = true; }
 
-                     try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/lowBatteryFlash"); Boolean.TryParse(Item.InnerText, out flashLedLowBattery[i]); }
-                     catch { }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/Blue"); Byte.TryParse(Item.InnerText, out m_Leds[i][2]); }
+                        catch { missingSetting = true; }
 
-                     try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/touchSensitivity"); Byte.TryParse(Item.InnerText, out touchSensitivity[i]); }
-                     catch { }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/RumbleBoost"); Byte.TryParse(Item.InnerText, out m_Rumble[i]); }
+                        catch { missingSetting = true; }
 
-                     try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/touchEnabled"); Boolean.TryParse(Item.InnerText, out touchEnabled[i]); }
-                     catch { }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/ledAsBatteryIndicator"); Boolean.TryParse(Item.InnerText, out ledAsBattery[i]); }
+                        catch { missingSetting = true; }
+
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/lowBatteryFlash"); Boolean.TryParse(Item.InnerText, out flashLedLowBattery[i]); }
+                        catch { missingSetting = true; }
+
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/touchSensitivity"); Byte.TryParse(Item.InnerText, out touchSensitivity[i]); }
+                        catch { missingSetting = true; }
+
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/touchEnabled"); Boolean.TryParse(Item.InnerText, out touchEnabled[i]); }
+                        catch { missingSetting = true; }
+
+                        // Add new settings
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/LowRed"); Byte.TryParse(Item.InnerText, out m_LowLeds[i][0]); }
+                        catch { missingSetting = true; }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/LowGreen"); Byte.TryParse(Item.InnerText, out m_LowLeds[i][1]); }
+                        catch { missingSetting = true; }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/LowBlue"); Byte.TryParse(Item.InnerText, out m_LowLeds[i][2]); }
+                        catch { missingSetting = true; }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/twoFingerRC"); Boolean.TryParse(Item.InnerText, out twoFingerRC[i]); }
+                        catch { missingSetting = true; }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/tapSensitivity"); Byte.TryParse(Item.InnerText, out tapSensitivity[i]); }
+                        catch { missingSetting = true; }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/scrollSensitivity"); Byte.TryParse(Item.InnerText, out scrollSensitivity[i]); }
+                        catch { missingSetting = true; }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/customMapPath"); customMapPath[i] = Item.InnerText; }
+                        catch { missingSetting = true; }
+
+                    }
+
+                    try { Item = m_Xdoc.SelectSingleNode("/ScpControl/useExclusiveMode"); Boolean.TryParse(Item.InnerText, out useExclusiveMode); }
+                    catch { missingSetting = true; }
+                    try { Item = m_Xdoc.SelectSingleNode("/ScpControl/startMinimized"); Boolean.TryParse(Item.InnerText, out startMinimized); }
+                    catch { missingSetting = true; }
+                    try { Item = m_Xdoc.SelectSingleNode("/ScpControl/formWidth"); Int32.TryParse(Item.InnerText, out formWidth); }
+                    catch { missingSetting = true; }
+                    try { Item = m_Xdoc.SelectSingleNode("/ScpControl/formHeight"); Int32.TryParse(Item.InnerText, out formHeight); }
+                    catch { missingSetting = true; }
                 }
-
-                try { Item = m_Xdoc.SelectSingleNode("/ScpControl/useExclusiveMode"); Boolean.TryParse(Item.InnerText, out useExclusiveMode); }
-                catch { }
             }
             catch { Loaded = false; }
-            
+
+            // Only add missing settings if the actual load was graceful
+            if (missingSetting && Loaded)
+                Save();
+
             return Loaded;
         }
-
         public Boolean Save() 
         {
             Boolean Saved = true;
@@ -291,9 +603,13 @@ namespace ScpControl
                 m_Xdoc.AppendChild(Node);
 
                 Node = m_Xdoc.CreateNode(XmlNodeType.Element, "ScpControl", null);
-                XmlNode xmlUseExclNode = m_Xdoc.CreateNode(XmlNodeType.Element, "useExclusiveMode", null); xmlUseExclNode.InnerText = useExclusiveMode.ToString(); Node.AppendChild(xmlUseExclNode);
 
-                XmlNode cNode1 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller1", null);  Node.AppendChild(cNode1);
+                XmlNode xmlUseExclNode = m_Xdoc.CreateNode(XmlNodeType.Element, "useExclusiveMode", null); xmlUseExclNode.InnerText = useExclusiveMode.ToString(); Node.AppendChild(xmlUseExclNode);
+                XmlNode xmlStartMinimized = m_Xdoc.CreateNode(XmlNodeType.Element, "startMinimized", null); xmlStartMinimized.InnerText = startMinimized.ToString(); Node.AppendChild(xmlStartMinimized);
+                XmlNode xmlFormWidth = m_Xdoc.CreateNode(XmlNodeType.Element, "formWidth", null); xmlFormWidth.InnerText = formWidth.ToString(); Node.AppendChild(xmlFormWidth);
+                XmlNode xmlFormHeight = m_Xdoc.CreateNode(XmlNodeType.Element, "formHeight", null); xmlFormHeight.InnerText = formHeight.ToString(); Node.AppendChild(xmlFormHeight);
+                    
+                XmlNode cNode1 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller1", null); Node.AppendChild(cNode1);
                 XmlNode cNode2 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller2", null); Node.AppendChild(cNode2);
                 XmlNode cNode3 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller3", null); Node.AppendChild(cNode3);
                 XmlNode cNode4 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller4", null); Node.AppendChild(cNode4);
@@ -311,6 +627,14 @@ namespace ScpControl
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "touchSensitivity", null); Entry.InnerText = touchSensitivity[i].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "touchEnabled", null); Entry.InnerText = touchEnabled[i].ToString(); cNodes[i].AppendChild(Entry);
 
+                    // Add new settings
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "LowRed", null); Entry.InnerText = m_LowLeds[i][0].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "LowGreen", null); Entry.InnerText = m_LowLeds[i][1].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "LowBlue", null); Entry.InnerText = m_LowLeds[i][2].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "twoFingerRC", null); Entry.InnerText = twoFingerRC[i].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "tapSensitivity", null); Entry.InnerText = tapSensitivity[i].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "scrollSensitivity", null); Entry.InnerText = scrollSensitivity[i].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "customMapPath", null); Entry.InnerText = customMapPath[i]; cNodes[i].AppendChild(Entry);
                 }               
                 m_Xdoc.AppendChild(Node);
 
@@ -320,7 +644,5 @@ namespace ScpControl
 
             return Saved;
         }
-
-        
     }
 }

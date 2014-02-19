@@ -8,7 +8,8 @@ namespace ScpControl
     class Touchpad
     {
         internal static int TOUCHPAD_DATA_OFFSET = 35;
-        internal static int lastTouchPadX, lastTouchPadY;
+        internal static int lastTouchPadX, lastTouchPadY,
+            lastTouchPadX2, lastTouchPadY2;
         internal static bool lastTouchPadIsDown;
         internal static bool lastIsActive;
         internal static byte lastTouchID;
@@ -16,16 +17,22 @@ namespace ScpControl
         internal static int ticks = -1; //incremented every input report, in the future use something more reliable
         public static void handleTouchpad(byte[] data, bool touchPadIsDown)
         {
-            int mouseDeltaX = 0, mouseDeltaY = 0;
+            int mouseDeltaX = 0, mouseDeltaY = 0,
+                mouseDeltaX2 = 0, mouseDeltaY2 = 0;
 
-            bool _isActive = (data[0 + TOUCHPAD_DATA_OFFSET] >> 7) != 0 ? false : true; // finger(s) down
-            byte touchID = (byte)( data[0 + TOUCHPAD_DATA_OFFSET] & 0x7F);
+            bool _isActive = (data[0 + TOUCHPAD_DATA_OFFSET] >> 7) != 0 ? false : true; // >= 1 touch detected
+            // increased scope of _isActive2 
+            bool _isActive2 = (data[4 + TOUCHPAD_DATA_OFFSET] >> 7) != 0 ? false : true; // > 1 touch detected
+            byte touchID = (byte)(data[0 + TOUCHPAD_DATA_OFFSET] & 0x7F);
      
             if (_isActive)
             {
                 ticks++;
                 int currentX = data[1 + TOUCHPAD_DATA_OFFSET] + ((data[2 + TOUCHPAD_DATA_OFFSET] & 0xF) * 255);
                 int currentY = ((data[2 + TOUCHPAD_DATA_OFFSET] & 0xF0) >> 4) + (data[3 + TOUCHPAD_DATA_OFFSET] * 16);
+                //add secondary touch data
+                int currentX2 = data[5 + TOUCHPAD_DATA_OFFSET] + ((data[6 + TOUCHPAD_DATA_OFFSET] & 0xF) * 255);
+                int currentY2 = ((data[6 + TOUCHPAD_DATA_OFFSET] & 0xF0) >> 4) + (data[7 + TOUCHPAD_DATA_OFFSET] * 16);
 
                 if (lastIsActive)
                 {
@@ -33,45 +40,55 @@ namespace ScpControl
                     double sensitivity = Global.getTouchSensitivity(0) / 100.0;
                     mouseDeltaX = (int)(sensitivity * (currentX - lastTouchPadX));
                     mouseDeltaY = (int)(sensitivity * (currentY - lastTouchPadY));
+                    //add mouseDelta for secondary touch data
+                    mouseDeltaX2 = (int)(sensitivity * (currentX2 - lastTouchPadX2));
+                    mouseDeltaY2 = (int)(sensitivity * (currentY2 - lastTouchPadY2));
+
                     //prevent jitter of  the cursor
                     if (Math.Abs(mouseDeltaX) < 5 && Math.Abs(mouseDeltaY) < 5 && ticks<100)
                     {
                         mouseDeltaX = 0;
                         mouseDeltaY = 0;
                     }
-                    //if its right corner do a right click (resolution of touchpad values is ~ 1920x1080)
-                    if (touchPadIsDown && !lastTouchPadIsDown && currentX > 1500 && currentY > 600 )
-                    {
-                        mouseDeltaX = 0;
-                        mouseDeltaY = 0;
-                        performRightClick();
-                    }
-                    //perfrom a mouse down event when touchpad pressed
-                    else if (touchPadIsDown && !lastTouchPadIsDown)
-                    {
-                        mouseDeltaX = 0;
-                        mouseDeltaY = 0;
-                        LeftMouseDown();
-                    }
-                    //perfrom a mouse up event when touchpad released
-                    else if (!touchPadIsDown && lastTouchPadIsDown)
+
+                    if (touchPadIsDown)
+                        {
+                            if (!lastTouchPadIsDown)
+                            {
+                                mouseDeltaX = 0;
+                                mouseDeltaY = 0;
+                                //own right click (more than 1 touch detected) - if enabled.
+                                //if its right corner do a right click (resolution of touchpad values is ~ 1920x1080)
+                                if ((Global.getTwoFingerRC(0) && _isActive2)
+                                            || (!Global.getTwoFingerRC(0)
+                                            && currentX > 1500 && currentY > 600))
+                                    performRightClick();
+                                //perform a mouse down event when touchpad pressed
+                                else LeftMouseDown();
+                            }
+                        }
+                    //perform a mouse up event when touchpad released
+                    else if (lastTouchPadIsDown)
                     {
                         mouseDeltaX = 0;
                         mouseDeltaY = 0;
                         LeftMouseUp();
                     }
 
-                    bool _isActive2 = (data[4 + TOUCHPAD_DATA_OFFSET] >> 7) != 0 ? false : true; // 2nd finger is down
-                    if (_isActive2)
+                    //either zoom or scroll, scroll has X/2/Y/2 within 400 points 
+                    if (_isActive2 &&
+                        Math.Abs(currentX - currentX2) < 900
+                        && Math.Abs(currentY - currentY2) < 300)
                     {
                         //mouse wheel 120 == 1 wheel click
-                        if (mouseDeltaY > 10)
+                        int rotation = (int)(-0.6 * Global.getScrollSensitivity(0));
+                        if (mouseDeltaY >= 5)
                         {
-                            MouseWheel(-120);
+                            MouseWheel(rotation);
                         }
-                        else if (mouseDeltaY < -10)
+                        else if (mouseDeltaY <= -5)
                         {
-                            MouseWheel(120);
+                            MouseWheel(-rotation);
                         }
                         mouseDeltaY = 0;
                         mouseDeltaX = 0;
@@ -81,16 +98,32 @@ namespace ScpControl
 
                 lastTouchPadX = currentX;
                 lastTouchPadY = currentY;
+                //secondary touch data
+                lastTouchPadX2 = currentX2;
+                lastTouchPadY2 = currentY2;
+                
                 lastTouchPadIsDown = touchPadIsDown;
             }
             else // finger(s) lifted from touchpad while virtual mouse button(s) clicked
             {
+                // Click trackpad's top edge (no touch movement) - configurable
+                if (touchPadIsDown)
+                    if (!lastTouchPadIsDown)
+                    {
+                        ushort key = Global.getCustomKey("cbPad");
+                        //Whatever key the config asks for.
+                        if (key != 0)
+                            performKeyPress(key);
+                    }
+                // Set new last touchpad down value
+                lastTouchPadIsDown = touchPadIsDown;
                 if (!lastIsActive) // neither active before or now
                     return;
                 if (lastIsActive)
                 {
-                    //was a tap perform mouse left clcick
-                    if (ticks<100)
+                    //should be configurable (was 100)
+                    //was a tap perform mouse left click
+                    if (ticks < Global.getTapSensitivity(0))
                     {
                         performLeftClick();
                     }
@@ -160,7 +193,7 @@ namespace ScpControl
             uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
         }
 
-        static void performLeftClick()
+        public static void performLeftClick()
         {
             sendInputs[0].Type = INPUT_MOUSE;
             sendInputs[0].Data.Mouse.ExtraInfo = IntPtr.Zero;
@@ -183,6 +216,28 @@ namespace ScpControl
             sendInputs[0].Data.Mouse.Time = 0;
             sendInputs[0].Data.Mouse.X = 0;
             sendInputs[0].Data.Mouse.Y = 0;
+            uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
+        }
+
+        public static void performKeyPress(ushort key)
+        {
+            sendInputs[0].Type = INPUT_KEYBOARD;
+            sendInputs[0].Data.Keyboard.ExtraInfo = IntPtr.Zero;
+            sendInputs[0].Data.Keyboard.Flags = 0;
+            sendInputs[0].Data.Keyboard.Scan = 0;
+            sendInputs[0].Data.Keyboard.Time = 0;
+            sendInputs[0].Data.Keyboard.Vk = key;
+            uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
+        }
+
+        public static void performKeyRelease(ushort key)
+        {
+            sendInputs[0].Type = INPUT_KEYBOARD;
+            sendInputs[0].Data.Keyboard.ExtraInfo = IntPtr.Zero;
+            sendInputs[0].Data.Keyboard.Flags = KEYEVENTF_KEYUP;
+            sendInputs[0].Data.Keyboard.Scan = 0;
+            sendInputs[0].Data.Keyboard.Time = 0;
+            sendInputs[0].Data.Keyboard.Vk = key;
             uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
         }
 

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
-
 using ScpControl;
-
 namespace ScpServer 
 {
     public partial class ScpForm : Form 
     {
-
+        protected IntPtr notify = IntPtr.Zero;
         delegate void LogDebugDelegate(DateTime Time, String Data);
 
         protected void LogDebug(DateTime Time, String Data) 
@@ -27,6 +25,9 @@ namespace ScpServer
                 String Posted = Time.ToString() + "." + Time.Millisecond.ToString("000");
 
                 lvDebug.Items.Add(new ListViewItem(new String[] { Posted, Data })).EnsureVisible();
+                
+                //Added alternative
+                lbLastMessage.Text = Data;
             }
         }
 
@@ -36,11 +37,20 @@ namespace ScpServer
             {
                 notifyIcon1.Visible = true;
                 this.Hide();
+                //hide in taskbar
+                this.ShowInTaskbar = false;
             }
             else if (FormWindowState.Normal == this.WindowState)
             {       
                 notifyIcon1.Visible = false;
+                //show in taskbar
+                this.ShowInTaskbar = true;
+
             }
+            //Added last message alternative
+            if (this.Height > 220)
+                lbLastMessage.Visible = false;
+            else lbLastMessage.Visible = true;
         }
 
         protected RadioButton[] Pad = new RadioButton[4];
@@ -55,9 +65,6 @@ namespace ScpServer
             Pad[1] = rbPad_2;
             Pad[2] = rbPad_3;
             Pad[3] = rbPad_4;
-           
-
-            
         }
 
         protected void Form_Load(object sender, EventArgs e) 
@@ -66,37 +73,52 @@ namespace ScpServer
             tmrUpdate.Enabled = true;
             Global.Load();
             hideDS4CheckBox.Checked = Global.getUseExclusiveMode();
-            if(btnStart.Enabled)
-                btnStart_Click(sender, e);
-        }
+            if (btnStartStop.Enabled)
+                btnStartStop_Click(sender, e);
+            
+            // New settings
+            this.Width = Global.getFormWidth();
+            this.Height = Global.getFormHeight();
+            startMinimizedCheckBox.Checked = Global.getStartMinimized();
+            if (startMinimizedCheckBox.Checked)
+            {
+                this.WindowState = FormWindowState.Minimized;
+                Form_Resize(sender, e);
+            }
+            Global.loadCustomMapping(0);
 
+
+        }
         protected void Form_Close(object sender, FormClosingEventArgs e) 
         {
+            Global.setFormWidth(this.Width);
+            Global.setFormHeight(this.Height);
+            Global.Save();
             rootHub.Close();
-
         }
 
-        protected void btnStart_Click(object sender, EventArgs e) 
+        protected void btnStartStop_Click(object sender, EventArgs e) 
         {
-            if (rootHub.Open() && rootHub.Start())
-            {
-                btnStart.Enabled = false;
-                btnStop.Enabled  = true;
-            }
+            if (btnStartStop.Text == Properties.Resources.Start
+                && rootHub.Open() && rootHub.Start())
+                    btnStartStop.Text = Properties.Resources.Stop;
+            else if (btnStartStop.Text == Properties.Resources.Stop 
+                && rootHub.Stop())
+                    btnStartStop.Text = Properties.Resources.Start;
         }
-
-        protected void btnStop_Click(object sender, EventArgs e) 
+        protected void btnStop_Click(object sender, EventArgs e)
         {
             if (rootHub.Stop())
             {
-                btnStart.Enabled = true;
-                btnStop.Enabled  = false;
+                btnStartStop.Enabled = true;
+                btnStop.Enabled = false;
             }
         }
-
         protected void btnClear_Click(object sender, EventArgs e) 
         {
             lvDebug.Items.Clear();
+            //Added alternative
+            lbLastMessage.Text = string.Empty;
         }
 
         protected override void WndProc(ref Message m) 
@@ -106,70 +128,55 @@ namespace ScpServer
                 if (m.Msg == ScpDevice.WM_DEVICECHANGE)
                 {
                     Int32 Type = m.WParam.ToInt32();
-
+                    Console.WriteLine(Type);
                     switch (Type)
                     {
                         case ScpDevice.DBT_DEVICEARRIVAL:
-                        case ScpDevice.DBT_DEVICEQUERYREMOVE:
-                        case ScpDevice.DBT_DEVICEREMOVECOMPLETE:
-
-                            ScpDevice.DEV_BROADCAST_HDR hdr;
-
-                            hdr = (ScpDevice.DEV_BROADCAST_HDR) Marshal.PtrToStructure(m.LParam, typeof(ScpDevice.DEV_BROADCAST_HDR));
-
-                            if (hdr.dbch_devicetype == ScpDevice.DBT_DEVTYP_DEVICEINTERFACE)
-                            {
-                                ScpDevice.DEV_BROADCAST_DEVICEINTERFACE_M deviceInterface;
-
-                                deviceInterface = (ScpDevice.DEV_BROADCAST_DEVICEINTERFACE_M) Marshal.PtrToStructure(m.LParam, typeof(ScpDevice.DEV_BROADCAST_DEVICEINTERFACE_M));
-
-                                String Class = "{" + new Guid(deviceInterface.dbcc_classguid).ToString().ToUpper() + "}";
-
-                                String Path = new String(deviceInterface.dbcc_name);
-                                Path = Path.Substring(0, Path.IndexOf('\0')).ToUpper();
-                            }
+                            rootHub.StartNewControllers();
                             break;
                     }
+                   
                 }
             }
             catch { }
 
             base.WndProc(ref m);
         }
-
         protected void tmrUpdate_Tick(object sender, EventArgs e) 
         {
+
+            // If controllers are detected, but not checked, automatically check #1
+            bool checkFirst = true;
             bool optionsEnabled = false;
-            int controllers = 0;
             for (Int32 Index = 0; Index < Pad.Length; Index++)
             {
-                Pad[Index].Text    = rootHub.getControllerInfo(Index);
+                Pad[Index].Text = rootHub.getControllerInfo(Index);
                 if (Pad[Index].Text != null && Pad[Index].Text != "")
                 {
                     Pad[Index].Enabled = true;
-                    controllers++;
-                    if (Pad[Index].Checked == true)
-                    {
-                        optionsEnabled = true;
-                    }
-                    
+                    optionsEnabled = true;
+                    // As above
+                    if (checkFirst && (Pad[Index].Checked && Index != 0))
+                        checkFirst = false;
                 }
-                else {
+                else 
+                {
                     Pad[Index].Text = "Disconnected";
                     Pad[Index].Enabled = false;
                     Pad[Index].Checked = false;
+
+                    // As above
+                    if (Index == 0)
+                        checkFirst = false;
                 }
             }
-            if (controllers > 0 && !optionsEnabled)
-            {
-                // at least one controller present but none checked
-                // select the first
-                Pad[0].Checked = true;
-            }
-            optionsButton.Enabled = optionsEnabled;
             btnClear.Enabled = lvDebug.Items.Count > 0;
-        }
 
+            // As above
+            if (checkFirst && btnClear.Enabled)
+                Pad[0].Checked = true;
+            optionsButton.Enabled = optionsEnabled;
+        }
         protected void On_Debug(object sender, ScpControl.DebugEventArgs e) 
         {
             LogDebug(e.Time, e.Data);
@@ -183,31 +190,47 @@ namespace ScpServer
                 {
                     Options opt = new Options(rootHub,Index);
                     opt.Text = "Options for Controller " + (Index + 1);
+                    opt.Icon = this.Icon;
                     opt.ShowDialog();
                 }
             }
         }
-
-        private void notifyIcon1_Click(object sender, EventArgs e)
+        private void notifyIcon_Click(object sender, EventArgs e)
         {
             this.Show();
             WindowState = FormWindowState.Normal;
         }
-
-
         private void hotkeysButton_Click(object sender, EventArgs e)
         {
             Hotkeys hotkeysForm = new Hotkeys();
+            hotkeysForm.Icon = this.Icon;
             hotkeysForm.ShowDialog();
+        }
+        private void lnkControllers_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("control", "joy.cpl");
         }
 
         private void hideDS4CheckBox_CheckedChanged(object sender, EventArgs e)
         {
+            // Prevent the Game Controllers window from throwing an error when controllers are un/hidden
+            System.Diagnostics.Process[] rundll32 = System.Diagnostics.Process.GetProcessesByName("rundll32");
+            foreach (System.Diagnostics.Process rundll32Instance in rundll32)
+                foreach (System.Diagnostics.ProcessModule module in rundll32Instance.Modules)
+                    if (module.FileName.Contains("joy.cpl"))
+                        module.Dispose();
+
             Global.setUseExclusiveMode(hideDS4CheckBox.Checked);
-            btnStop_Click(sender, e);
-            btnStart_Click(sender, e);
+            btnStartStop_Click(sender, e);
+            btnStartStop_Click(sender, e);
             Global.Save();
         }
+        private void startMinimizedCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Global.setStartMinimized(startMinimizedCheckBox.Checked);
+            Global.Save();
+        }
+
     }
 
     public class ThemeUtil 

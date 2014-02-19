@@ -8,6 +8,14 @@ using Microsoft.Win32.SafeHandles;
 using System.Diagnostics;
 using HidLibrary;
 using System.Threading.Tasks;
+
+
+using System.Linq;
+using System.Text;
+using System.IO;
+using System.Collections;
+using System.Management;
+
 namespace ScpControl 
 {
     public partial class BusDevice : ScpDevice 
@@ -27,7 +35,7 @@ namespace ScpControl
         private Thread[] workers = new Thread[4];
         protected bool isWorkersShouldRun = false;
         private object[] ds4locks = new object[4];
-
+        private ManagementEventWatcher watcher = null;
         protected virtual Int32 Scale(Int32 Value, Boolean Flip) 
         {
             Value -= 0x80;
@@ -92,6 +100,24 @@ namespace ScpControl
                 int[] pid = { 0x05C4 };
                 try
                 {
+                    WqlEventQuery q;
+                    ManagementOperationObserver observer = new ManagementOperationObserver();
+                    ManagementScope scope = new ManagementScope("root\\CIMV2");
+                    scope.Options.EnablePrivileges = false;
+                    try
+                    {
+                        q = new WqlEventQuery();
+                        q.EventClassName = "__InstanceCreationEvent";
+                        q.WithinInterval = new TimeSpan(0, 0, 1);
+
+                        q.Condition = @"TargetInstance ISA 'Win32_USBControllerDevice' ";
+                        Console.WriteLine(q.QueryString);
+                        watcher = new ManagementEventWatcher(scope, q);
+                        watcher.EventArrived += new EventArrivedEventHandler(DeviceArrived);
+                        watcher.Start();
+                    }
+                    catch (Exception e) { Console.WriteLine(e.Message); }
+
                     IEnumerable<HidDevice> devices = HidDevices.Enumerate(0x054C, pid);
                     foreach (HidDevice device in devices)
                     {
@@ -106,8 +132,10 @@ namespace ScpControl
                             Plugin(ind + 1);
                             isWorkersShouldRun = true;
                             int t = ind;
-                            if(workers[ind].ThreadState==System.Threading.ThreadState.Aborted || workers[ind].ThreadState==System.Threading.ThreadState.Stopped)
-                                workers[ind] = new Thread(() => { ProcessData(t); });
+                            if(workers
+                                [ind].ThreadState == System.Threading.ThreadState.Aborted || workers[ind].ThreadState == System.Threading.ThreadState.Stopped)
+                                workers[ind] = new Thread(() =>
+                                { ProcessData(t); });
                             workers[ind].Start();
                             LogDebug("Controller " + (ind + 1) + " ready to use");
                         }
@@ -166,6 +194,14 @@ namespace ScpControl
             Monitor.Enter(this);
             if (IsActive)
             {
+                try
+                {
+                    watcher.Stop();
+                    watcher.Dispose();
+                    watcher = null;
+                }
+                catch (Exception e)
+                { Console.WriteLine(e.Message); }
                 isWorkersShouldRun = false;
                 for (int i = 1; i <= 4; i++)
                 {
@@ -177,9 +213,9 @@ namespace ScpControl
                             DS4Controllers[i - 1].Device.CloseDevice();
                             DS4Controllers[i - 1] = null;
                         }
-                    }              
+                    }
                }
-               Unplug(0); 
+               Unplug(0);               
             }
             Monitor.Exit(this);
             return base.Close();
@@ -300,6 +336,13 @@ namespace ScpControl
                     {
                         return;
                     }
+
+                    if (d.Device.IsTimedOut)
+                    {
+                        Console.WriteLine("timed out");
+                        StopController(device);
+                        return;
+                    }
                     byte[] data = d.retrieveData();
                     if (data != null)
                     {
@@ -308,8 +351,8 @@ namespace ScpControl
                         Report(processingData[device].parsedData, processingData[device].output);
                     }
                 }
-            }
-            
+            }    
+  
         }
 
         protected virtual Boolean LogDebug(byte[] array)
@@ -391,6 +434,93 @@ namespace ScpControl
           
         }
 
+        public void StopController(int device)
+        {
+            if (IsActive)
+            {
+                Unplug(device + 1);
+                DS4Controllers[device] = null;
+                LogDebug("Controller " + (device + 1) + " lost connection and was stopped");
+            }
+        }
+
+        public void DeviceArrived(Object sender, EventArrivedEventArgs arg)
+        {
+            StartNewControllers();
+        }
+
+        // Hot plug
+        public void StartNewControllers()
+        {
+            if (IsActive)
+            {
+                int[] pid = { 0x05C4 };
+                byte[] buffer = new byte[16];
+                buffer[0] = 18;
+                
+                try
+                {
+                    IEnumerable<HidDevice> devices = HidDevices.Enumerate(0x054C, pid);
+                    foreach (HidDevice device in devices)
+                    {
+                        if (!device.IsOpen)
+                            device.OpenDevice(Global.getUseExclusiveMode());
+                        if (device.IsOpen)
+                        {
+                           // device.readFeatureData(buffer);
+                            //string mac = String.Format(
+                             //   "{0:X02}:{1:X}:{2:X02}:{3:X02}:{4:X02}:{5:X02}",
+                              //  buffer[6], buffer[5], buffer[4], buffer[3], buffer[2], buffer[1]);
+                            if (((Func<bool>)delegate
+                                {
+                                    for (Int32 Index = 0; Index < DS4Controllers.Length; Index++)
+                                        if (DS4Controllers[Index] != null
+                                            && DS4Controllers[Index].Device != null
+                                            )
+                                            return true;
+                                    return false;
+                                })())
+                                continue;
+                        }
+                        else continue;
+                        for (Int32 Index = 0; Index < DS4Controllers.Length; Index++)
+                            if (DS4Controllers[Index] == null || DS4Controllers[Index].Device == null)
+                            {
+                                LogDebug("New Controller Found: VID:"
+                                        + device.Attributes.VendorHexId
+                                        + " PID:" + device.Attributes.ProductHexId);
+                                if (device.IsOpen)
+                                {
+                                        DS4Controllers[Index] = new DS4Device(device, Index);
+                                        ledColor color = Global.loadColor(Index);
+                                        DS4Controllers[Index].sendOutputReport();
+                                        Plugin(Index + 1);
+                                        isWorkersShouldRun = true;
+                                        int t = Index;
+                                        if (workers
+                                            [Index].ThreadState == System.Threading.ThreadState.Aborted || workers[Index].ThreadState == System.Threading.ThreadState.Stopped)
+                                            workers[Index] = new Thread(() =>
+                                            { ProcessData(t); });
+                                        workers[Index].Start();
+                                        LogDebug("Controller " + (Index + 1) + " ready to use");
+                                        break;
+                                }
+                                else
+                                {
+                                        LogDebug("Could not open the controller " + (Index + 1) + " for exclusive access");
+                                        LogDebug("Try to quit any applications that can be using the controller");
+                                        LogDebug("Then press Stop and Start to try accessing device again");
+                                }
+                            }
+                    }
+                }
+                catch (Exception e)
+                {
+                    LogDebug(e.ToString());
+                }
+
+            }
+        }
     }
 
 }

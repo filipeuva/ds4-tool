@@ -33,7 +33,7 @@ namespace HidLibrary
 
         private readonly HidDeviceCapabilities _deviceCapabilities;
         private readonly HidDeviceEventMonitor _deviceEventMonitor;
-        
+        private byte idleTicks = 0;
         private bool _monitorDeviceEvents;
 
         internal HidDevice(string devicePath, string description = null)
@@ -64,7 +64,8 @@ namespace HidLibrary
         public SafeFileHandle safeReadHandle { get; private set; }
         public FileStream fileStream { get; private set; }
         public bool IsOpen { get; private set; }
-        public bool IsConnected { get { return HidDevices.IsConnected(_devicePath); } }
+        public bool IsConnected { get { return HidDevices.IsConnected(_devicePath) && idleTicks<=5; } }
+        public bool IsTimedOut { get { return idleTicks > 5; } }
         public string Description { get { return _description; } }
         public HidDeviceCapabilities Capabilities { get { return _deviceCapabilities; } }
         public HidDeviceAttributes Attributes { get { return _deviceAttributes; } }
@@ -148,9 +149,12 @@ namespace HidLibrary
             if(fileStream!=null)
                 fileStream.Close();
             fileStream = null;
-            if (safeReadHandle!=null)
+            Console.WriteLine("Close fs");
+            if (safeReadHandle!=null && !safeReadHandle.IsInvalid)
             {
                 safeReadHandle.Close();
+                Console.WriteLine("Close sh");
+
             }
             safeReadHandle = null;
         }
@@ -163,9 +167,24 @@ namespace HidLibrary
 
         private void DeviceEventMonitorRemoved()
         {
-            if (IsOpen) CloseDevice();
+            if (IsOpen)
+            {
+                MonitorDeviceEvents = false;
+                Console.WriteLine("Cancelling IO");
+                NativeMethods.CancelIoEx(safeReadHandle.DangerousGetHandle(), IntPtr.Zero);
+                Console.WriteLine("Cancelled IO");
+                CloseDevice();
+                idleTicks = 6; // force timeOut on USB
+                Console.WriteLine("Device is closed.");
+            }
             if (Removed != null) Removed();
             if (Remove != null) Remove(this, new EventArgs());
+        }
+
+        public void Tick()
+        {
+            idleTicks++;
+            Console.WriteLine(idleTicks);
         }
 
         public void Dispose()
@@ -206,7 +225,7 @@ namespace HidLibrary
             try
             {
                 uint bytesRead;
-
+                idleTicks = 0;
                 if (NativeMethods.ReadFile(safeReadHandle.DangerousGetHandle(), inputBuffer, (uint)inputBuffer.Length, out bytesRead, IntPtr.Zero))
                 {
                     return ReadStatus.Success;
