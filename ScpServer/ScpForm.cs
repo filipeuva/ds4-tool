@@ -134,7 +134,7 @@ namespace ScpServer
                 {
                     Int32 Type = m.WParam.ToInt32();
                     //Console.WriteLine(Type);
-                    //rootHub.StartNewControllers();                  
+                    rootHub.StartNewControllers();                  
                 }
             }
             catch { }

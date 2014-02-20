@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Win32.SafeHandles; 
+using Microsoft.Win32.SafeHandles;
 namespace HidLibrary
 {
     public class HidDevice : IDisposable
@@ -83,7 +83,7 @@ namespace HidLibrary
 
         public override string ToString()
         {
-            return string.Format("VendorID={0}, ProductID={1}, Version={2}, DevicePath={3}", 
+            return string.Format("VendorID={0}, ProductID={1}, Version={2}, DevicePath={3}",
                                 _deviceAttributes.VendorHexId,
                                 _deviceAttributes.ProductHexId,
                                 _deviceAttributes.Version,
@@ -146,11 +146,11 @@ namespace HidLibrary
 
         private void closeFileStreamIO()
         {
-            if(fileStream!=null)
+            if (fileStream != null)
                 fileStream.Close();
             fileStream = null;
             Console.WriteLine("Close fs");
-            if (safeReadHandle!=null && !safeReadHandle.IsInvalid)
+            if (safeReadHandle != null && !safeReadHandle.IsInvalid)
             {
                 safeReadHandle.Close();
                 Console.WriteLine("Close sh");
@@ -169,12 +169,15 @@ namespace HidLibrary
         {
             if (IsOpen)
             {
+                lock (this)
+                {
+                    idleTicks = 100;
+                }
                 MonitorDeviceEvents = false;
                 Console.WriteLine("Cancelling IO");
                 NativeMethods.CancelIoEx(safeReadHandle.DangerousGetHandle(), IntPtr.Zero);
                 Console.WriteLine("Cancelled IO");
                 CloseDevice();
-                idleTicks = 6; // force timeOut on USB
                 Console.WriteLine("Device is closed.");
             }
             if (Removed != null) Removed();
@@ -183,7 +186,10 @@ namespace HidLibrary
 
         public void Tick()
         {
-            idleTicks++;;
+            lock (this)
+            {
+                idleTicks++;
+            }
         }
 
         public void Dispose()
@@ -224,7 +230,10 @@ namespace HidLibrary
             try
             {
                 uint bytesRead;
-                idleTicks = 0;
+                lock (this)
+                {
+                    idleTicks = 0;
+                }
                 if (NativeMethods.ReadFile(safeReadHandle.DangerousGetHandle(), inputBuffer, (uint)inputBuffer.Length, out bytesRead, IntPtr.Zero))
                 {
                     return ReadStatus.Success;
@@ -238,61 +247,62 @@ namespace HidLibrary
             {
                 return ReadStatus.ReadError;
             }
-                            
 
 
-            
+
+
         }
 
         public ReadStatus ReadWithFileStream(byte[] inputBuffer, int timeout)
         {
-               try
+            try
+            {
+                if (safeReadHandle == null)
+                    safeReadHandle = OpenHandle(_devicePath, true);
+                if (fileStream == null && !safeReadHandle.IsInvalid)
+                    fileStream = new FileStream(safeReadHandle, FileAccess.ReadWrite, inputBuffer.Length, false);
+                if (!safeReadHandle.IsInvalid && fileStream.CanRead)
                 {
-                    if (safeReadHandle == null)
-                        safeReadHandle = OpenHandle(_devicePath, true);
-                    if (fileStream == null && !safeReadHandle.IsInvalid)
-                        fileStream = new FileStream(safeReadHandle, FileAccess.ReadWrite, inputBuffer.Length, false);
-                    if (!safeReadHandle.IsInvalid && fileStream.CanRead)
-                    {
 
-                        Task<ReadStatus> readFileTask = new Task<ReadStatus>(() => ReadWithFileStreamTask(inputBuffer));
-                        readFileTask.Start();
-                        bool success = readFileTask.Wait(timeout);
-                        if (success)
+                    Task<ReadStatus> readFileTask = new Task<ReadStatus>(() => ReadWithFileStreamTask(inputBuffer));
+                    readFileTask.Start();
+                    bool success = readFileTask.Wait(timeout);
+                    if (success)
+                    {
+                        if (readFileTask.Result == ReadStatus.Success)
                         {
-                            if (readFileTask.Result == ReadStatus.Success)
-                            {
-                                return ReadStatus.Success;
-                            }
-                            else if (readFileTask.Result == ReadStatus.ReadError)
-                            {
-                                return ReadStatus.ReadError;
-                            }
-                            else if (readFileTask.Result == ReadStatus.NoDataRead)
-                            {
-                                return ReadStatus.NoDataRead;
-                            }
+                            return ReadStatus.Success;
                         }
-                        else
-                            return ReadStatus.WaitTimedOut;
+                        else if (readFileTask.Result == ReadStatus.ReadError)
+                        {
+                            return ReadStatus.ReadError;
+                        }
+                        else if (readFileTask.Result == ReadStatus.NoDataRead)
+                        {
+                            return ReadStatus.NoDataRead;
+                        }
                     }
-                  
-                }
-                catch (Exception e)
-                {
-                    if (e is AggregateException)
-                    {
-                        Console.WriteLine(e.Message);
-                        return ReadStatus.WaitFail;
-                    }
-                    else {
-                        return ReadStatus.ReadError;
-                    }
+                    else
+                        return ReadStatus.WaitTimedOut;
                 }
 
-            
-                
-            
+            }
+            catch (Exception e)
+            {
+                if (e is AggregateException)
+                {
+                    Console.WriteLine(e.Message);
+                    return ReadStatus.WaitFail;
+                }
+                else
+                {
+                    return ReadStatus.ReadError;
+                }
+            }
+
+
+
+
             return ReadStatus.ReadError;
         }
 
@@ -374,7 +384,7 @@ namespace HidLibrary
             return hidHandle;
         }
 
-        public bool readFeatureData(byte[] inputBuffer )
+        public bool readFeatureData(byte[] inputBuffer)
         {
             return NativeMethods.HidD_GetFeature(safeReadHandle.DangerousGetHandle(), inputBuffer, inputBuffer.Length);
         }

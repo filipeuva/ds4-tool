@@ -44,12 +44,6 @@ namespace ScpServer
             lowRedValLabel.Text = lowColor.red.ToString();
             lowGreenValLabel.Text = lowColor.green.ToString();
             lowBlueValLabel.Text = lowColor.blue.ToString();
-
-            #region watch sixaxis data
-            Global.registerForSixaxisData(this);
-            InvokeUpdateDelegate += InvokeUpdate;
-            InvokeCloseDelegate += this.Close;
-            #endregion
         }
         #region watch sixaxis data
         public delegate void UpdateInvoker(byte[] data);

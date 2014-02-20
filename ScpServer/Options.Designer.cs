@@ -76,10 +76,10 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.realTimeChangesCheckBox = new System.Windows.Forms.CheckBox();
-            this.tBsixaxisX = new System.Windows.Forms.TrackBar();
-            this.tBsixaxisY = new System.Windows.Forms.TrackBar();
             this.pictureBox = new System.Windows.Forms.PictureBox();
             this.advColorDialog = new ScpServer.AdvancedColorDialog();
+            this.tBsixaxisY = new System.Windows.Forms.TrackBar();
+            this.tBsixaxisX = new System.Windows.Forms.TrackBar();
             ((System.ComponentModel.ISupportInitialize)(this.blueBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.greenBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.redBar)).BeginInit();
@@ -91,9 +91,9 @@
             this.fullLedPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tapSensitivityBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scrollSensitivityBar)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tBsixaxisX)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tBsixaxisY)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tBsixaxisY)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tBsixaxisX)).BeginInit();
             this.SuspendLayout();
             // 
             // BlueLabel
@@ -614,35 +614,6 @@
             this.realTimeChangesCheckBox.UseVisualStyleBackColor = true;
             this.realTimeChangesCheckBox.CheckedChanged += new System.EventHandler(this.realTimeChangesCheckBox_CheckedChanged);
             // 
-            // tBsixaxisX
-            // 
-            this.tBsixaxisX.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.tBsixaxisX.AutoSize = false;
-            this.tBsixaxisX.Enabled = false;
-            this.tBsixaxisX.Location = new System.Drawing.Point(501, 248);
-            this.tBsixaxisX.Maximum = 64;
-            this.tBsixaxisX.Name = "tBsixaxisX";
-            this.tBsixaxisX.Size = new System.Drawing.Size(100, 19);
-            this.tBsixaxisX.TabIndex = 71;
-            this.tBsixaxisX.TickFrequency = 25;
-            this.tBsixaxisX.TickStyle = System.Windows.Forms.TickStyle.None;
-            this.tBsixaxisX.Value = 32;
-            // 
-            // tBsixaxisY
-            // 
-            this.tBsixaxisY.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.tBsixaxisY.AutoSize = false;
-            this.tBsixaxisY.Enabled = false;
-            this.tBsixaxisY.Location = new System.Drawing.Point(476, 198);
-            this.tBsixaxisY.Maximum = 64;
-            this.tBsixaxisY.Name = "tBsixaxisY";
-            this.tBsixaxisY.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tBsixaxisY.Size = new System.Drawing.Size(19, 100);
-            this.tBsixaxisY.TabIndex = 72;
-            this.tBsixaxisY.TickFrequency = 25;
-            this.tBsixaxisY.TickStyle = System.Windows.Forms.TickStyle.None;
-            this.tBsixaxisY.Value = 32;
-            // 
             // pictureBox
             // 
             this.pictureBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
@@ -661,6 +632,37 @@
             this.advColorDialog.AnyColor = true;
             this.advColorDialog.Color = System.Drawing.Color.Blue;
             this.advColorDialog.FullOpen = true;
+            // 
+            // tBsixaxisY
+            // 
+            this.tBsixaxisY.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.tBsixaxisY.AutoSize = false;
+            this.tBsixaxisY.Enabled = false;
+            this.tBsixaxisY.Location = new System.Drawing.Point(476, 198);
+            this.tBsixaxisY.Maximum = 64;
+            this.tBsixaxisY.Name = "tBsixaxisY";
+            this.tBsixaxisY.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.tBsixaxisY.Size = new System.Drawing.Size(19, 100);
+            this.tBsixaxisY.TabIndex = 72;
+            this.tBsixaxisY.TickFrequency = 25;
+            this.tBsixaxisY.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.tBsixaxisY.Value = 32;
+            this.tBsixaxisY.Visible = false;
+            // 
+            // tBsixaxisX
+            // 
+            this.tBsixaxisX.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.tBsixaxisX.AutoSize = false;
+            this.tBsixaxisX.Enabled = false;
+            this.tBsixaxisX.Location = new System.Drawing.Point(501, 248);
+            this.tBsixaxisX.Maximum = 64;
+            this.tBsixaxisX.Name = "tBsixaxisX";
+            this.tBsixaxisX.Size = new System.Drawing.Size(100, 19);
+            this.tBsixaxisX.TabIndex = 71;
+            this.tBsixaxisX.TickFrequency = 25;
+            this.tBsixaxisX.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.tBsixaxisX.Value = 32;
+            this.tBsixaxisX.Visible = false;
             // 
             // Options
             // 
@@ -727,9 +729,9 @@
             this.fullLedPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.tapSensitivityBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.scrollSensitivityBar)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tBsixaxisX)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tBsixaxisY)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tBsixaxisY)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tBsixaxisX)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -786,8 +788,8 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox realTimeChangesCheckBox;
-        private System.Windows.Forms.TrackBar tBsixaxisX;
-        private System.Windows.Forms.TrackBar tBsixaxisY;
         private System.Windows.Forms.PictureBox pictureBox;
+        private System.Windows.Forms.TrackBar tBsixaxisY;
+        private System.Windows.Forms.TrackBar tBsixaxisX;
     }
 }
