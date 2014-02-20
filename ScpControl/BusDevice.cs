@@ -16,9 +16,9 @@ using System.IO;
 using System.Collections;
 using System.Management;
 
-namespace ScpControl 
+namespace ScpControl
 {
-    public partial class BusDevice : ScpDevice 
+    public partial class BusDevice : ScpDevice
     {
 
         protected DS4Device[] DS4Controllers = new DS4Device[4];
@@ -36,7 +36,7 @@ namespace ScpControl
         protected bool isWorkersShouldRun = false;
         private object[] ds4locks = new object[4];
         private ManagementEventWatcher watcher = null;
-        protected virtual Int32 Scale(Int32 Value, Boolean Flip) 
+        protected virtual Int32 Scale(Int32 Value, Boolean Flip)
         {
             Value -= 0x80;
 
@@ -47,13 +47,13 @@ namespace ScpControl
         }
 
 
-        public BusDevice() : base(BUS_CLASS_GUID) 
+        public BusDevice() : base(BUS_CLASS_GUID)
         {
             InitializeComponent();
             Initialize();
         }
 
-        public BusDevice(IContainer container) : base(BUS_CLASS_GUID) 
+        public BusDevice(IContainer container) : base(BUS_CLASS_GUID)
         {
             container.Add(this);
             Initialize();
@@ -71,12 +71,12 @@ namespace ScpControl
             }
         }
 
-        public override Boolean Open(int Instance = 0) 
+        public override Boolean Open(int Instance = 0)
         {
             return base.Open(Instance);
         }
 
-        public override Boolean Open(String DevicePath) 
+        public override Boolean Open(String DevicePath)
         {
             m_Path = DevicePath;
             m_WinUsbHandle = (IntPtr) INVALID_HANDLE_VALUE;
@@ -84,14 +84,14 @@ namespace ScpControl
             if (GetDeviceHandle(m_Path))
             {
                 m_IsActive = true;
-               
+
             }
 
             return true;
         }
 
-        public override Boolean Start() 
-        {    
+        public override Boolean Start()
+        {
             if (IsActive)
             {
                 int ind = 0;
@@ -160,13 +160,13 @@ namespace ScpControl
                 {
                     LogDebug(e.ToString());
                 }
-             
+
             }
             return true;
         }
 
 
-        public override Boolean Stop()  
+        public override Boolean Stop()
         {
             if (IsActive)
             {
@@ -185,12 +185,12 @@ namespace ScpControl
                         }
                     }
                 }
-                Unplug(0);                 
+                Unplug(0);
             }
             return base.Stop();
         }
 
-        public override Boolean Close() 
+        public override Boolean Close()
         {
             Monitor.Enter(this);
             if (IsActive)
@@ -205,7 +205,7 @@ namespace ScpControl
                 { Console.WriteLine(e.Message); }
                 isWorkersShouldRun = false;
                 for (int i = 1; i <= 4; i++)
-                {
+                {               
                     lock (ds4locks[i-1])
                     {
                         if (DS4Controllers[i - 1] != null)
@@ -215,15 +215,15 @@ namespace ScpControl
                             DS4Controllers[i - 1] = null;
                         }
                     }
-               }
-               Unplug(0);               
+                }
+                Unplug(0);
             }
             Monitor.Exit(this);
             return base.Close();
         }
 
 
-        public virtual void Parse(Byte[] Input, Byte[] Output) 
+        public virtual void Parse(Byte[] Input, Byte[] Output)
         {
             Byte Serial = (Byte)(Input[0] + 1);
 
@@ -256,10 +256,10 @@ namespace ScpControl
                 if ((Buttons & (0x1 << 15)) > 0) Output[11] |= (Byte)(1 << 6); // X
 
                 if ((Buttons & (0x1 << 16)) > 16) Output[11] |= (Byte)(1 << 2); // Guide     
-              
+
                 Output[12] = Input[26]; // Left Trigger
                 Output[13] = Input[27]; // Right Trigger
-            
+
                 Int32 ThumbLX =  Scale(Input[14], false);
                 Int32 ThumbLY = -Scale(Input[15], false);
                 Int32 ThumbRX = Scale(Input[16], false);
@@ -280,7 +280,7 @@ namespace ScpControl
         }
 
 
-        public virtual Boolean Plugin(Int32 Serial) 
+        public virtual Boolean Plugin(Int32 Serial)
         {
             if (IsActive)
             {
@@ -303,7 +303,7 @@ namespace ScpControl
             return false;
         }
 
-        public virtual Boolean Unplug(Int32 Serial) 
+        public virtual Boolean Unplug(Int32 Serial)
         {
             if (IsActive)
             {
@@ -352,8 +352,15 @@ namespace ScpControl
                         Report(processingData[device].parsedData, processingData[device].output);
                     }
                 }
-            }    
-  
+            }
+        }
+
+        // Publicize input data
+        public byte[] GetInputData(int device)
+        {
+            if (DS4Controllers[device] != null)
+                return DS4Controllers[device].InputData;
+            return null;
         }
 
         protected virtual Boolean LogDebug(byte[] array)
@@ -370,7 +377,7 @@ namespace ScpControl
         }
 
 
-        public virtual Boolean Report(Byte[] Input, Byte[] Output) 
+        public virtual Boolean Report(Byte[] Input, Byte[] Output)
         {
             if (IsActive)
             {
@@ -386,8 +393,6 @@ namespace ScpControl
                     DS4Controllers[deviceInd].SmallRumble = Small;
                     DS4Controllers[deviceInd].BigRumble = Big;
                 }
-                //Task sendReportTask = new Task(() => DS4Controllers[deviceInd].sendOutputReport());
-                //sendReportTask.Start();
                 DS4Controllers[deviceInd].sendOutputReport();
                 return result;
 
@@ -414,7 +419,7 @@ namespace ScpControl
             DS4Controllers[device].sendOutputReport();
         }
 
-        public void SetLeds(int deviceNum,byte Red, byte Green, byte Blue)
+        public void SetLeds(int deviceNum, byte Red, byte Green, byte Blue)
         {
             DS4Controllers[deviceNum].setLedColor(Red, Green, Blue);
         }
@@ -432,7 +437,7 @@ namespace ScpControl
                 return DS4Controllers[device].toString();
             else
                 return null;
-          
+
         }
 
         public void StopController(int device)
@@ -445,10 +450,6 @@ namespace ScpControl
             }
         }
 
-        public void DeviceArrived(Object sender, EventArrivedEventArgs arg)
-        {
-            StartNewControllers();
-        }
 
         // Hot plug
         public void StartNewControllers()
@@ -458,7 +459,7 @@ namespace ScpControl
                 int[] pid = { 0x05C4 };
                 byte[] buffer = new byte[16];
                 buffer[0] = 18;
-                
+
                 try
                 {
                     IEnumerable<HidDevice> devices = HidDevices.Enumerate(0x054C, pid);
@@ -468,19 +469,19 @@ namespace ScpControl
                             device.OpenDevice(Global.getUseExclusiveMode());
                         if (device.IsOpen)
                         {
-                           // device.readFeatureData(buffer);
+                            // device.readFeatureData(buffer);
                             //string mac = String.Format(
-                             //   "{0:X02}:{1:X}:{2:X02}:{3:X02}:{4:X02}:{5:X02}",
-                              //  buffer[6], buffer[5], buffer[4], buffer[3], buffer[2], buffer[1]);
+                            //   "{0:X02}:{1:X}:{2:X02}:{3:X02}:{4:X02}:{5:X02}",
+                            //  buffer[6], buffer[5], buffer[4], buffer[3], buffer[2], buffer[1]);
                             if (((Func<bool>)delegate
-                                {
-                                    for (Int32 Index = 0; Index < DS4Controllers.Length; Index++)
-                                        if (DS4Controllers[Index] != null
-                                            && DS4Controllers[Index].Device != null
-                                            )
-                                            return true;
-                                    return false;
-                                })())
+                            {
+                                for (Int32 Index = 0; Index < DS4Controllers.Length; Index++)
+                                    if (DS4Controllers[Index] != null
+                                        && DS4Controllers[Index].Device != null
+                                        )
+                                        return true;
+                                return false;
+                            })())
                                 continue;
                         }
                         else continue;
@@ -492,25 +493,25 @@ namespace ScpControl
                                         + " PID:" + device.Attributes.ProductHexId);
                                 if (device.IsOpen)
                                 {
-                                        DS4Controllers[Index] = new DS4Device(device, Index);
-                                        ledColor color = Global.loadColor(Index);
-                                        DS4Controllers[Index].sendOutputReport();
-                                        Plugin(Index + 1);
-                                        isWorkersShouldRun = true;
-                                        int t = Index;
-                                        if (workers
-                                            [Index].ThreadState == System.Threading.ThreadState.Aborted || workers[Index].ThreadState == System.Threading.ThreadState.Stopped)
-                                            workers[Index] = new Thread(() =>
-                                            { ProcessData(t); });
-                                        workers[Index].Start();
-                                        LogDebug("Controller " + (Index + 1) + " ready to use");
-                                        break;
+                                    DS4Controllers[Index] = new DS4Device(device, Index);
+                                    ledColor color = Global.loadColor(Index);
+                                    DS4Controllers[Index].sendOutputReport();
+                                    Plugin(Index + 1);
+                                    isWorkersShouldRun = true;
+                                    int t = Index;
+                                    if (workers
+                                        [Index].ThreadState == System.Threading.ThreadState.Aborted || workers[Index].ThreadState == System.Threading.ThreadState.Stopped)
+                                        workers[Index] = new Thread(() =>
+                                        { ProcessData(t); });
+                                    workers[Index].Start();
+                                    LogDebug("Controller " + (Index + 1) + " ready to use");
+                                    break;
                                 }
                                 else
                                 {
-                                        LogDebug("Could not open the controller " + (Index + 1) + " for exclusive access");
-                                        LogDebug("Try to quit any applications that can be using the controller");
-                                        LogDebug("Then press Stop and Start to try accessing device again");
+                                    LogDebug("Could not open the controller " + (Index + 1) + " for exclusive access");
+                                    LogDebug("Try to quit any applications that can be using the controller");
+                                    LogDebug("Then press Stop and Start to try accessing device again");
                                 }
                             }
                     }

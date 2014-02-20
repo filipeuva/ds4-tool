@@ -39,6 +39,15 @@ namespace ScpControl
         private byte[] btInputData;
         private string MACAddr;
  
+        // Publicize Input Data
+        public byte[] InputData 
+        {
+            get
+            {
+                return inputData;
+            }
+        }
+ 
         public HidDevice Device
         {
             get { return hid_device; }
@@ -260,13 +269,14 @@ namespace ScpControl
 
             bool anyPressed = false;
                 foreach (KeyValuePair<string, ushort> customKey in Global.getCustomKeys())
-                    if (RemapBool(or10, or11, orx, customKey.Key))
+                    if (RemapBool(or10, or11, orx, customKey.Key.Replace("Repeat", string.Empty)))
                     {
                         anyPressed = true;
                         if (lastPressed == null)
                         {
                             ResetMapping(r10, r11, rx, customKey.Key);
                             Touchpad.performKeyPress(customKey.Value);
+                            if (!customKey.Key.Contains("Repeat"))
                             lastPressed = customKey.Value;
                         }
                     }
@@ -297,13 +307,17 @@ namespace ScpControl
                         case "A Button":     r11[6] = RemapBool(or10, or11, orx, customButton.Key); break;
                         case "X Button":     r11[7] = RemapBool(or10, or11, orx, customButton.Key); break;
 
-                        case "Guide":         rx[0] = RemapByte(or10, or11, orx, customButton.Key); break;
-                        case "Left X-Axis":   rx[1] = RemapByte(or10, or11, orx, customButton.Key); break;
-                        case "Left Y-Axis":   rx[2] = RemapByte(or10, or11, orx, customButton.Key); break;
-                        case "Right X-Axis":  rx[3] = RemapByte(or10, or11, orx, customButton.Key); break;
-                        case "Right Y-Axis":  rx[4] = RemapByte(or10, or11, orx, customButton.Key); break;
-                        case "Left Trigger":  rx[5] = RemapByte(or10, or11, orx, customButton.Key); break;
-                        case "Right Trigger": rx[6] = RemapByte(or10, or11, orx, customButton.Key); break;
+                        case "Guide":          rx[0] = RemapByte(or10, or11, orx, customButton.Key); break;
+                        case "Left X-Axis":    if (NibbleChanged(rx[1], orx[1])) rx[1] = RemapNibble(or10, or11, orx, customButton.Key);    break;
+                        case "Left Y-Axis":    if (NibbleChanged(rx[2], orx[2])) rx[2] = RemapNibble(or10, or11, orx, customButton.Key);    break;
+                        case "Right X-Axis":   if (NibbleChanged(rx[3], orx[3])) rx[3] = RemapNibble(or10, or11, orx, customButton.Key);    break;
+                        case "Right Y-Axis":   if (NibbleChanged(rx[4], orx[4])) rx[4] = RemapNibble(or10, or11, orx, customButton.Key);    break;
+                        case "Left X-Axis 2":  if (NibbleChanged(rx[1], orx[1])) rx[1] = RemapNibbleAlt(or10, or11, orx, customButton.Key); break;
+                        case "Left Y-Axis 2":  if (NibbleChanged(rx[2], orx[2])) rx[2] = RemapNibbleAlt(or10, or11, orx, customButton.Key); break;
+                        case "Right X-Axis 2": if (NibbleChanged(rx[3], orx[3])) rx[3] = RemapNibbleAlt(or10, or11, orx, customButton.Key); break;
+                        case "Right Y-Axis 2": if (NibbleChanged(rx[4], orx[4])) rx[4] = RemapNibbleAlt(or10, or11, orx, customButton.Key); break;
+                        case "Left Trigger":   rx[5] = RemapByte(or10, or11, orx, customButton.Key); break;
+                        case "Right Trigger":  rx[6] = RemapByte(or10, or11, orx, customButton.Key); break;
 
                         case "Click": if (RemapBool(or10, or11, orx, customButton.Key))
                             {
@@ -316,9 +330,37 @@ namespace ScpControl
                                 }
                             }
                             break;
+                        case "Right Click": if (RemapBool(or10, or11, orx, customButton.Key))
+                            {
+                                anyPressed = true;
+                                if (lastPressed == null)
+                                {
+                                    ResetMapping(r10, r11, rx, customButton.Key);
+                                    Touchpad.performRightClick();
+                                    lastPressed = customButton.Value;
+                                }
+                            }
+                            break;
+                        case "Middle Click": if (RemapBool(or10, or11, orx, customButton.Key))
+                            {
+                                anyPressed = true;
+                                if (lastPressed == null)
+                                {
+                                    ResetMapping(r10, r11, rx, customButton.Key);
+                                    Touchpad.performMiddleClick();
+                                    lastPressed = customButton.Value;
+                                }
+                            }
+                            break;
                     }
                 if (!anyPressed && lastPressed != null)
                     lastPressed = null;
+        }
+        private bool NibbleChanged(byte a, byte b)
+        {
+            if (Math.Abs(a - b) > 10)
+                return false;
+            else return true;
         }
         private bool RemapBool(bool[] r10, bool[] r11, byte[] rx, string key)
         {
@@ -341,10 +383,14 @@ namespace ScpControl
                 case "cbSquare":   return r11[7];
 
                 case "cbPS":       return rx[0] > 100;
-                case "cbLX":       return rx[1] > 127;
-                case "cbLY":       return rx[2] > 123;
-                case "cbRX":       return rx[3] > 125;
-                case "cbRY":       return rx[4] > 127;
+                case "cbLX":       return rx[1] < 117;
+                case "cbLY":       return rx[2] < 113;
+                case "cbRX":       return rx[3] < 115;
+                case "cbRY":       return rx[4] < 117;
+                case "cbLX2":      return rx[1] > 137;
+                case "cbLY2":      return rx[2] > 133;
+                case "cbRX2":      return rx[3] > 135;
+                case "cbRY2":      return rx[4] > 137;
                 case "cbL2":       return rx[5] > 100;
                 case "cbR2":       return rx[6] > 100;
             }
@@ -375,8 +421,82 @@ namespace ScpControl
                 case "cbLY":       return rx[2];
                 case "cbRX":       return rx[3];
                 case "cbRY":       return rx[4];
+                case "cbLX2":      return (byte)(rx[1] - 127 < 0?0:(rx[1]-127));
+                case "cbLY2":      return (byte)(rx[2] - 123 < 0?0:(rx[2]-123));
+                case "cbRX2":      return (byte)(rx[3] - 125 < 0?0:(rx[3]-125));
+                case "cbRY2":      return (byte)(rx[4] - 127 < 0?0:(rx[4]-127));
                 case "cbL2":       return rx[5];
                 case "cbR2":       return rx[6];
+            }
+            return 0;
+        }
+        private byte RemapNibble(bool[] r10, bool[] r11, byte[] rx, string key)
+        {
+            // Remap to half a byte (nibble)
+            switch (key)
+            {
+                case "cbShare":    return (byte)(r10[0] ? 255 : 127);
+                case "cbL3":       return (byte)(r10[1] ? 255 : 127);
+                case "cbR3":       return (byte)(r10[2] ? 255 : 127);
+                case "cbOptions":  return (byte)(r10[3] ? 255 : 127);
+                case "cbUp":       return (byte)(r10[4] ? 255 : 127);
+                case "cbRight":    return (byte)(r10[5] ? 255 : 127);
+                case "cbDown":     return (byte)(r10[6] ? 255 : 127);
+                case "cbLeft":     return (byte)(r10[7] ? 255 : 127);
+
+                case "cbL1":       return (byte)(r11[2] ? 255 : 127);
+                case "cbR1":       return (byte)(r11[3] ? 255 : 127);
+                case "cbTriangle": return (byte)(r11[4] ? 255 : 127);
+                case "cbCircle":   return (byte)(r11[5] ? 255 : 127);
+                case "cbCross":    return (byte)(r11[6] ? 255 : 127);
+                case "cbSquare":   return (byte)(r11[7] ? 255 : 127);
+
+                case "cbPS":       return (byte)(rx[0]==255?255:127);
+                case "cbLX":       return rx[1];
+                case "cbLY":       return rx[2];
+                case "cbRX":       return rx[3];
+                case "cbRY":       return rx[4];
+                case "cbLX2":      return (byte)(255 - rx[1]);
+                case "cbLY2":      return (byte)(255 - rx[2]);
+                case "cbRX2":      return (byte)(255 - rx[3]);
+                case "cbRY2":      return (byte)(255 - rx[4]);
+                case "cbL2":       return (byte)(rx[5]==255?255:127);
+                case "cbR2":       return (byte)(rx[6]==255?255:127);
+            }
+            return 0;
+        }
+        private byte RemapNibbleAlt(bool[] r10, bool[] r11, byte[] rx, string key)
+        {
+            // Remap to half a byte (nibble)
+            switch (key)
+            {
+                case "cbShare":    return (byte)(r10[0] ? 0 : 127);
+                case "cbL3":       return (byte)(r10[1] ? 0 : 127);
+                case "cbR3":       return (byte)(r10[2] ? 0 : 127);
+                case "cbOptions":  return (byte)(r10[3] ? 0 : 127);
+                case "cbUp":       return (byte)(r10[4] ? 0 : 127);
+                case "cbRight":    return (byte)(r10[5] ? 0 : 127);
+                case "cbDown":     return (byte)(r10[6] ? 0 : 127);
+                case "cbLeft":     return (byte)(r10[7] ? 0 : 127);
+
+                case "cbL1":       return (byte)(r11[2] ? 0 : 127);
+                case "cbR1":       return (byte)(r11[3] ? 0 : 127);
+                case "cbTriangle": return (byte)(r11[4] ? 0 : 127);
+                case "cbCircle":   return (byte)(r11[5] ? 0 : 127);
+                case "cbCross":    return (byte)(r11[6] ? 0 : 127);
+                case "cbSquare":   return (byte)(r11[7] ? 0 : 127);
+
+                case "cbPS":       return (byte)(rx[0]==255?0:127);
+                case "cbLX":       return (byte)(255 - rx[1]);
+                case "cbLY":       return (byte)(255 - rx[1]);
+                case "cbRX":       return (byte)(255 - rx[1]);
+                case "cbRY":       return (byte)(255 - rx[1]);
+                case "cbLX2":      return rx[1];
+                case "cbLY2":      return rx[2];
+                case "cbRX2":      return rx[3];
+                case "cbRY2":      return rx[4];
+                case "cbL2":       return (byte)(rx[5]==255?0:127);
+                case "cbR2":       return (byte)(rx[6]==255?0:127);
             }
             return 0;
         }
@@ -405,6 +525,10 @@ namespace ScpControl
                 case "cbLY":  rx[2] = 123; break;
                 case "cbRX":  rx[3] = 125; break;
                 case "cbRY":  rx[4] = 127; break;
+                case "cbLX2": rx[1] = 127; break;
+                case "cbLY2": rx[2] = 123; break;
+                case "cbRX2": rx[3] = 125; break;
+                case "cbRY2": rx[4] = 127; break;
                 case "cbL2":  rx[5] = 0;   break;
                 case "cbR2":  rx[6] = 0;   break;
             }
@@ -560,12 +684,6 @@ namespace ScpControl
             //Guide
             var Guide = data[7] & (1 << 1 - 1);
             Report[12] = (byte)(Guide != 0 ? 0xFF : 0x00);
-
-            #region watch sixaxis data
-            Global.setSixaxisData(new byte[] { 
-                data[20], data[24]
-            });
-            #endregion
 
             return Report;
 

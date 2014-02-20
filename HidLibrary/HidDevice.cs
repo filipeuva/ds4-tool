@@ -11,7 +11,6 @@ namespace HidLibrary
         public event InsertedEventHandler Inserted;
         public event RemovedEventHandler Removed;
 
-        public event EventHandler<EventArgs> Insert;
         public event EventHandler<EventArgs> Remove;
 
         public delegate void InsertedEventHandler();
@@ -39,7 +38,6 @@ namespace HidLibrary
         internal HidDevice(string devicePath, string description = null)
         {
             _deviceEventMonitor = new HidDeviceEventMonitor(this);
-            _deviceEventMonitor.Inserted += DeviceEventMonitorInserted;
             _deviceEventMonitor.Removed += DeviceEventMonitorRemoved;
 
             _devicePath = devicePath;
@@ -355,7 +353,7 @@ namespace HidLibrary
                     return false;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }

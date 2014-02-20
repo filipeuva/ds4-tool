@@ -72,27 +72,20 @@ namespace ScpServer
             Icon = Properties.Resources.Scp_All;
             tmrUpdate.Enabled = true;
             Global.Load();
-            hideDS4CheckBox.CheckedChanged -= hideDS4CheckBox_CheckedChanged;
             hideDS4CheckBox.Checked = Global.getUseExclusiveMode();
-            hideDS4CheckBox.CheckedChanged += hideDS4CheckBox_CheckedChanged;
             if (btnStartStop.Enabled)
                 btnStartStop_Click(sender, e);
             
             // New settings
             this.Width = Global.getFormWidth();
             this.Height = Global.getFormHeight();
-            startMinimizedCheckBox.CheckedChanged -= startMinimizedCheckBox_CheckedChanged;
             startMinimizedCheckBox.Checked = Global.getStartMinimized();
-            startMinimizedCheckBox.CheckedChanged += startMinimizedCheckBox_CheckedChanged;
-
             if (startMinimizedCheckBox.Checked)
             {
                 this.WindowState = FormWindowState.Minimized;
                 Form_Resize(sender, e);
             }
             Global.loadCustomMapping(0);
-
-
         }
         protected void Form_Close(object sender, FormClosingEventArgs e) 
         {
@@ -143,17 +136,15 @@ namespace ScpServer
         }
         protected void tmrUpdate_Tick(object sender, EventArgs e) 
         {
-
             // If controllers are detected, but not checked, automatically check #1
             bool checkFirst = true;
-            bool optionsEnabled = false;
             for (Int32 Index = 0; Index < Pad.Length; Index++)
             {
                 Pad[Index].Text = rootHub.getControllerInfo(Index);
                 if (Pad[Index].Text != null && Pad[Index].Text != "")
                 {
                     Pad[Index].Enabled = true;
-                    optionsEnabled = true;
+
                     // As above
                     if (checkFirst && (Pad[Index].Checked && Index != 0))
                         checkFirst = false;
@@ -174,7 +165,7 @@ namespace ScpServer
             // As above
             if (checkFirst && btnClear.Enabled)
                 Pad[0].Checked = true;
-            optionsButton.Enabled = optionsEnabled;
+            optionsButton.Enabled = checkFirst;
         }
         protected void On_Debug(object sender, ScpControl.DebugEventArgs e) 
         {

@@ -437,12 +437,17 @@ namespace ScpControl
                         try
                         {
                             Item = m_Xdoc.SelectSingleNode(String.Format("/Control/{0}", button.Name));
+                            if (Item == null)
+                                Item = m_Xdoc.SelectSingleNode(String.Format("/Control/{0}", button.Name + "Repeat"));
                             if (Item != null)
                                 if (UInt16.TryParse(Item.InnerText, out wvk))
                                 {
                                     button.Tag = wvk;
                                     button.Text = ((System.Windows.Forms.Keys)wvk).ToString();
                                     customMapKeys.Add(button.Name, wvk);
+
+                                    if (Item.Name.Contains("Repeat"))
+                                        button.ForeColor = System.Drawing.Color.Red;
                                 }
                                 else
                                 {
@@ -483,11 +488,12 @@ namespace ScpControl
                     try
                     {
                         // Save even if string (for xbox controller buttons)
-                        //if (button.Tag is int)
-                        //if ((int)button.Tag < 256 && (int)button.Tag >= 0)
                         if (button.Tag != null)
                         {
-                            XmlNode buttonNode = m_Xdoc.CreateNode(XmlNodeType.Element, button.Name, null);
+                            string name = button.Name;
+                            if (button.ForeColor == System.Drawing.Color.Red)
+                                name += "Repeat";
+                            XmlNode buttonNode = m_Xdoc.CreateNode(XmlNodeType.Element, name, null);
                             buttonNode.InnerText = button.Tag.ToString(); 
                             Node.AppendChild(buttonNode);
                         }

@@ -6,14 +6,12 @@ using System.Windows.Forms;
 namespace ScpServer
 {
     public partial class Options : Form
-    #region watch sixaxis data
-        , ScpControl.Global.DisposableSixaxisObserver
-    #endregion
     {
         private ScpControl.BusDevice scpDevice;
         private int device;
 
         Byte[] oldLedColor, oldLowLedColor;
+        TrackBar tBsixaxisX, tBsixaxisY;
 
         public Options(BusDevice bus_device, int deviceNum)
         {
@@ -44,50 +42,74 @@ namespace ScpServer
             lowRedValLabel.Text = lowColor.red.ToString();
             lowGreenValLabel.Text = lowColor.green.ToString();
             lowBlueValLabel.Text = lowColor.blue.ToString();
+
+            #region watch sixaxis data
+            Timer sixaxisTimer = new Timer();
+            sixaxisTimer.Tick +=
+            (delegate
+                {
+                    if (tBsixaxisX == null || tBsixaxisY == null)
+                    {
+                        tBsixaxisX = new TrackBar();
+                        tBsixaxisY = new TrackBar();
+                        ((System.ComponentModel.ISupportInitialize)(tBsixaxisX)).BeginInit();
+                        ((System.ComponentModel.ISupportInitialize)(tBsixaxisY)).BeginInit();
+                        // tBsixaxisX
+                        tBsixaxisX.Anchor = AnchorStyles.Bottom;
+                        tBsixaxisX.AutoSize = false;
+                        tBsixaxisX.Enabled = false;
+                        tBsixaxisX.Location = new Point(501, 248);
+                        tBsixaxisX.Maximum = 64;
+                        tBsixaxisX.Name = "tBsixaxisX";
+                        tBsixaxisX.Size = new Size(100, 19);
+                        tBsixaxisX.TabIndex = 71;
+                        tBsixaxisX.TickFrequency = 25;
+                        tBsixaxisX.TickStyle = TickStyle.None;
+                        // tBsixaxisY
+                        tBsixaxisY.Anchor = AnchorStyles.Bottom;
+                        tBsixaxisY.AutoSize = false;
+                        tBsixaxisY.Enabled = false;
+                        tBsixaxisY.Location = new Point(476, 198);
+                        tBsixaxisY.Maximum = 64;
+                        tBsixaxisY.Name = "tBsixaxisY";
+                        tBsixaxisY.Orientation = Orientation.Vertical;
+                        tBsixaxisY.Size = new Size(19, 100);
+                        tBsixaxisY.TabIndex = 72;
+                        tBsixaxisY.TickFrequency = 25;
+                        tBsixaxisY.TickStyle = TickStyle.None;
+                        Controls.Add(tBsixaxisY);
+                        Controls.Add(tBsixaxisX);
+                        ((System.ComponentModel.ISupportInitialize)(tBsixaxisX)).EndInit();
+                        ((System.ComponentModel.ISupportInitialize)(tBsixaxisY)).EndInit();
+                    }
+                    byte[] inputData = scpDevice.GetInputData(device);
+                    if (inputData != null)
+                    {
+                        int x = inputData[20];
+                        if (x > 150)
+                            x -= 254;
+                        x += 32;
+                        if (x < 0)
+                            x = 0;
+                        else if (x > 64)
+                            x = 64;
+                        tBsixaxisX.Value = x;
+                        x = inputData[24];
+                        if (x > 150)
+                            x -= 254;
+                        x += 32;
+                        if (x < 0)
+                            x = 0;
+                        else if (x > 64)
+                            x = 64;
+                        tBsixaxisY.Value = x;
+                    }
+                });
+            sixaxisTimer.Interval = 10;
+            this.FormClosing += delegate { sixaxisTimer.Stop(); };
+            sixaxisTimer.Start();
+            #endregion
         }
-        #region watch sixaxis data
-        public delegate void UpdateInvoker(byte[] data);
-        public delegate void CloseInvoker();
-        public UpdateInvoker InvokeUpdateDelegate;
-        public CloseInvoker InvokeCloseDelegate;
-        public void Update(byte[] data)
-        {
-            if (this.IsHandleCreated)
-            {
-                this.BeginInvoke(InvokeUpdateDelegate, data);
-            }
-        }
-        public void InvokeUpdate(byte[] data)
-        {
-            int x = data[0];
-            if (x > 150)
-                x -= 254;
-            x += 32;
-            if (x < 0)
-                x = 0;
-            else if (x > 64)
-                x = 64;
-            tBsixaxisX.Value = x;
-            x = data[1];
-            if (x > 150)
-                x -= 254;
-            x += 32;
-            if (x < 0)
-                x = 0;
-            else if (x > 64)
-                x = 64;
-            tBsixaxisY.Value = x;
-        }
-        public void InvokeClose()
-        {
-            this.Invoke(InvokeCloseDelegate);
-        }
-        private void Options_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (Global.unregisterForSixaxisData(this))
-                e.Cancel = true;
-        }
-        #endregion
 
         private void CustomMappingButton_Click(object sender, EventArgs e)
         {

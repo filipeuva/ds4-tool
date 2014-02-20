@@ -77,6 +77,13 @@
             this.label22 = new System.Windows.Forms.Label();
             this.label23 = new System.Windows.Forms.Label();
             this.label24 = new System.Windows.Forms.Label();
+            this.cbLY2 = new System.Windows.Forms.ComboBox();
+            this.cbLX2 = new System.Windows.Forms.ComboBox();
+            this.cbRY2 = new System.Windows.Forms.ComboBox();
+            this.cbRX2 = new System.Windows.Forms.ComboBox();
+            this.cbTopPad = new System.Windows.Forms.ComboBox();
+            this.cbMultiTouch = new System.Windows.Forms.ComboBox();
+            this.cbRepeat = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -93,8 +100,8 @@
             // 
             // label1
             // 
-            this.label1.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label1.Location = new System.Drawing.Point(689, 25);
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.Location = new System.Drawing.Point(665, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(90, 17);
             this.label1.TabIndex = 1;
@@ -103,8 +110,8 @@
             // 
             // label2
             // 
-            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label2.Location = new System.Drawing.Point(629, 66);
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label2.Location = new System.Drawing.Point(592, 26);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(90, 17);
             this.label2.TabIndex = 2;
@@ -113,8 +120,8 @@
             // 
             // label3
             // 
-            this.label3.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label3.Location = new System.Drawing.Point(725, 66);
+            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label3.Location = new System.Drawing.Point(735, 26);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(90, 17);
             this.label3.TabIndex = 3;
@@ -123,8 +130,8 @@
             // 
             // label4
             // 
-            this.label4.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label4.Location = new System.Drawing.Point(689, 108);
+            this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label4.Location = new System.Drawing.Point(665, 89);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(90, 17);
             this.label4.TabIndex = 4;
@@ -133,9 +140,9 @@
             // 
             // cbSquare
             // 
-            this.cbSquare.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.cbSquare.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbSquare.FormattingEnabled = true;
-            this.cbSquare.Location = new System.Drawing.Point(629, 82);
+            this.cbSquare.Location = new System.Drawing.Point(617, 43);
             this.cbSquare.MaxLength = 1;
             this.cbSquare.Name = "cbSquare";
             this.cbSquare.Size = new System.Drawing.Size(90, 21);
@@ -149,9 +156,9 @@
             // 
             // cbCircle
             // 
-            this.cbCircle.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.cbCircle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbCircle.FormattingEnabled = true;
-            this.cbCircle.Location = new System.Drawing.Point(725, 82);
+            this.cbCircle.Location = new System.Drawing.Point(711, 43);
             this.cbCircle.MaxLength = 1;
             this.cbCircle.Name = "cbCircle";
             this.cbCircle.Size = new System.Drawing.Size(90, 21);
@@ -165,9 +172,9 @@
             // 
             // cbTriangle
             // 
-            this.cbTriangle.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.cbTriangle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbTriangle.FormattingEnabled = true;
-            this.cbTriangle.Location = new System.Drawing.Point(689, 41);
+            this.cbTriangle.Location = new System.Drawing.Point(665, 16);
             this.cbTriangle.MaxLength = 1;
             this.cbTriangle.Name = "cbTriangle";
             this.cbTriangle.Size = new System.Drawing.Size(90, 21);
@@ -181,9 +188,9 @@
             // 
             // cbCross
             // 
-            this.cbCross.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.cbCross.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbCross.FormattingEnabled = true;
-            this.cbCross.Location = new System.Drawing.Point(689, 124);
+            this.cbCross.Location = new System.Drawing.Point(665, 70);
             this.cbCross.MaxLength = 1;
             this.cbCross.Name = "cbCross";
             this.cbCross.Size = new System.Drawing.Size(90, 21);
@@ -197,9 +204,8 @@
             // 
             // cbDown
             // 
-            this.cbDown.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.cbDown.FormattingEnabled = true;
-            this.cbDown.Location = new System.Drawing.Point(47, 124);
+            this.cbDown.Location = new System.Drawing.Point(60, 70);
             this.cbDown.MaxLength = 1;
             this.cbDown.Name = "cbDown";
             this.cbDown.Size = new System.Drawing.Size(90, 21);
@@ -213,9 +219,8 @@
             // 
             // cbUp
             // 
-            this.cbUp.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.cbUp.FormattingEnabled = true;
-            this.cbUp.Location = new System.Drawing.Point(47, 41);
+            this.cbUp.Location = new System.Drawing.Point(60, 16);
             this.cbUp.MaxLength = 1;
             this.cbUp.Name = "cbUp";
             this.cbUp.Size = new System.Drawing.Size(90, 21);
@@ -229,9 +234,8 @@
             // 
             // cbRight
             // 
-            this.cbRight.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.cbRight.FormattingEnabled = true;
-            this.cbRight.Location = new System.Drawing.Point(108, 82);
+            this.cbRight.Location = new System.Drawing.Point(106, 43);
             this.cbRight.MaxLength = 1;
             this.cbRight.Name = "cbRight";
             this.cbRight.Size = new System.Drawing.Size(90, 21);
@@ -245,9 +249,8 @@
             // 
             // cbLeft
             // 
-            this.cbLeft.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.cbLeft.FormattingEnabled = true;
-            this.cbLeft.Location = new System.Drawing.Point(12, 82);
+            this.cbLeft.Location = new System.Drawing.Point(12, 43);
             this.cbLeft.MaxLength = 1;
             this.cbLeft.Name = "cbLeft";
             this.cbLeft.Size = new System.Drawing.Size(90, 21);
@@ -261,8 +264,7 @@
             // 
             // label5
             // 
-            this.label5.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label5.Location = new System.Drawing.Point(47, 108);
+            this.label5.Location = new System.Drawing.Point(60, 89);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(90, 17);
             this.label5.TabIndex = 12;
@@ -271,8 +273,7 @@
             // 
             // label6
             // 
-            this.label6.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label6.Location = new System.Drawing.Point(108, 66);
+            this.label6.Location = new System.Drawing.Point(130, 27);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(90, 17);
             this.label6.TabIndex = 11;
@@ -281,8 +282,7 @@
             // 
             // label7
             // 
-            this.label7.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label7.Location = new System.Drawing.Point(12, 66);
+            this.label7.Location = new System.Drawing.Point(-13, 26);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(90, 17);
             this.label7.TabIndex = 10;
@@ -291,8 +291,7 @@
             // 
             // label8
             // 
-            this.label8.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label8.Location = new System.Drawing.Point(47, 25);
+            this.label8.Location = new System.Drawing.Point(60, 0);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(90, 17);
             this.label8.TabIndex = 9;
@@ -406,9 +405,9 @@
             // label13
             // 
             this.label13.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label13.Location = new System.Drawing.Point(736, 160);
+            this.label13.Location = new System.Drawing.Point(711, 135);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(65, 17);
+            this.label13.Size = new System.Drawing.Size(90, 17);
             this.label13.TabIndex = 25;
             this.label13.Text = "Options";
             this.label13.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -417,7 +416,7 @@
             // 
             this.cbOptions.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.cbOptions.FormattingEnabled = true;
-            this.cbOptions.Location = new System.Drawing.Point(640, 161);
+            this.cbOptions.Location = new System.Drawing.Point(617, 133);
             this.cbOptions.MaxLength = 1;
             this.cbOptions.Name = "cbOptions";
             this.cbOptions.Size = new System.Drawing.Size(90, 21);
@@ -433,7 +432,7 @@
             // 
             this.cbRX.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.cbRX.FormattingEnabled = true;
-            this.cbRX.Location = new System.Drawing.Point(640, 188);
+            this.cbRX.Location = new System.Drawing.Point(617, 198);
             this.cbRX.MaxLength = 1;
             this.cbRX.Name = "cbRX";
             this.cbRX.Size = new System.Drawing.Size(90, 21);
@@ -448,7 +447,7 @@
             // label14
             // 
             this.label14.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label14.Location = new System.Drawing.Point(736, 187);
+            this.label14.Location = new System.Drawing.Point(594, 172);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(65, 17);
             this.label14.TabIndex = 27;
@@ -459,7 +458,7 @@
             // 
             this.cbLX.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.cbLX.FormattingEnabled = true;
-            this.cbLX.Location = new System.Drawing.Point(101, 187);
+            this.cbLX.Location = new System.Drawing.Point(12, 198);
             this.cbLX.MaxLength = 1;
             this.cbLX.Name = "cbLX";
             this.cbLX.Size = new System.Drawing.Size(90, 21);
@@ -474,7 +473,7 @@
             // label15
             // 
             this.label15.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label15.Location = new System.Drawing.Point(30, 188);
+            this.label15.Location = new System.Drawing.Point(155, 172);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(65, 17);
             this.label15.TabIndex = 31;
@@ -485,7 +484,7 @@
             // 
             this.cbShare.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.cbShare.FormattingEnabled = true;
-            this.cbShare.Location = new System.Drawing.Point(101, 160);
+            this.cbShare.Location = new System.Drawing.Point(106, 133);
             this.cbShare.MaxLength = 1;
             this.cbShare.Name = "cbShare";
             this.cbShare.Size = new System.Drawing.Size(90, 21);
@@ -500,9 +499,9 @@
             // label16
             // 
             this.label16.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label16.Location = new System.Drawing.Point(30, 161);
+            this.label16.Location = new System.Drawing.Point(12, 134);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(65, 17);
+            this.label16.Size = new System.Drawing.Size(90, 17);
             this.label16.TabIndex = 29;
             this.label16.Text = "Share";
             this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -511,7 +510,7 @@
             // 
             this.cbLY.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.cbLY.FormattingEnabled = true;
-            this.cbLY.Location = new System.Drawing.Point(101, 214);
+            this.cbLY.Location = new System.Drawing.Point(59, 171);
             this.cbLY.MaxLength = 1;
             this.cbLY.Name = "cbLY";
             this.cbLY.Size = new System.Drawing.Size(90, 21);
@@ -526,7 +525,7 @@
             // label17
             // 
             this.label17.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label17.Location = new System.Drawing.Point(30, 215);
+            this.label17.Location = new System.Drawing.Point(156, 226);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(65, 17);
             this.label17.TabIndex = 35;
@@ -537,7 +536,7 @@
             // 
             this.cbRY.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.cbRY.FormattingEnabled = true;
-            this.cbRY.Location = new System.Drawing.Point(640, 215);
+            this.cbRY.Location = new System.Drawing.Point(665, 171);
             this.cbRY.MaxLength = 1;
             this.cbRY.Name = "cbRY";
             this.cbRY.Size = new System.Drawing.Size(90, 21);
@@ -552,7 +551,7 @@
             // label18
             // 
             this.label18.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label18.Location = new System.Drawing.Point(736, 214);
+            this.label18.Location = new System.Drawing.Point(594, 225);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(65, 17);
             this.label18.TabIndex = 33;
@@ -617,7 +616,7 @@
             this.btnLoad.Location = new System.Drawing.Point(12, 282);
             this.btnLoad.Name = "btnLoad";
             this.btnLoad.Size = new System.Drawing.Size(65, 21);
-            this.btnLoad.TabIndex = 22;
+            this.btnLoad.TabIndex = 24;
             this.btnLoad.Text = "Load";
             this.btnLoad.UseVisualStyleBackColor = true;
             this.btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
@@ -629,7 +628,7 @@
             this.btnSave.Location = new System.Drawing.Point(750, 282);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(65, 21);
-            this.btnSave.TabIndex = 23;
+            this.btnSave.TabIndex = 25;
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
@@ -639,11 +638,11 @@
             // 
             this.cbPS.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.cbPS.FormattingEnabled = true;
-            this.cbPS.Location = new System.Drawing.Point(237, 19);
+            this.cbPS.Location = new System.Drawing.Point(237, 20);
             this.cbPS.MaxLength = 1;
             this.cbPS.Name = "cbPS";
             this.cbPS.Size = new System.Drawing.Size(90, 21);
-            this.cbPS.TabIndex = 21;
+            this.cbPS.TabIndex = 20;
             this.cbPS.Text = "Guide";
             this.cbPS.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
             this.cbPS.Enter += new System.EventHandler(this.EnterCommand);
@@ -655,11 +654,11 @@
             // 
             this.cbPad.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.cbPad.FormattingEnabled = true;
-            this.cbPad.Location = new System.Drawing.Point(333, 19);
+            this.cbPad.Location = new System.Drawing.Point(303, 42);
             this.cbPad.MaxLength = 1;
             this.cbPad.Name = "cbPad";
             this.cbPad.Size = new System.Drawing.Size(90, 21);
-            this.cbPad.TabIndex = 20;
+            this.cbPad.TabIndex = 21;
             this.cbPad.Text = "Click";
             this.cbPad.Visible = false;
             this.cbPad.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
@@ -671,7 +670,7 @@
             // label21
             // 
             this.label21.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.label21.Location = new System.Drawing.Point(237, 3);
+            this.label21.Location = new System.Drawing.Point(237, 4);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(90, 17);
             this.label21.TabIndex = 42;
@@ -681,9 +680,9 @@
             // label22
             // 
             this.label22.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.label22.Location = new System.Drawing.Point(333, 3);
+            this.label22.Location = new System.Drawing.Point(237, 41);
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(90, 17);
+            this.label22.Size = new System.Drawing.Size(60, 22);
             this.label22.TabIndex = 43;
             this.label22.Text = "Touchpad";
             this.label22.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -693,7 +692,7 @@
             // 
             this.label23.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(436, 8);
+            this.label23.Location = new System.Drawing.Point(368, 8);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(217, 13);
             this.label23.TabIndex = 44;
@@ -703,11 +702,110 @@
             // 
             this.label24.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(436, 23);
+            this.label24.Location = new System.Drawing.Point(368, 23);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(175, 13);
             this.label24.TabIndex = 45;
             this.label24.Text = "Press DEL once to remove a value.";
+            // 
+            // cbLY2
+            // 
+            this.cbLY2.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.cbLY2.FormattingEnabled = true;
+            this.cbLY2.Location = new System.Drawing.Point(60, 225);
+            this.cbLY2.MaxLength = 1;
+            this.cbLY2.Name = "cbLY2";
+            this.cbLY2.Size = new System.Drawing.Size(90, 21);
+            this.cbLY2.TabIndex = 47;
+            this.cbLY2.Text = "Left Y-Axis 2";
+            this.cbLY2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
+            this.cbLY2.Enter += new System.EventHandler(this.EnterCommand);
+            this.cbLY2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
+            this.cbLY2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
+            this.cbLY2.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
+            // 
+            // cbLX2
+            // 
+            this.cbLX2.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.cbLX2.FormattingEnabled = true;
+            this.cbLX2.Location = new System.Drawing.Point(106, 198);
+            this.cbLX2.MaxLength = 1;
+            this.cbLX2.Name = "cbLX2";
+            this.cbLX2.Size = new System.Drawing.Size(90, 21);
+            this.cbLX2.TabIndex = 46;
+            this.cbLX2.Text = "Left X-Axis 2";
+            this.cbLX2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
+            this.cbLX2.Enter += new System.EventHandler(this.EnterCommand);
+            this.cbLX2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
+            this.cbLX2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
+            this.cbLX2.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
+            // 
+            // cbRY2
+            // 
+            this.cbRY2.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.cbRY2.FormattingEnabled = true;
+            this.cbRY2.Location = new System.Drawing.Point(665, 225);
+            this.cbRY2.MaxLength = 1;
+            this.cbRY2.Name = "cbRY2";
+            this.cbRY2.Size = new System.Drawing.Size(90, 21);
+            this.cbRY2.TabIndex = 49;
+            this.cbRY2.Text = "Right Y-Axis 2";
+            this.cbRY2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
+            this.cbRY2.Enter += new System.EventHandler(this.EnterCommand);
+            this.cbRY2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
+            this.cbRY2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
+            this.cbRY2.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
+            // 
+            // cbRX2
+            // 
+            this.cbRX2.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.cbRX2.FormattingEnabled = true;
+            this.cbRX2.Location = new System.Drawing.Point(711, 198);
+            this.cbRX2.MaxLength = 1;
+            this.cbRX2.Name = "cbRX2";
+            this.cbRX2.Size = new System.Drawing.Size(90, 21);
+            this.cbRX2.TabIndex = 48;
+            this.cbRX2.Text = "Right X-Axis 2";
+            this.cbRX2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
+            this.cbRX2.Enter += new System.EventHandler(this.EnterCommand);
+            this.cbRX2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
+            this.cbRX2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
+            this.cbRX2.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
+            // 
+            // cbTopPad
+            // 
+            this.cbTopPad.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.cbTopPad.FormattingEnabled = true;
+            this.cbTopPad.Location = new System.Drawing.Point(399, 42);
+            this.cbTopPad.MaxLength = 1;
+            this.cbTopPad.Name = "cbTopPad";
+            this.cbTopPad.Size = new System.Drawing.Size(90, 21);
+            this.cbTopPad.TabIndex = 22;
+            this.cbTopPad.Text = "Middle Click";
+            this.cbTopPad.Visible = false;
+            // 
+            // cbMultiTouch
+            // 
+            this.cbMultiTouch.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.cbMultiTouch.FormattingEnabled = true;
+            this.cbMultiTouch.Location = new System.Drawing.Point(495, 42);
+            this.cbMultiTouch.MaxLength = 1;
+            this.cbMultiTouch.Name = "cbMultiTouch";
+            this.cbMultiTouch.Size = new System.Drawing.Size(90, 21);
+            this.cbMultiTouch.TabIndex = 23;
+            this.cbMultiTouch.Text = "Right Click";
+            this.cbMultiTouch.Visible = false;
+            // 
+            // cbRepeat
+            // 
+            this.cbRepeat.AutoSize = true;
+            this.cbRepeat.Location = new System.Drawing.Point(13, 259);
+            this.cbRepeat.Name = "cbRepeat";
+            this.cbRepeat.Size = new System.Drawing.Size(61, 17);
+            this.cbRepeat.TabIndex = 26;
+            this.cbRepeat.Text = "Repeat";
+            this.cbRepeat.UseVisualStyleBackColor = true;
+            this.cbRepeat.CheckedChanged += new System.EventHandler(this.cbRepeat_CheckedChanged);
             // 
             // CustomMapping
             // 
@@ -715,6 +813,18 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(244)))), ((int)(((byte)(244)))));
             this.ClientSize = new System.Drawing.Size(827, 310);
+            this.Controls.Add(this.cbRepeat);
+            this.Controls.Add(this.cbCross);
+            this.Controls.Add(this.cbTriangle);
+            this.Controls.Add(this.label18);
+            this.Controls.Add(this.label14);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.cbRY);
+            this.Controls.Add(this.cbRX);
+            this.Controls.Add(this.cbOptions);
+            this.Controls.Add(this.cbMultiTouch);
+            this.Controls.Add(this.cbTopPad);
             this.Controls.Add(this.label24);
             this.Controls.Add(this.label23);
             this.Controls.Add(this.cbPad);
@@ -724,46 +834,41 @@
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnLoad);
             this.Controls.Add(this.cbL1);
-            this.Controls.Add(this.label20);
             this.Controls.Add(this.cbR1);
-            this.Controls.Add(this.label19);
-            this.Controls.Add(this.cbLY);
             this.Controls.Add(this.label17);
-            this.Controls.Add(this.cbRY);
-            this.Controls.Add(this.label18);
-            this.Controls.Add(this.cbLX);
             this.Controls.Add(this.label15);
             this.Controls.Add(this.cbShare);
             this.Controls.Add(this.label16);
-            this.Controls.Add(this.cbRX);
-            this.Controls.Add(this.label14);
-            this.Controls.Add(this.cbOptions);
-            this.Controls.Add(this.label13);
             this.Controls.Add(this.cbL3);
             this.Controls.Add(this.cbL2);
-            this.Controls.Add(this.label11);
-            this.Controls.Add(this.label12);
             this.Controls.Add(this.cbR2);
             this.Controls.Add(this.cbR3);
-            this.Controls.Add(this.label9);
-            this.Controls.Add(this.label10);
             this.Controls.Add(this.cbDown);
-            this.Controls.Add(this.cbUp);
-            this.Controls.Add(this.cbRight);
-            this.Controls.Add(this.cbLeft);
             this.Controls.Add(this.label5);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.label8);
-            this.Controls.Add(this.cbCross);
-            this.Controls.Add(this.cbTriangle);
             this.Controls.Add(this.cbCircle);
             this.Controls.Add(this.cbSquare);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
+            this.Controls.Add(this.pictureBox);
+            this.Controls.Add(this.cbUp);
+            this.Controls.Add(this.cbLeft);
+            this.Controls.Add(this.cbRight);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.cbRX2);
+            this.Controls.Add(this.cbRY2);
+            this.Controls.Add(this.cbLY2);
+            this.Controls.Add(this.label13);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.label20);
+            this.Controls.Add(this.label19);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.label12);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.label10);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.pictureBox);
+            this.Controls.Add(this.cbLY);
+            this.Controls.Add(this.cbLX);
+            this.Controls.Add(this.cbLX2);
             this.MaximumSize = new System.Drawing.Size(886, 359);
             this.MinimumSize = new System.Drawing.Size(797, 303);
             this.Name = "CustomMapping";
@@ -825,5 +930,12 @@
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.Label label23;
         private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.ComboBox cbLY2;
+        private System.Windows.Forms.ComboBox cbLX2;
+        private System.Windows.Forms.ComboBox cbRY2;
+        private System.Windows.Forms.ComboBox cbRX2;
+        private System.Windows.Forms.ComboBox cbTopPad;
+        private System.Windows.Forms.ComboBox cbMultiTouch;
+        private System.Windows.Forms.CheckBox cbRepeat;
     }
 }

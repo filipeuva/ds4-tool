@@ -15,6 +15,7 @@ namespace ScpServer
         private int device;
         private bool handleNextKeyPress = false;
         private List<ComboBox> comboBoxes = new List<ComboBox>();
+        private ComboBox lastSelected;
 
         public CustomMapping(int deviceNum)
         {
@@ -29,6 +30,7 @@ namespace ScpServer
                     comboBoxes.Add((ComboBox)control);
                     availableButtons.Add(control.Text);
                 }
+            availableButtons.Sort();
             foreach (ComboBox comboBox in comboBoxes)
                 comboBox.Items.AddRange(availableButtons.ToArray());
             // Do not add XInput to touchpad
@@ -40,7 +42,9 @@ namespace ScpServer
         {
             //Change image to represent button
             if (sender is ComboBox)
-                switch (((ComboBox)sender).Name)
+            {
+                lastSelected = (ComboBox)sender;
+                switch (lastSelected.Name)
                 {
                     #region Set pictureBox.Image to relevant Properties.Resources image
                     case "cbL2": pictureBox.Image = Properties.Resources._2;
@@ -65,11 +69,19 @@ namespace ScpServer
                         break;
                     case "cbLX": pictureBox.Image = Properties.Resources._12;
                         break;
+                    case "cbLY2": pictureBox.Image = Properties.Resources._11;
+                        break;
+                    case "cbLX2": pictureBox.Image = Properties.Resources._12;
+                        break;
                     case "cbR3": pictureBox.Image = Properties.Resources._13;
                         break;
                     case "cbRY": pictureBox.Image = Properties.Resources._14;
                         break;
                     case "cbRX": pictureBox.Image = Properties.Resources._15;
+                        break;
+                    case "cbRY2": pictureBox.Image = Properties.Resources._14;
+                        break;
+                    case "cbRX2": pictureBox.Image = Properties.Resources._15;
                         break;
                     case "cbSquare": pictureBox.Image = Properties.Resources._16;
                         break;
@@ -91,21 +103,45 @@ namespace ScpServer
                         break;
                     #endregion
                 }
+                if (lastSelected.ForeColor == Color.Red)
+                    cbRepeat.Checked = true;
+                else cbRepeat.Checked = false;
+            }
         }
         private void PreviewKeyDownCommand(object sender, PreviewKeyDownEventArgs e)
         {
-            if (e.KeyCode == Keys.Tab)
-                if (sender is ComboBox)
+            if (sender is ComboBox)
+            {
+                if (e.KeyCode == Keys.Tab)
                     if (((ComboBox)sender).Text.Length == 0)
                     {
                         ((ComboBox)sender).Tag = e.KeyValue;
                         ((ComboBox)sender).Text = e.KeyCode.ToString();
                         handleNextKeyPress = true;
                     }
+            }
         }
         private void KeyDownCommand(object sender, KeyEventArgs e)
         {
             if (sender is ComboBox)
+            {
+                if (((ComboBox)sender).Tag is int)
+                {
+                    if (e.KeyValue == (int)(((ComboBox)sender).Tag))
+                    {
+                        if (((ComboBox)sender).ForeColor == SystemColors.WindowText)
+                        {
+                            ((ComboBox)sender).ForeColor = Color.Red;
+                            cbRepeat.Checked = true;
+                        }
+                        else
+                        {
+                            ((ComboBox)sender).ForeColor = SystemColors.WindowText;
+                            cbRepeat.Checked = false;
+                        }
+                        return;
+                    }
+                }
                 if (((ComboBox)sender).Text.Length != 0)
                     ((ComboBox)sender).Text = string.Empty;
                 else if (e.KeyCode == Keys.Delete)
@@ -115,12 +151,13 @@ namespace ScpServer
                     e.Handled = true;
                     e.SuppressKeyPress = true;
                 }
-            if (e.KeyCode != Keys.Delete)
-            {
-                ((ComboBox)sender).Tag = e.KeyValue;
-                ((ComboBox)sender).Text = e.KeyCode.ToString();
-                e.Handled = true;
-                e.SuppressKeyPress = true;
+                if (e.KeyCode != Keys.Delete)
+                {
+                    ((ComboBox)sender).Tag = e.KeyValue;
+                    ((ComboBox)sender).Text = e.KeyCode.ToString();
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                }
             }
         }
         private void KeyPressCommand(object sender, KeyPressEventArgs e)
@@ -146,6 +183,12 @@ namespace ScpServer
 
                 else ((ComboBox)sender).Tag = null;
             }
+        }
+        private void cbRepeat_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbRepeat.Checked)
+                lastSelected.ForeColor = Color.Red;
+            else lastSelected.ForeColor = SystemColors.WindowText;
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -184,5 +227,6 @@ namespace ScpServer
                 Global.Save();
             }
         }
+
     }
 }

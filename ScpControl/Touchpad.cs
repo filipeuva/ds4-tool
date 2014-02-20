@@ -206,12 +206,25 @@ namespace ScpControl
             uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
         }
 
-        static void performRightClick()
+        public static void performRightClick()
         {
             sendInputs[0].Type = INPUT_MOUSE;
             sendInputs[0].Data.Mouse.ExtraInfo = IntPtr.Zero;
             sendInputs[0].Data.Mouse.Flags = 0;
             sendInputs[0].Data.Mouse.Flags |= MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP;
+            sendInputs[0].Data.Mouse.MouseData = 0;
+            sendInputs[0].Data.Mouse.Time = 0;
+            sendInputs[0].Data.Mouse.X = 0;
+            sendInputs[0].Data.Mouse.Y = 0;
+            uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
+        }
+
+        public static void performMiddleClick()
+        {
+            sendInputs[0].Type = INPUT_MOUSE;
+            sendInputs[0].Data.Mouse.ExtraInfo = IntPtr.Zero;
+            sendInputs[0].Data.Mouse.Flags = 0;
+            sendInputs[0].Data.Mouse.Flags |= MOUSEEVENTF_MIDDLEDOWN | MOUSEEVENTF_MIDDLEUP;
             sendInputs[0].Data.Mouse.MouseData = 0;
             sendInputs[0].Data.Mouse.Time = 0;
             sendInputs[0].Data.Mouse.X = 0;
