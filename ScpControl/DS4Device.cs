@@ -692,7 +692,7 @@ namespace ScpControl
 
         public String toString()
         {
-            return "Controller " + (deviceNum + 1) + ": " + "Battery = "+charge+"%," +" Touchpad Enabled = " + isTouchEnabled + (isUSB ? " (USB)" : " (BT)");
+            return "Controller " + (deviceNum + 1) + ": " + "Battery = " + charge + "%," + " Touchpad Enabled = " + isTouchEnabled + (isUSB ? " (USB)" : " (BT)");
         }
 
     }

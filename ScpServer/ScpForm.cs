@@ -72,14 +72,19 @@ namespace ScpServer
             Icon = Properties.Resources.Scp_All;
             tmrUpdate.Enabled = true;
             Global.Load();
+            hideDS4CheckBox.CheckedChanged -= hideDS4CheckBox_CheckedChanged;
             hideDS4CheckBox.Checked = Global.getUseExclusiveMode();
+            hideDS4CheckBox.CheckedChanged += hideDS4CheckBox_CheckedChanged;
             if (btnStartStop.Enabled)
                 btnStartStop_Click(sender, e);
             
             // New settings
             this.Width = Global.getFormWidth();
             this.Height = Global.getFormHeight();
+            startMinimizedCheckBox.CheckedChanged -= startMinimizedCheckBox_CheckedChanged;
             startMinimizedCheckBox.Checked = Global.getStartMinimized();
+            startMinimizedCheckBox.CheckedChanged += startMinimizedCheckBox_CheckedChanged;
+
             if (startMinimizedCheckBox.Checked)
             {
                 this.WindowState = FormWindowState.Minimized;
@@ -128,14 +133,8 @@ namespace ScpServer
                 if (m.Msg == ScpDevice.WM_DEVICECHANGE)
                 {
                     Int32 Type = m.WParam.ToInt32();
-                    Console.WriteLine(Type);
-                    switch (Type)
-                    {
-                        case ScpDevice.DBT_DEVICEARRIVAL:
-                            rootHub.StartNewControllers();
-                            break;
-                    }
-                   
+                    //Console.WriteLine(Type);
+                    //rootHub.StartNewControllers();                  
                 }
             }
             catch { }
@@ -221,8 +220,8 @@ namespace ScpServer
                         module.Dispose();
 
             Global.setUseExclusiveMode(hideDS4CheckBox.Checked);
-            btnStartStop_Click(sender, e);
-            btnStartStop_Click(sender, e);
+             btnStartStop_Click(sender, e);
+             btnStartStop_Click(sender, e);
             Global.Save();
         }
         private void startMinimizedCheckBox_CheckedChanged(object sender, EventArgs e)

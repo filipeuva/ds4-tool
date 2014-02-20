@@ -100,6 +100,7 @@ namespace ScpControl
                 int[] pid = { 0x05C4 };
                 try
                 {
+                    /*
                     WqlEventQuery q;
                     ManagementOperationObserver observer = new ManagementOperationObserver();
                     ManagementScope scope = new ManagementScope("root\\CIMV2");
@@ -114,10 +115,10 @@ namespace ScpControl
                         Console.WriteLine(q.QueryString);
                         watcher = new ManagementEventWatcher(scope, q);
                         watcher.EventArrived += new EventArrivedEventHandler(DeviceArrived);
-                        watcher.Start();
+                        //watcher.Start();
                     }
                     catch (Exception e) { Console.WriteLine(e.Message); }
-
+                    */
                     IEnumerable<HidDevice> devices = HidDevices.Enumerate(0x054C, pid);
                     foreach (HidDevice device in devices)
                     {
