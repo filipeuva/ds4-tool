@@ -110,7 +110,7 @@ namespace ScpControl
                 if (touchPadIsDown)
                     if (!lastTouchPadIsDown)
                     {
-                        ushort key = Global.getCustomKey("cbPad");
+                        ushort key = Global.getCustomKey(DS4Controls.TouchButton);
                         //Whatever key the config asks for.
                         if (key != 0)
                             performKeyPress(key);

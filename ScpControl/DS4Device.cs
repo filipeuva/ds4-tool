@@ -18,8 +18,17 @@ namespace ScpControl
         public byte blue;
     }
 
+    public struct DS4State
+    {
+        public byte LX, LY, RX, RY, L2, R2;
+        public bool Square, Triangle, Circle, Cross, Share, Options, TouchButton, L1, R1, L3, R3, PS;
+        public bool DpadUp, DpadRight, DpadDown, DpadLeft;
+    }
+
     public class DS4Device
     {
+        private DS4State PrevState = new DS4State();
+        private DS4State cState = new DS4State();
         private short charge = 0;
         private bool isUSB = true;
         private int deviceNum = 0;
@@ -163,501 +172,54 @@ namespace ScpControl
                 if (Device.ReadFile(btInputData) == HidDevice.ReadStatus.Success)
                 {
                     Array.Copy(btInputData, 2, inputData, 0, 64);
-                    bool touchPressed = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
-                    toggleTouchpad(inputData[8], inputData[9], touchPressed);
-                    updateBatteryStatus(inputData[30], isUSB);
-                    if (isTouchEnabled)
-                        Touchpad.handleTouchpad(inputData, touchPressed);
                 }
                 else return null;
-            else if (Device.ReadFile(inputData) == HidDevice.ReadStatus.Success)
-            {
-                bool touchPressed = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
-                toggleTouchpad(inputData[8], inputData[9], touchPressed);
-                updateBatteryStatus(inputData[30], isUSB);
-                if (isTouchEnabled)
-                    Touchpad.handleTouchpad(inputData, touchPressed);
-            }
+            else if (Device.ReadFile(inputData) == HidDevice.ReadStatus.Success) { }
             else return null;
+
             Device.flush_Queue();
+
+            readButtons(inputData);
+            toggleTouchpad(inputData[8], inputData[9], cState.TouchButton);
+            updateBatteryStatus(inputData[30], isUSB);
+            if (isTouchEnabled)
+                Touchpad.handleTouchpad(inputData, cState.TouchButton);
+
             if (Global.getHasCustomKeysorButtons(deviceNum))
-                return remapButtons(inputData);
-            else return mapButtons(inputData);
-        }
-
-        private byte[] remapButtons(byte[] data)
-        {
-            if (data == null)
-                return null;
-            Report[1] = 0x02;
-            Report[2] = 0x05;
-            Report[3] = 0x12;
-            // ignore 4 to 9
-
-            bool up =      ((byte)data[5] & (1 << 4 - 1)) != 0,
-                down =     ((byte)data[5] & (1 << 3 - 1)) != 0,
-                left =     ((byte)data[5] & (1 << 2 - 1)) != 0,
-                right =    ((byte)data[5] & (1 << 1 - 1)) != 0,
-                triangle = ((byte)data[5] & (1 << 8 - 1)) != 0,
-                circle =   ((byte)data[5] & (1 << 7 - 1)) != 0,
-                cross =    ((byte)data[5] & (1 << 6 - 1)) != 0,
-                square =   ((byte)data[5] & (1 << 5 - 1)) != 0,
-                r1 =       ((byte)data[6] & (1 << 2 - 1)) != 0,
-                l1 =       ((byte)data[6] & (1 << 1 - 1)) != 0,
-                r2 =       ((byte)data[6] & (1 << 4 - 1)) != 0,
-                l2 =       ((byte)data[6] & (1 << 3 - 1)) != 0,
-                r3 =       ((byte)data[6] & (1 << 8 - 1)) != 0,
-                l3 =       ((byte)data[6] & (1 << 7 - 1)) != 0,
-                options =  ((byte)data[6] & (1 << 6 - 1)) != 0,
-                share =    ((byte)data[6] & (1 << 5 - 1)) != 0,
-                ps =       ((byte)data[7] & (1 << 1 - 1)) != 0;
-
-            bool[] dpad = { right, left, down, up };
-            byte dpad_state = 0;
-            for (int i = 0; i < 4; ++i)
-                if (dpad[i])
-                    dpad_state |= (byte)(1 << i);
-
-            switch (dpad_state)
             {
-                case 0: up = true;  down = false; left = false; right = false; break;
-                case 1: up = true;  down = false; left = false; right = true;  break;
-                case 2: up = false; down = false; left = false; right = true;  break;
-                case 3: up = false; down = true;  left = false; right = true;  break;
-                case 4: up = false; down = true;  left = false; right = false; break;
-                case 5: up = false; down = true;  left = true;  right = false; break;
-                case 6: up = false; down = false; left = true;  right = false; break;
-                case 7: up = true;  down = false; left = true;  right = false; break;
-                case 8: up = false; down = false; left = false; right = false; break;
+                Mapping.mapButtons(cState);
+                return ConvertTo360();
             }
-
-            bool[] r10 = { share, l3, r3, options, up, right, down, left };
-            bool[] r11 = { false, false, l1, r1, triangle, circle, cross, square };
-            byte[] rx = { (byte)(ps?255:0), data[1], data[2], data[3], data[4], data[8], data[9] };
-
-            RemapButtons(r10, r11, rx);
-
-            byte b10 = 0;
-            for (int i = 0; i < 8; ++i)
-                if (r10[i])
-                    b10 |= (byte)(1 << i);
-            Report[10] = b10;
-            byte b11 = 0;
-            for (int i = 0; i < 8; ++i)
-                if (r11[i])
-                    b11 |= (byte)(1 << i);
-            Report[11] = b11;
-
-            Report[12] = rx[0]; //Guide
-            Report[14] = rx[1]; //Left Stick X
-            Report[15] = rx[2]; //Left Stick Y
-            Report[16] = rx[3]; //Right Stick X
-            Report[17] = rx[4]; //Right Stick Y
-            Report[26] = rx[5]; //Left Trigger
-            Report[27] = rx[6]; //Right Trigger
-
-            return Report;
-        }
-        private void RemapButtons(bool[] r10, bool[] r11, byte[] rx)
-        {
-            // Original array values
-            bool[] or10 = new bool[r10.Length], or11 = new bool[r11.Length];
-            byte[] orx = new byte[rx.Length];
-            Array.Copy(r10, or10, r10.Length);
-            Array.Copy(r11, or11, r11.Length);
-            Array.Copy(rx, orx, rx.Length);
-
-            bool anyPressed = false;
-                foreach (KeyValuePair<string, ushort> customKey in Global.getCustomKeys())
-                    if (RemapBool(or10, or11, orx, customKey.Key.Replace("Repeat", string.Empty)))
-                    {
-                        anyPressed = true;
-                        if (lastPressed == null)
-                        {
-                            ResetMapping(r10, r11, rx, customKey.Key);
-                            Touchpad.performKeyPress(customKey.Value);
-                            if (!customKey.Key.Contains("Repeat"))
-                            lastPressed = customKey.Value;
-                        }
-                    }
-                    else if (lastPressed is ushort && (ushort)lastPressed == customKey.Value)
-                    {
-                        Touchpad.performKeyRelease(customKey.Value);
-                        // Reset last pressed to avoid keyup repeat, 
-                        // but not to null or the keydown will repeat
-                        lastPressed = 0;
-                    }
-
-                foreach (KeyValuePair<string, string> customButton in Global.getCustomButtons())
-                    switch (customButton.Value)
-                    {
-                        case "Back":         r10[0] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "Left Stick":   r10[1] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "Right Stick":  r10[2] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "Start":        r10[3] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "Up Button":    r10[4] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "Right Button": r10[5] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "Down Button":  r10[6] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "Left Button":  r10[7] = RemapBool(or10, or11, orx, customButton.Key); break;
-
-                        case "Left Bumper":  r11[2] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "Right Bumper": r11[3] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "Y Button":     r11[4] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "B Button":     r11[5] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "A Button":     r11[6] = RemapBool(or10, or11, orx, customButton.Key); break;
-                        case "X Button":     r11[7] = RemapBool(or10, or11, orx, customButton.Key); break;
-
-                        case "Guide":          rx[0] = RemapByte(or10, or11, orx, customButton.Key); break;
-                        case "Left X-Axis":    if (NibbleChanged(rx[1], orx[1])) rx[1] = RemapNibble(or10, or11, orx, customButton.Key);    break;
-                        case "Left Y-Axis":    if (NibbleChanged(rx[2], orx[2])) rx[2] = RemapNibble(or10, or11, orx, customButton.Key);    break;
-                        case "Right X-Axis":   if (NibbleChanged(rx[3], orx[3])) rx[3] = RemapNibble(or10, or11, orx, customButton.Key);    break;
-                        case "Right Y-Axis":   if (NibbleChanged(rx[4], orx[4])) rx[4] = RemapNibble(or10, or11, orx, customButton.Key);    break;
-                        case "Left X-Axis 2":  if (NibbleChanged(rx[1], orx[1])) rx[1] = RemapNibbleAlt(or10, or11, orx, customButton.Key); break;
-                        case "Left Y-Axis 2":  if (NibbleChanged(rx[2], orx[2])) rx[2] = RemapNibbleAlt(or10, or11, orx, customButton.Key); break;
-                        case "Right X-Axis 2": if (NibbleChanged(rx[3], orx[3])) rx[3] = RemapNibbleAlt(or10, or11, orx, customButton.Key); break;
-                        case "Right Y-Axis 2": if (NibbleChanged(rx[4], orx[4])) rx[4] = RemapNibbleAlt(or10, or11, orx, customButton.Key); break;
-                        case "Left Trigger":   rx[5] = RemapByte(or10, or11, orx, customButton.Key); break;
-                        case "Right Trigger":  rx[6] = RemapByte(or10, or11, orx, customButton.Key); break;
-
-                        case "Click": if (RemapBool(or10, or11, orx, customButton.Key))
-                            {
-                                anyPressed = true;
-                                if (lastPressed == null)
-                                {
-                                    ResetMapping(r10, r11, rx, customButton.Key);
-                                    Touchpad.performLeftClick();
-                                    lastPressed = customButton.Value;
-                                }
-                            }
-                            break;
-                        case "Right Click": if (RemapBool(or10, or11, orx, customButton.Key))
-                            {
-                                anyPressed = true;
-                                if (lastPressed == null)
-                                {
-                                    ResetMapping(r10, r11, rx, customButton.Key);
-                                    Touchpad.performRightClick();
-                                    lastPressed = customButton.Value;
-                                }
-                            }
-                            break;
-                        case "Middle Click": if (RemapBool(or10, or11, orx, customButton.Key))
-                            {
-                                anyPressed = true;
-                                if (lastPressed == null)
-                                {
-                                    ResetMapping(r10, r11, rx, customButton.Key);
-                                    Touchpad.performMiddleClick();
-                                    lastPressed = customButton.Value;
-                                }
-                            }
-                            break;
-                    }
-                if (!anyPressed && lastPressed != null)
-                    lastPressed = null;
-        }
-        private bool NibbleChanged(byte a, byte b)
-        {
-            if (Math.Abs(a - b) > 10)
-                return false;
-            else return true;
-        }
-        private bool RemapBool(bool[] r10, bool[] r11, byte[] rx, string key)
-        {
-            switch (key)
-            {
-                case "cbShare":    return r10[0];
-                case "cbL3":       return r10[1];
-                case "cbR3":       return r10[2];
-                case "cbOptions":  return r10[3];
-                case "cbUp":       return r10[4];
-                case "cbRight":    return r10[5];
-                case "cbDown":     return r10[6];
-                case "cbLeft":     return r10[7];
-
-                case "cbL1":       return r11[2];
-                case "cbR1":       return r11[3];
-                case "cbTriangle": return r11[4];
-                case "cbCircle":   return r11[5];
-                case "cbCross":    return r11[6];
-                case "cbSquare":   return r11[7];
-
-                case "cbPS":       return rx[0] > 100;
-                case "cbLX":       return rx[1] < 117;
-                case "cbLY":       return rx[2] < 113;
-                case "cbRX":       return rx[3] < 115;
-                case "cbRY":       return rx[4] < 117;
-                case "cbLX2":      return rx[1] > 137;
-                case "cbLY2":      return rx[2] > 133;
-                case "cbRX2":      return rx[3] > 135;
-                case "cbRY2":      return rx[4] > 137;
-                case "cbL2":       return rx[5] > 100;
-                case "cbR2":       return rx[6] > 100;
-            }
-            return false;
-        }
-        private byte RemapByte(bool[] r10, bool[] r11, byte[] rx, string key)
-        {
-            switch (key)
-            {
-                case "cbShare":    return (byte)(r10[0]?255:0);
-                case "cbL3":       return (byte)(r10[1]?255:0);
-                case "cbR3":       return (byte)(r10[2]?255:0);
-                case "cbOptions":  return (byte)(r10[3]?255:0);
-                case "cbUp":       return (byte)(r10[4]?255:0);
-                case "cbRight":    return (byte)(r10[5]?255:0);
-                case "cbDown":     return (byte)(r10[6]?255:0);
-                case "cbLeft":     return (byte)(r10[7]?255:0);
-
-                case "cbL1":       return (byte)(r11[2]?255:0);
-                case "cbR1":       return (byte)(r11[3]?255:0);
-                case "cbTriangle": return (byte)(r11[4]?255:0);
-                case "cbCircle":   return (byte)(r11[5]?255:0);
-                case "cbCross":    return (byte)(r11[6]?255:0);
-                case "cbSquare":   return (byte)(r11[7]?255:0);
-
-                case "cbPS":       return rx[0];
-                case "cbLX":       return rx[1];
-                case "cbLY":       return rx[2];
-                case "cbRX":       return rx[3];
-                case "cbRY":       return rx[4];
-                case "cbLX2":      return (byte)(rx[1] - 127 < 0?0:(rx[1]-127));
-                case "cbLY2":      return (byte)(rx[2] - 123 < 0?0:(rx[2]-123));
-                case "cbRX2":      return (byte)(rx[3] - 125 < 0?0:(rx[3]-125));
-                case "cbRY2":      return (byte)(rx[4] - 127 < 0?0:(rx[4]-127));
-                case "cbL2":       return rx[5];
-                case "cbR2":       return rx[6];
-            }
-            return 0;
-        }
-        private byte RemapNibble(bool[] r10, bool[] r11, byte[] rx, string key)
-        {
-            // Remap to half a byte (nibble)
-            switch (key)
-            {
-                case "cbShare":    return (byte)(r10[0] ? 255 : 127);
-                case "cbL3":       return (byte)(r10[1] ? 255 : 127);
-                case "cbR3":       return (byte)(r10[2] ? 255 : 127);
-                case "cbOptions":  return (byte)(r10[3] ? 255 : 127);
-                case "cbUp":       return (byte)(r10[4] ? 255 : 127);
-                case "cbRight":    return (byte)(r10[5] ? 255 : 127);
-                case "cbDown":     return (byte)(r10[6] ? 255 : 127);
-                case "cbLeft":     return (byte)(r10[7] ? 255 : 127);
-
-                case "cbL1":       return (byte)(r11[2] ? 255 : 127);
-                case "cbR1":       return (byte)(r11[3] ? 255 : 127);
-                case "cbTriangle": return (byte)(r11[4] ? 255 : 127);
-                case "cbCircle":   return (byte)(r11[5] ? 255 : 127);
-                case "cbCross":    return (byte)(r11[6] ? 255 : 127);
-                case "cbSquare":   return (byte)(r11[7] ? 255 : 127);
-
-                case "cbPS":       return (byte)(rx[0]==255?255:127);
-                case "cbLX":       return rx[1];
-                case "cbLY":       return rx[2];
-                case "cbRX":       return rx[3];
-                case "cbRY":       return rx[4];
-                case "cbLX2":      return (byte)(255 - rx[1]);
-                case "cbLY2":      return (byte)(255 - rx[2]);
-                case "cbRX2":      return (byte)(255 - rx[3]);
-                case "cbRY2":      return (byte)(255 - rx[4]);
-                case "cbL2":       return (byte)(rx[5]==255?255:127);
-                case "cbR2":       return (byte)(rx[6]==255?255:127);
-            }
-            return 0;
-        }
-        private byte RemapNibbleAlt(bool[] r10, bool[] r11, byte[] rx, string key)
-        {
-            // Remap to half a byte (nibble)
-            switch (key)
-            {
-                case "cbShare":    return (byte)(r10[0] ? 0 : 127);
-                case "cbL3":       return (byte)(r10[1] ? 0 : 127);
-                case "cbR3":       return (byte)(r10[2] ? 0 : 127);
-                case "cbOptions":  return (byte)(r10[3] ? 0 : 127);
-                case "cbUp":       return (byte)(r10[4] ? 0 : 127);
-                case "cbRight":    return (byte)(r10[5] ? 0 : 127);
-                case "cbDown":     return (byte)(r10[6] ? 0 : 127);
-                case "cbLeft":     return (byte)(r10[7] ? 0 : 127);
-
-                case "cbL1":       return (byte)(r11[2] ? 0 : 127);
-                case "cbR1":       return (byte)(r11[3] ? 0 : 127);
-                case "cbTriangle": return (byte)(r11[4] ? 0 : 127);
-                case "cbCircle":   return (byte)(r11[5] ? 0 : 127);
-                case "cbCross":    return (byte)(r11[6] ? 0 : 127);
-                case "cbSquare":   return (byte)(r11[7] ? 0 : 127);
-
-                case "cbPS":       return (byte)(rx[0]==255?0:127);
-                case "cbLX":       return (byte)(255 - rx[1]);
-                case "cbLY":       return (byte)(255 - rx[1]);
-                case "cbRX":       return (byte)(255 - rx[1]);
-                case "cbRY":       return (byte)(255 - rx[1]);
-                case "cbLX2":      return rx[1];
-                case "cbLY2":      return rx[2];
-                case "cbRX2":      return rx[3];
-                case "cbRY2":      return rx[4];
-                case "cbL2":       return (byte)(rx[5]==255?0:127);
-                case "cbR2":       return (byte)(rx[6]==255?0:127);
-            }
-            return 0;
-        }
-        private void ResetMapping(bool[] r10, bool[] r11, byte[] rx, string key)
-        {
-            switch (key)
-            {
-                case "cbShare":    r10[0] = false; break;
-                case "cbL3":       r10[1] = false; break;
-                case "cbR3":       r10[2] = false; break;
-                case "cbOptions":  r10[3] = false; break;
-                case "cbUp":       r10[4] = false; break;
-                case "cbRight":    r10[5] = false; break;
-                case "cbDown":     r10[6] = false; break;
-                case "cbLeft":     r10[7] = false; break;
-
-                case "cbL1":       r11[2] = false; break;
-                case "cbR1":       r11[3] = false; break;
-                case "cbTriangle": r11[4] = false; break;
-                case "cbCircle":   r11[5] = false; break;
-                case "cbCross":    r11[6] = false; break;
-                case "cbSquare":   r11[7] = false; break;
-
-                case "cbPS":  rx[0] = 0;   break;
-                case "cbLX":  rx[1] = 127; break;
-                case "cbLY":  rx[2] = 123; break;
-                case "cbRX":  rx[3] = 125; break;
-                case "cbRY":  rx[4] = 127; break;
-                case "cbLX2": rx[1] = 127; break;
-                case "cbLY2": rx[2] = 123; break;
-                case "cbRX2": rx[3] = 125; break;
-                case "cbRY2": rx[4] = 127; break;
-                case "cbL2":  rx[5] = 0;   break;
-                case "cbR2":  rx[6] = 0;   break;
-            }
+            else return ConvertTo360();
         }
 
-        private byte[] mapButtons(byte[] data)
+
+        private byte[] ConvertTo360()
         {
-            if (data == null)
-            {
-                return null;
-            }
 
             Report[1] = 0x02;
             Report[2] = 0x05;
             Report[3] = 0x12;
 
-            Report[14] = data[1]; //Left Stick X
+            Report[14] = cState.LX; //Left Stick X
 
 
-            Report[15] = data[2]; //Left Stick Y
+            Report[15] = cState.LY; //Left Stick Y
 
 
-            Report[16] = data[3]; //Right Stick X
+            Report[16] = cState.RX; //Right Stick X
 
 
-            Report[17] = data[4]; //Right Stick Y
+            Report[17] = cState.RY; //Right Stick Y
 
 
-            Report[26] = data[8]; //Left Trigger
+            Report[26] = cState.L2; //Left Trigger
 
 
-            Report[27] = data[9]; //Right Trigger
-
-            var bitY = ((byte)data[5] & (1 << 8 - 1)) != 0;
-            var bitB = ((byte)data[5] & (1 << 7 - 1)) != 0;
-            var bitA = ((byte)data[5] & (1 << 6 - 1)) != 0;
-            var bitX = ((byte)data[5] & (1 << 5 - 1)) != 0;
-            var dpadUpBit = ((byte)data[5] & (1 << 4 - 1)) != 0;
-            var dpadDownBit = ((byte)data[5] & (1 << 3 - 1)) != 0;
-            var dpadLeftBit = ((byte)data[5] & (1 << 2 - 1)) != 0;
-            var dpadRightBit = ((byte)data[5] & (1 << 1 - 1)) != 0;
+            Report[27] = cState.R2; //Right Trigger
 
 
-
-            bool[] dpad = { dpadRightBit, dpadLeftBit, dpadDownBit, dpadUpBit };
-            byte c = 0;
-            for (int i = 0; i < 4; ++i)
-            {
-                if (dpad[i])
-                {
-                    c |= (byte)(1 << i);
-                }
-            }
-
-            bool dpadUp = false;
-            bool dpadLeft = false;
-            bool dpadDown = false;
-            bool dpadRight = false;
-
-            int dpad_state = c;
-            switch (dpad_state)
-            {
-                case 0:
-                    dpadUp = true;
-                    dpadDown = false;
-                    dpadLeft = false;
-                    dpadRight = false;
-                    break;
-                case 1:
-                    dpadUp = true;
-                    dpadDown = false;
-                    dpadLeft = false;
-                    dpadRight = true;
-                    break;
-                case 2:
-                    dpadUp = false;
-                    dpadDown = false;
-                    dpadLeft = false;
-                    dpadRight = true;
-                    break;
-                case 3:
-                    dpadUp = false;
-                    dpadDown = true;
-                    dpadLeft = false;
-                    dpadRight = true;
-                    break;
-                case 4:
-                    dpadUp = false;
-                    dpadDown = true;
-                    dpadLeft = false;
-                    dpadRight = false;
-                    break;
-                case 5:
-                    dpadUp = false;
-                    dpadDown = true;
-                    dpadLeft = true;
-                    dpadRight = false;
-                    break;
-                case 6:
-                    dpadUp = false;
-                    dpadDown = false;
-                    dpadLeft = true;
-                    dpadRight = false;
-                    break;
-                case 7:
-                    dpadUp = true;
-                    dpadDown = false;
-                    dpadLeft = true;
-                    dpadRight = false;
-                    break;
-                case 8:
-                    dpadUp = false;
-                    dpadDown = false;
-                    dpadLeft = false;
-                    dpadRight = false;
-                    break;
-
-            }
-
-            var thumbRight = ((byte)data[6] & (1 << 8 - 1)) != 0;
-            var thumbLeft = ((byte)data[6] & (1 << 7 - 1)) != 0;
-            var start = ((byte)data[6] & (1 << 6 - 1)) != 0;
-            var options = ((byte)data[6] & (1 << 5 - 1)) != 0;
-            var abit5 = ((byte)data[6] & (1 << 4 - 1)) != 0;
-            var abit6 = ((byte)data[6] & (1 << 3 - 1)) != 0;
-            var rb = ((byte)data[6] & (1 << 2 - 1)) != 0;
-            var lb = ((byte)data[6] & (1 << 1 - 1)) != 0;
-
-            bool[] r11 = { false, false, lb, rb, bitY, bitB, bitA, bitX };
+            bool[] r11 = { false, false, cState.L1, cState.R1, cState.Triangle, cState.Circle, cState.Cross, cState.Square };
 
             byte b11 = 0;
             for (int i = 0; i < 8; ++i)
@@ -669,7 +231,7 @@ namespace ScpControl
             }
             Report[11] = b11;
 
-            bool[] r10 = { options, thumbLeft, thumbRight, start, dpadUp, dpadRight, dpadDown, dpadLeft };
+            bool[] r10 = { cState.Options, cState.L3, cState.R3, cState.Share, cState.DpadUp, cState.DpadRight, cState.DpadDown, cState.DpadLeft };
             byte b10 = 0;
             for (int i = 0; i < 8; ++i)
             {
@@ -682,10 +244,69 @@ namespace ScpControl
             Report[10] = b10;
 
             //Guide
-            var Guide = data[7] & (1 << 1 - 1);
-            Report[12] = (byte)(Guide != 0 ? 0xFF : 0x00);
+            Report[12] = (byte)(cState.PS ? 0xFF : 0x00);
 
             return Report;
+
+        }
+
+        private void readButtons(byte[] data)
+        {
+            if (data == null)
+            {
+                return;
+            }
+
+            cState.LX = data[1];
+            cState.LY = data[2];
+            cState.RX = data[3];
+            cState.RY = data[4];
+            cState.L2 = data[8];
+            cState.R2 = data[9];
+
+            cState.Triangle = ((byte)data[5] & (1 << 7)) != 0;
+            cState.Circle = ((byte)data[5] & (1 << 6)) != 0;
+            cState.Cross = ((byte)data[5] & (1 << 5)) != 0;
+            cState.Square = ((byte)data[5] & (1 << 4)) != 0;
+            cState.DpadUp = ((byte)data[5] & (1 << 3)) != 0;
+            cState.DpadDown = ((byte)data[5] & (1 << 2)) != 0;
+            cState.DpadLeft = ((byte)data[5] & (1 << 1)) != 0;
+            cState.DpadRight = ((byte)data[5] & (1 << 0)) != 0;
+
+            //Convert dpad into individual On/Off bits instead of a clock representation
+            bool[] dpad = { cState.DpadRight, cState.DpadLeft, cState.DpadDown, cState.DpadUp };
+            byte c = 0;
+            for (int i = 0; i < 4; ++i)
+            {
+                if (dpad[i])
+                {
+                    c |= (byte)(1 << i);
+                }
+            }
+
+            int dpad_state = c;
+            switch (dpad_state)
+            {
+                case 0: cState.DpadUp = true; cState.DpadDown = false; cState.DpadLeft = false; cState.DpadRight = false; break;
+                case 1: cState.DpadUp = true; cState.DpadDown = false; cState.DpadLeft = false; cState.DpadRight = true; break;
+                case 2: cState.DpadUp = false; cState.DpadDown = false; cState.DpadLeft = false; cState.DpadRight = true; break;
+                case 3: cState.DpadUp = false; cState.DpadDown = true; cState.DpadLeft = false; cState.DpadRight = true; break;
+                case 4: cState.DpadUp = false; cState.DpadDown = true; cState.DpadLeft = false; cState.DpadRight = false; break;
+                case 5: cState.DpadUp = false; cState.DpadDown = true; cState.DpadLeft = true; cState.DpadRight = false; break;
+                case 6: cState.DpadUp = false; cState.DpadDown = false; cState.DpadLeft = true; cState.DpadRight = false; break;
+                case 7: cState.DpadUp = true; cState.DpadDown = false; cState.DpadLeft = true; cState.DpadRight = false; break;
+                case 8: cState.DpadUp = false; cState.DpadDown = false; cState.DpadLeft = false; cState.DpadRight = false; break;
+            }
+
+            cState.R3 = ((byte)data[6] & (1 << 7)) != 0;
+            cState.L3 = ((byte)data[6] & (1 << 6)) != 0;
+            cState.Share = ((byte)data[6] & (1 << 5)) != 0;
+            cState.Options = ((byte)data[6] & (1 << 4)) != 0;
+            cState.R1 = ((byte)data[6] & (1 << 1)) != 0;
+            cState.L1 = ((byte)data[6] & (1 << 0)) != 0;
+
+            cState.PS = ((byte)data[7] & (1 << 0)) != 0;
+            cState.TouchButton = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
 
         }
 

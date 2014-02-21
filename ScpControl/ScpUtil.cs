@@ -9,6 +9,8 @@ namespace ScpControl
 {
     public enum Ds3PadId :   byte { None = 0xFF, One = 0x00, Two = 0x01, Three = 0x02, Four = 0x03, All = 0x04 };
 
+    public enum DS4Controls : byte { LXNeg, LXPos, LYNeg, LYPos, RXNeg, RXPos, RYNeg, RYPos, L1, L2, L3, R1, R2, R3, Square, Triangle, Circle, Cross, DpadUp, DpadRight, DpadDown, DpadLeft, PS, TouchButton, Share, Options };
+    public enum X360Controls : byte { LXNeg, LXPos, LYNeg, LYPos, RXNeg, RXPos, RYNeg, RYPos, LB, LT, LS, RB, RT, RS, X, Y, B, A, DpadUp, DpadRight, DpadDown, DpadLeft, Guide, Back, Start };
    
     public class DebugEventArgs   : EventArgs 
     {
@@ -235,11 +237,11 @@ namespace ScpControl
         {
             return m_Config.LoadCustomMapping(getCustomMap(device));
         }
-        public static ushort getCustomKey(string controlName)
+        public static ushort getCustomKey(DS4Controls controlName)
         {
             return m_Config.GetCustomKey(controlName);
         }
-        public static string getCustomButton(string controlName)
+        public static X360Controls getCustomButton(DS4Controls controlName)
         {
             return m_Config.GetCustomButton(controlName);
         }
@@ -247,13 +249,13 @@ namespace ScpControl
         {
             return m_Config.customMapButtons.Count > 0 || m_Config.customMapKeys.Count > 0;
         }
-        public static Dictionary<string, string> getCustomButtons()
+        public static Dictionary<DS4Controls, X360Controls> getCustomButtons()
         {
-            return new Dictionary<string,string>(m_Config.customMapButtons);
+            return new Dictionary<DS4Controls, X360Controls>(m_Config.customMapButtons);
         }
-        public static Dictionary<string, ushort> getCustomKeys()
+        public static Dictionary<DS4Controls, ushort> getCustomKeys()
         {
-            return new Dictionary<string, ushort>(m_Config.customMapKeys);
+            return new Dictionary<DS4Controls, ushort>(m_Config.customMapKeys);
         }
         #region watch sixaxis data
         static List<SixaxisObserver> observers = new List<SixaxisObserver>();
@@ -363,8 +365,8 @@ namespace ScpControl
 
         // Add new settings
         public String[] customMapPath = { String.Empty, String.Empty, String.Empty, String.Empty };
-        public Dictionary<String, UInt16> customMapKeys = new Dictionary<String, UInt16>();
-        public Dictionary<String, String> customMapButtons = new Dictionary<String, String>();
+        public Dictionary<DS4Controls, UInt16> customMapKeys = new Dictionary<DS4Controls, UInt16>();
+        public Dictionary<DS4Controls, X360Controls> customMapButtons = new Dictionary<DS4Controls, X360Controls>();
         public Int32 formWidth = 782;
         public Int32 formHeight = 550;
         public Boolean startMinimized = false;
@@ -379,13 +381,13 @@ namespace ScpControl
             new Byte[] {0,0,0},
             new Byte[] {0,0,0}
         };
-        public String GetCustomButton(String controlName)
+        public X360Controls GetCustomButton(DS4Controls controlName)
         {
             if (customMapButtons.ContainsKey(controlName))
                 return customMapButtons[controlName];
-            else return String.Empty;
+            else return 0;
         }
-        public UInt16 GetCustomKey(String controlName)
+        public UInt16 GetCustomKey(DS4Controls controlName)
         {
             if (customMapKeys.ContainsKey(controlName))
                 return customMapKeys[controlName];
@@ -406,8 +408,8 @@ namespace ScpControl
                         try
                         {
                             if (UInt16.TryParse(Item.InnerText, out wvk))
-                                customMapKeys.Add(Item.Name, wvk);
-                            else customMapButtons.Add(Item.Name, Item.InnerText);
+                                customMapKeys.Add(getDS4ControlsByName(Item.Name), wvk);
+                            else customMapButtons.Add(getDS4ControlsByName(Item.Name), getX360ControlsByName(Item.InnerText));
                         }
                         catch
                         {
@@ -444,7 +446,7 @@ namespace ScpControl
                                 {
                                     button.Tag = wvk;
                                     button.Text = ((System.Windows.Forms.Keys)wvk).ToString();
-                                    customMapKeys.Add(button.Name, wvk);
+                                    customMapKeys.Add(getDS4ControlsByName(button.Name), wvk);
 
                                     if (Item.Name.Contains("Repeat"))
                                         button.ForeColor = System.Drawing.Color.Red;
@@ -453,7 +455,7 @@ namespace ScpControl
                                 {
                                     button.Tag = Item.InnerText;
                                     button.Text = Item.InnerText;
-                                    customMapButtons.Add(button.Name, Item.InnerText);
+                                    customMapButtons.Add(getDS4ControlsByName(button.Name), getX360ControlsByName( Item.InnerText));
                                 }
                         }
                         catch
@@ -513,6 +515,76 @@ namespace ScpControl
             return Saved;
         }
 
+        private DS4Controls getDS4ControlsByName(string key)
+        {
+            switch (key)
+            {
+                case "cbShare": return DS4Controls.Share;
+                case "cbL3": return DS4Controls.L3;
+                case "cbR3": return DS4Controls.R3;
+                case "cbOptions": return DS4Controls.Options;
+                case "cbUp": return DS4Controls.DpadUp;
+                case "cbRight": return DS4Controls.DpadRight;
+                case "cbDown": return DS4Controls.DpadDown;
+                case "cbLeft": return DS4Controls.DpadLeft;
+
+                case "cbL1": return DS4Controls.L1;
+                case "cbR1": return DS4Controls.R1;
+                case "cbTriangle": return DS4Controls.Triangle;
+                case "cbCircle": return DS4Controls.Circle;
+                case "cbCross": return DS4Controls.Cross;
+                case "cbSquare": return DS4Controls.Square;
+
+                case "cbPS": return DS4Controls.PS;
+                case "cbLX": return DS4Controls.LXNeg;
+                case "cbLY": return DS4Controls.LYNeg;
+                case "cbRX": return DS4Controls.RXNeg;
+                case "cbRY": return DS4Controls.RYNeg;
+                case "cbLX2": return DS4Controls.LXPos;
+                case "cbLY2": return DS4Controls.LYPos;
+                case "cbRX2": return DS4Controls.RXPos;
+                case "cbRY2": return DS4Controls.RYPos;
+                case "cbL2": return DS4Controls.L2;
+                case "cbR2": return DS4Controls.R2;
+            }
+            return 0;
+        }
+        private X360Controls getX360ControlsByName(string key)
+        {
+            switch (key)
+            {
+                case "Back": return X360Controls.Back;
+                case "Left Stick": return X360Controls.LS;
+                case "Right Stick": return X360Controls.RS;
+                case "Start": return X360Controls.Start;
+                case "Up Button": return X360Controls.DpadUp;
+                case "Right Button": return X360Controls.DpadRight;
+                case "Down Button": return X360Controls.DpadDown;
+                case "Left Button": return X360Controls.DpadLeft;
+
+                case "Left Bumper": return X360Controls.LB;
+                case "Right Bumper": return X360Controls.RB;
+                case "Y Button": return X360Controls.Y;
+                case "B Button": return X360Controls.B;
+                case "A Button": return X360Controls.A;
+                case "X Button": return X360Controls.X;
+
+                case "Guide": return X360Controls.Guide;
+                case "Left X-Axis-": return X360Controls.LXNeg;
+                case "Left Y-Axis-": return X360Controls.LYNeg;
+                case "Right X-Axis-": return X360Controls.RXNeg;
+                case "Right Y-Axis-": return X360Controls.RYNeg;
+
+                case "Left X-Axis+": return X360Controls.LXPos;
+                case "Left Y-Axis+": return X360Controls.LYPos;
+                case "Right X-Axis+": return X360Controls.RXPos;
+                case "Right Y-Axis+": return X360Controls.RYPos;
+                case "Left Trigger": return X360Controls.LT; ;
+                case "Right Trigger": return X360Controls.RT; ;
+                    
+            }
+            return 0;
+        }
         public Boolean Load() 
         {
             Boolean Loaded = true;

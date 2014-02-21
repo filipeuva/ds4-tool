@@ -437,7 +437,7 @@
             this.cbRX.Name = "cbRX";
             this.cbRX.Size = new System.Drawing.Size(90, 21);
             this.cbRX.TabIndex = 15;
-            this.cbRX.Text = "Right X-Axis";
+            this.cbRX.Text = "Right X-Axis-";
             this.cbRX.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
             this.cbRX.Enter += new System.EventHandler(this.EnterCommand);
             this.cbRX.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
@@ -463,7 +463,7 @@
             this.cbLX.Name = "cbLX";
             this.cbLX.Size = new System.Drawing.Size(90, 21);
             this.cbLX.TabIndex = 5;
-            this.cbLX.Text = "Left X-Axis";
+            this.cbLX.Text = "Left X-Axis-";
             this.cbLX.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
             this.cbLX.Enter += new System.EventHandler(this.EnterCommand);
             this.cbLX.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
@@ -515,7 +515,7 @@
             this.cbLY.Name = "cbLY";
             this.cbLY.Size = new System.Drawing.Size(90, 21);
             this.cbLY.TabIndex = 6;
-            this.cbLY.Text = "Left Y-Axis";
+            this.cbLY.Text = "Left Y-Axis-";
             this.cbLY.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
             this.cbLY.Enter += new System.EventHandler(this.EnterCommand);
             this.cbLY.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
@@ -541,7 +541,7 @@
             this.cbRY.Name = "cbRY";
             this.cbRY.Size = new System.Drawing.Size(90, 21);
             this.cbRY.TabIndex = 16;
-            this.cbRY.Text = "Right Y-Axis";
+            this.cbRY.Text = "Right Y-Axis-";
             this.cbRY.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
             this.cbRY.Enter += new System.EventHandler(this.EnterCommand);
             this.cbRY.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
@@ -717,7 +717,7 @@
             this.cbLY2.Name = "cbLY2";
             this.cbLY2.Size = new System.Drawing.Size(90, 21);
             this.cbLY2.TabIndex = 47;
-            this.cbLY2.Text = "Left Y-Axis 2";
+            this.cbLY2.Text = "Left Y-Axis+";
             this.cbLY2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
             this.cbLY2.Enter += new System.EventHandler(this.EnterCommand);
             this.cbLY2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
@@ -733,7 +733,7 @@
             this.cbLX2.Name = "cbLX2";
             this.cbLX2.Size = new System.Drawing.Size(90, 21);
             this.cbLX2.TabIndex = 46;
-            this.cbLX2.Text = "Left X-Axis 2";
+            this.cbLX2.Text = "Left X-Axis+";
             this.cbLX2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
             this.cbLX2.Enter += new System.EventHandler(this.EnterCommand);
             this.cbLX2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
@@ -749,7 +749,7 @@
             this.cbRY2.Name = "cbRY2";
             this.cbRY2.Size = new System.Drawing.Size(90, 21);
             this.cbRY2.TabIndex = 49;
-            this.cbRY2.Text = "Right Y-Axis 2";
+            this.cbRY2.Text = "Right Y-Axis+";
             this.cbRY2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
             this.cbRY2.Enter += new System.EventHandler(this.EnterCommand);
             this.cbRY2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
@@ -765,7 +765,7 @@
             this.cbRX2.Name = "cbRX2";
             this.cbRX2.Size = new System.Drawing.Size(90, 21);
             this.cbRX2.TabIndex = 48;
-            this.cbRX2.Text = "Right X-Axis 2";
+            this.cbRX2.Text = "Right X-Axis+";
             this.cbRX2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
             this.cbRX2.Enter += new System.EventHandler(this.EnterCommand);
             this.cbRX2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
