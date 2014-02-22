@@ -64,7 +64,7 @@ namespace ScpControl
                                             && currentX > 1500 && currentY > 600))
                                     performRightClick();
                                 //perform a mouse down event when touchpad pressed
-                                else LeftMouseDown();
+                                else MouseEvent(MOUSEEVENTF_LEFTDOWN);
                             }
                         }
                     //perform a mouse up event when touchpad released
@@ -72,7 +72,7 @@ namespace ScpControl
                     {
                         mouseDeltaX = 0;
                         mouseDeltaY = 0;
-                        LeftMouseUp();
+                        MouseEvent(MOUSEEVENTF_LEFTUP);
                     }
 
                     //either zoom or scroll, scroll has X/2/Y/2 within 400 points 
@@ -169,23 +169,11 @@ namespace ScpControl
             uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
         }
 
-        static void LeftMouseDown()
+        public static void MouseEvent(uint mouseButton)
         {
             sendInputs[0].Type = INPUT_MOUSE;
             sendInputs[0].Data.Mouse.ExtraInfo = IntPtr.Zero;
-            sendInputs[0].Data.Mouse.Flags = MOUSEEVENTF_LEFTDOWN ;
-            sendInputs[0].Data.Mouse.MouseData = 0;
-            sendInputs[0].Data.Mouse.Time = 0;
-            sendInputs[0].Data.Mouse.X = 0;
-            sendInputs[0].Data.Mouse.Y = 0;
-            uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
-        }
-
-        static void LeftMouseUp()
-        {
-            sendInputs[0].Type = INPUT_MOUSE;
-            sendInputs[0].Data.Mouse.ExtraInfo = IntPtr.Zero;
-            sendInputs[0].Data.Mouse.Flags = MOUSEEVENTF_LEFTUP;
+            sendInputs[0].Data.Mouse.Flags = mouseButton;
             sendInputs[0].Data.Mouse.MouseData = 0;
             sendInputs[0].Data.Mouse.Time = 0;
             sendInputs[0].Data.Mouse.X = 0;

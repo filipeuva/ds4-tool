@@ -30,6 +30,11 @@ namespace ScpControl
                 {
                     Touchpad.performKeyRelease(customKey.Value);
                 }
+                else if (PrevOn && CurOn)
+                {
+                   // resetToDefaultValue(customKey.Key, cState);
+                    //Touchpad.performKeyPress(customKey.Value);
+                }
             }
 
             foreach (KeyValuePair<DS4Controls, X360Controls> customButton in Global.getCustomButtons())
@@ -147,6 +152,30 @@ namespace ScpControl
                         break;
                     case X360Controls.RT:
                         MappedState.R2 = getByteMapping(customButton.Key, cState);
+                        break;
+                    case X360Controls.LeftMouse:
+                        bool PrevOn = getBoolMapping(customButton.Key, prevState);
+                        bool CurOn = getBoolMapping(customButton.Key, cState);
+                        if (!PrevOn && CurOn)
+                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_LEFTDOWN);
+                        else if (PrevOn && !CurOn)
+                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_LEFTUP);
+                        break;
+                    case X360Controls.RightMouse:
+                         PrevOn = getBoolMapping(customButton.Key, prevState);
+                         CurOn = getBoolMapping(customButton.Key, cState);
+                        if (!PrevOn && CurOn)
+                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_RIGHTDOWN);
+                        else if (PrevOn && !CurOn)
+                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_RIGHTUP);
+                        break;
+                    case X360Controls.MiddleMouse:
+                         PrevOn = getBoolMapping(customButton.Key, prevState);
+                         CurOn = getBoolMapping(customButton.Key, cState);
+                        if (!PrevOn && CurOn)
+                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_MIDDLEDOWN);
+                        else if (PrevOn && !CurOn)
+                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_MIDDLEUP);
                         break;
                 }
             }
