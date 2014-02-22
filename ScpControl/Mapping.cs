@@ -10,10 +10,15 @@ namespace ScpControl
         public static DS4State mapButtons(DS4State cState, DS4State prevState)
         {
             DS4State MappedState = cState;
+            bool LX = false, LY = false, RX = false, RY = false;
+            MappedState.LX = 127;
+            MappedState.LY = 127;
+            MappedState.RX = 127;
+            MappedState.RY = 127;
 
             foreach (KeyValuePair<DS4Controls, ushort> customKey in Global.getCustomKeys())
             {
-                
+
                 bool PrevOn = getBoolMapping(customKey.Key, prevState);
                 bool CurOn = getBoolMapping(customKey.Key, cState);
                 if (CurOn && !PrevOn)
@@ -30,10 +35,10 @@ namespace ScpControl
             foreach (KeyValuePair<DS4Controls, X360Controls> customButton in Global.getCustomButtons())
             {
 
-                bool LXChanged = compare(MappedState.LX, cState.LX);
-                bool LYChanged = compare(MappedState.LY, cState.LY);
-                bool RXChanged = compare(MappedState.RX, cState.RX);
-                bool RYChanged = compare(MappedState.RY, cState.RY);
+                bool LXChanged = MappedState.LX == 127;
+                bool LYChanged = MappedState.LY == 127;
+                bool RXChanged = MappedState.RX == 127;
+                bool RYChanged = MappedState.RY == 127;
                 switch (customButton.Value)
                 {
                     case X360Controls.A:
@@ -82,36 +87,60 @@ namespace ScpControl
                         MappedState.Options = getBoolMapping(customButton.Key, cState);
                         break;
                     case X360Controls.LXNeg:
-                        if (MappedState.LX == cState.LX)
-                        MappedState.LX = getXYAxisMapping(customButton.Key, cState);
+                        if (LXChanged)
+                        {
+                            MappedState.LX = getXYAxisMapping(customButton.Key, cState);
+                            LX = true;
+                        }
                         break;
                     case X360Controls.LYNeg:
-                        if (MappedState.LY == cState.LY)
-                        MappedState.LY = getXYAxisMapping(customButton.Key, cState);
-                        break;                
+                        if (LYChanged)
+                        {
+                            MappedState.LY = getXYAxisMapping(customButton.Key, cState);
+                            LY = true;
+                        }
+                        break;
                     case X360Controls.RXNeg:
                         if (RXChanged)
-                        MappedState.RX = getXYAxisMapping(customButton.Key, cState);
+                        {
+                            MappedState.RX = getXYAxisMapping(customButton.Key, cState);
+                            RX = true;
+                        }
                         break;
                     case X360Controls.RYNeg:
                         if (RYChanged)
-                        MappedState.RY = getXYAxisMapping(customButton.Key, cState);
+                        {
+                            MappedState.RY = getXYAxisMapping(customButton.Key, cState);
+                            RY = true;
+                        }
                         break;
                     case X360Controls.LXPos:
                         if (LXChanged)
-                        MappedState.LX = getXYAxisMapping(customButton.Key, cState,true);
+                        {
+                            MappedState.LX = getXYAxisMapping(customButton.Key, cState, true);
+                            LX = true;
+                        }
                         break;
                     case X360Controls.LYPos:
                         if (LYChanged)
-                        MappedState.LY = getXYAxisMapping(customButton.Key, cState, true);
+                        {
+                            MappedState.LY = getXYAxisMapping(customButton.Key, cState, true);
+                            LY = true;
+                        }
                         break;
                     case X360Controls.RXPos:
-                        if(RXChanged)
-                        MappedState.RX = getXYAxisMapping(customButton.Key, cState, true);
+                        if (RXChanged)
+                        {
+                            MappedState.RX = getXYAxisMapping(customButton.Key, cState, true);
+                            RX = true;
+                        }
                         break;
                     case X360Controls.RYPos:
                         if (RYChanged)
-                        MappedState.RY = getXYAxisMapping(customButton.Key, cState, true);
+                        {
+                            MappedState.RY = getXYAxisMapping(customButton.Key, cState, true);
+                            RY = true;
+                        }
                         break;
                     case X360Controls.LT:
                         MappedState.L2 = getByteMapping(customButton.Key, cState);
@@ -121,12 +150,21 @@ namespace ScpControl
                         break;
                 }
             }
+
+            if (!LX)
+                MappedState.LX = cState.LX;
+            if (!LY)
+                MappedState.LY = cState.LY;
+            if (!RX)
+                MappedState.RX = cState.RX;
+            if (!RY)
+                MappedState.RY = cState.RY;
             return MappedState;
         }
 
         public static bool compare(byte b1, byte b2)
         {
-            if(Math.Abs(b1-b2)>10)
+            if (Math.Abs(b1 - b2) > 10)
             {
                 return false;
             }
@@ -230,7 +268,7 @@ namespace ScpControl
                 case DS4Controls.R2: return (byte)(cState.R2 == 255 ? trueVal : falseVal);
             }
 
-            if (alt)
+            if (!alt)
             {
                 switch (control)
                 {
