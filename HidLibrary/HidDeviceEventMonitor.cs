@@ -30,7 +30,6 @@ namespace HidLibrary
                 Removed();
 
             Thread.Sleep(500);
-
             if (_device.MonitorDeviceEvents) Init();
         }
 

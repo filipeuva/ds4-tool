@@ -187,7 +187,9 @@ namespace ScpControl
 
             if (Global.getHasCustomKeysorButtons(deviceNum))
             {
-                Mapping.mapButtons(cState);
+                DS4State state = Mapping.mapButtons(cState,PrevState);
+                PrevState = cState;
+                cState = state;
                 return ConvertTo360();
             }
             else return ConvertTo360();

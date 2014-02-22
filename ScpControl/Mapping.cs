@@ -7,12 +7,33 @@ namespace ScpControl
 {
     class Mapping
     {
-        public static DS4State mapButtons(DS4State cState)
+        public static DS4State mapButtons(DS4State cState, DS4State prevState)
         {
             DS4State MappedState = cState;
+
+            foreach (KeyValuePair<DS4Controls, ushort> customKey in Global.getCustomKeys())
+            {
+                
+                bool PrevOn = getBoolMapping(customKey.Key, prevState);
+                bool CurOn = getBoolMapping(customKey.Key, cState);
+                if (CurOn && !PrevOn)
+                {
+                    resetToDefaultValue(customKey.Key, cState);
+                    Touchpad.performKeyPress(customKey.Value);
+                }
+                else if (PrevOn && !CurOn)
+                {
+                    Touchpad.performKeyRelease(customKey.Value);
+                }
+            }
+
             foreach (KeyValuePair<DS4Controls, X360Controls> customButton in Global.getCustomButtons())
             {
 
+                bool LXChanged = compare(MappedState.LX, cState.LX);
+                bool LYChanged = compare(MappedState.LY, cState.LY);
+                bool RXChanged = compare(MappedState.RX, cState.RX);
+                bool RYChanged = compare(MappedState.RY, cState.RY);
                 switch (customButton.Value)
                 {
                     case X360Controls.A:
@@ -61,40 +82,56 @@ namespace ScpControl
                         MappedState.Options = getBoolMapping(customButton.Key, cState);
                         break;
                     case X360Controls.LXNeg:
+                        if (MappedState.LX == cState.LX)
                         MappedState.LX = getXYAxisMapping(customButton.Key, cState);
                         break;
                     case X360Controls.LYNeg:
+                        if (MappedState.LY == cState.LY)
                         MappedState.LY = getXYAxisMapping(customButton.Key, cState);
-                        break;
-                    case X360Controls.LXPos:
-                        MappedState.LX = getXYAxisMapping(customButton.Key, cState);
-                        break;
+                        break;                
                     case X360Controls.RXNeg:
+                        if (RXChanged)
                         MappedState.RX = getXYAxisMapping(customButton.Key, cState);
                         break;
                     case X360Controls.RYNeg:
+                        if (RYChanged)
                         MappedState.RY = getXYAxisMapping(customButton.Key, cState);
                         break;
+                    case X360Controls.LXPos:
+                        if (LXChanged)
+                        MappedState.LX = getXYAxisMapping(customButton.Key, cState,true);
+                        break;
                     case X360Controls.LYPos:
+                        if (LYChanged)
                         MappedState.LY = getXYAxisMapping(customButton.Key, cState, true);
                         break;
                     case X360Controls.RXPos:
+                        if(RXChanged)
                         MappedState.RX = getXYAxisMapping(customButton.Key, cState, true);
                         break;
                     case X360Controls.RYPos:
+                        if (RYChanged)
                         MappedState.RY = getXYAxisMapping(customButton.Key, cState, true);
                         break;
                     case X360Controls.LT:
-                        MappedState.L2 = getXYAxisMapping(customButton.Key, cState,true);
+                        MappedState.L2 = getByteMapping(customButton.Key, cState);
                         break;
                     case X360Controls.RT:
-                        MappedState.R2 = getXYAxisMapping(customButton.Key, cState,true);
+                        MappedState.R2 = getByteMapping(customButton.Key, cState);
                         break;
                 }
             }
             return MappedState;
         }
 
+        public static bool compare(byte b1, byte b2)
+        {
+            if(Math.Abs(b1-b2)>10)
+            {
+                return false;
+            }
+            return true;
+        }
         public static byte getByteMapping(DS4Controls control, DS4State cState)
         {
             switch (control)
@@ -149,14 +186,14 @@ namespace ScpControl
                 case DS4Controls.Square: return cState.Square;
                 case DS4Controls.Triangle: return cState.Triangle;
                 case DS4Controls.Circle: return cState.Circle;
-                case DS4Controls.LXNeg: return cState.LX < 117;
-                case DS4Controls.LYNeg: return cState.LY < 113;
-                case DS4Controls.RXNeg: return cState.RX < 115;
-                case DS4Controls.RYNeg: return cState.RY < 117;
-                case DS4Controls.LXPos: return cState.LX > 137;
-                case DS4Controls.LYPos: return cState.LY > 133;
-                case DS4Controls.RXPos: return cState.RX > 135;
-                case DS4Controls.RYPos: return cState.RY > 137;
+                case DS4Controls.LXNeg: return cState.LX < 55;
+                case DS4Controls.LYNeg: return cState.LY < 55;
+                case DS4Controls.RXNeg: return cState.RX < 55;
+                case DS4Controls.RYNeg: return cState.RY < 55;
+                case DS4Controls.LXPos: return cState.LX > 200;
+                case DS4Controls.LYPos: return cState.LY > 200;
+                case DS4Controls.RXPos: return cState.RX > 200;
+                case DS4Controls.RYPos: return cState.RY > 200;
                 case DS4Controls.L2: return cState.L2 > 100;
                 case DS4Controls.R2: return cState.R2 > 100;
             }
@@ -222,6 +259,44 @@ namespace ScpControl
                 }
             }
             return 0;
+        }
+
+        //Returns false for any bool, 
+        //if control is one of the xy axis returns 127
+        //if its a trigger returns 0
+        public static DS4State resetToDefaultValue(DS4Controls control, DS4State cState)
+        {
+            switch (control)
+            {
+                case DS4Controls.Share: cState.Share = false; break;
+                case DS4Controls.Options: cState.Options = false; break;
+                case DS4Controls.L1: cState.L1 = false; break;
+                case DS4Controls.R1: cState.R1 = false; break;
+                case DS4Controls.L3: cState.L3 = false; break;
+                case DS4Controls.R3: cState.R3 = false; break;
+                case DS4Controls.DpadUp: cState.DpadUp = false; break;
+                case DS4Controls.DpadDown: cState.DpadDown = false; break;
+                case DS4Controls.DpadLeft: cState.DpadLeft = false; break;
+                case DS4Controls.DpadRight: cState.DpadRight = false; break;
+                case DS4Controls.TouchButton: cState.TouchButton = false; break;
+                case DS4Controls.PS: cState.PS = false; break;
+                case DS4Controls.Cross: cState.Cross = false; break;
+                case DS4Controls.Square: cState.Square = false; break;
+                case DS4Controls.Triangle: cState.Triangle = false; break;
+                case DS4Controls.Circle: cState.Circle = false; break;
+                case DS4Controls.LXNeg: cState.LX = 127; break;
+                case DS4Controls.LYNeg: cState.LY = 127; break;
+                case DS4Controls.RXNeg: cState.RX = 127; break;
+                case DS4Controls.RYNeg: cState.RY = 127; break;
+                case DS4Controls.LXPos: cState.LX = 127; break;
+                case DS4Controls.LYPos: cState.LY = 127; break;
+                case DS4Controls.RXPos: cState.RX = 127; break;
+                case DS4Controls.RYPos: cState.RY = 127; break;
+                case DS4Controls.L2: cState.L2 = 0; break;
+                case DS4Controls.R2: cState.R2 = 0; break;
+            }
+
+            return cState;
         }
     }
 }
