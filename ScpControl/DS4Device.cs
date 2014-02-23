@@ -233,7 +233,7 @@ namespace ScpControl
             }
             Report[11] = b11;
 
-            bool[] r10 = { cState.Options, cState.L3, cState.R3, cState.Share, cState.DpadUp, cState.DpadRight, cState.DpadDown, cState.DpadLeft };
+            bool[] r10 = { cState.Share, cState.L3, cState.R3, cState.Options, cState.DpadUp, cState.DpadRight, cState.DpadDown, cState.DpadLeft };
             byte b10 = 0;
             for (int i = 0; i < 8; ++i)
             {
@@ -302,8 +302,8 @@ namespace ScpControl
 
             cState.R3 = ((byte)data[6] & (1 << 7)) != 0;
             cState.L3 = ((byte)data[6] & (1 << 6)) != 0;
-            cState.Share = ((byte)data[6] & (1 << 5)) != 0;
-            cState.Options = ((byte)data[6] & (1 << 4)) != 0;
+            cState.Options = ((byte)data[6] & (1 << 5)) != 0;
+            cState.Share = ((byte)data[6] & (1 << 4)) != 0;
             cState.R1 = ((byte)data[6] & (1 << 1)) != 0;
             cState.L1 = ((byte)data[6] & (1 << 0)) != 0;
 
