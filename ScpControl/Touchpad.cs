@@ -13,6 +13,7 @@ namespace ScpControl
         internal static bool lastTouchPadIsDown;
         internal static bool lastIsActive;
         internal static byte lastTouchID;
+        internal static int originalX,originalY;
         internal static INPUT[] sendInputs = new INPUT[1]; // will allow for keyboard + mouse/tablet input within one SendInput call
         internal static int ticks = -1; //incremented every input report, in the future use something more reliable
         public static void handleTouchpad(byte[] data, bool touchPadIsDown)
@@ -45,28 +46,28 @@ namespace ScpControl
                     mouseDeltaY2 = (int)(sensitivity * (currentY2 - lastTouchPadY2));
 
                     //prevent jitter of  the cursor
-                    if (Math.Abs(mouseDeltaX) < 5 && Math.Abs(mouseDeltaY) < 5 && ticks<100)
+                    if (Math.Abs(mouseDeltaX) < 5 && Math.Abs(mouseDeltaY) < 5 && ticks < 100)
                     {
                         mouseDeltaX = 0;
                         mouseDeltaY = 0;
                     }
 
                     if (touchPadIsDown)
+                    {
+                        if (!lastTouchPadIsDown)
                         {
-                            if (!lastTouchPadIsDown)
-                            {
-                                mouseDeltaX = 0;
-                                mouseDeltaY = 0;
-                                //own right click (more than 1 touch detected) - if enabled.
-                                //if its right corner do a right click (resolution of touchpad values is ~ 1920x1080)
-                                if ((Global.getTwoFingerRC(0) && _isActive2)
-                                            || (!Global.getTwoFingerRC(0)
-                                            && currentX > 1500 && currentY > 600))
-                                    performRightClick();
-                                //perform a mouse down event when touchpad pressed
-                                else MouseEvent(MOUSEEVENTF_LEFTDOWN);
-                            }
+                            mouseDeltaX = 0;
+                            mouseDeltaY = 0;
+                            //own right click (more than 1 touch detected) - if enabled.
+                            //if its right corner do a right click (resolution of touchpad values is ~ 1920x1080)
+                            if ((Global.getTwoFingerRC(0) && _isActive2)
+                                        || (!Global.getTwoFingerRC(0)
+                                        && currentX > 1500 && currentY > 600))
+                                performRightClick();
+                            //perform a mouse down event when touchpad pressed
+                            else MouseEvent(MOUSEEVENTF_LEFTDOWN);
                         }
+                    }
                     //perform a mouse up event when touchpad released
                     else if (lastTouchPadIsDown)
                     {
@@ -96,6 +97,12 @@ namespace ScpControl
                     }
                 }
 
+                else
+                {
+                    originalX = currentX;
+                    originalY = currentY;
+                }
+
                 lastTouchPadX = currentX;
                 lastTouchPadY = currentY;
                 //secondary touch data
@@ -106,6 +113,8 @@ namespace ScpControl
             }
             else // finger(s) lifted from touchpad while virtual mouse button(s) clicked
             {
+                int currentX = data[1 + TOUCHPAD_DATA_OFFSET] + ((data[2 + TOUCHPAD_DATA_OFFSET] & 0xF) * 255);
+                int currentY = ((data[2 + TOUCHPAD_DATA_OFFSET] & 0xF0) >> 4) + (data[3 + TOUCHPAD_DATA_OFFSET] * 16);
                 // Click trackpad's top edge (no touch movement) - configurable
                 if (touchPadIsDown)
                     if (!lastTouchPadIsDown)
@@ -123,7 +132,7 @@ namespace ScpControl
                 {
                     //should be configurable (was 100)
                     //was a tap perform mouse left click
-                    if (ticks < Global.getTapSensitivity(0))
+                    if (ticks < Global.getTapSensitivity(0) && Math.Abs(originalX - currentX) < 10 && Math.Abs(originalY - currentY) < 10)
                     {
                         performLeftClick();
                     }

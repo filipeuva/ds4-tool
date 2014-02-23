@@ -30,6 +30,8 @@ namespace ScpServer
                     comboBoxes.Add((ComboBox)control);
                     availableButtons.Add(control.Text);
                 }
+            Comparison<ComboBox> comp = new Comparison<ComboBox>(compare);
+            comboBoxes.Sort(comp);
             availableButtons.Sort();
             foreach (ComboBox comboBox in comboBoxes)
                 comboBox.Items.AddRange(availableButtons.ToArray());
@@ -38,6 +40,10 @@ namespace ScpServer
             Global.loadCustomMapping(Global.getCustomMap(device), comboBoxes.ToArray());
         }
 
+        private int compare(ComboBox c1, ComboBox c2)
+        {
+            return c1.Text.CompareTo(c2.Text);
+        }
         private void EnterCommand(object sender, EventArgs e)
         {
             //Change image to represent button
@@ -178,6 +184,8 @@ namespace ScpServer
                         comboBox.Text = "(Unbound)";
                         comboBox.Tag = comboBox.Text;
                     }
+                Console.WriteLine(((ComboBox)sender).Name);
+                Console.WriteLine(comboBoxes[((ComboBox)sender).SelectedIndex].Name);
                 if (((ComboBox)sender).Name != comboBoxes[((ComboBox)sender).SelectedIndex].Name)
                     ((ComboBox)sender).Tag = ((ComboBox)sender).Text;
 
