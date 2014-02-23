@@ -401,8 +401,8 @@ namespace ScpControl
                     outputData[0] = 0x11;
                     outputData[1] = 128;
                     outputData[3] = 0xff;
-                    outputData[6] = BigRumble; //motor
-                    outputData[7] = SmallRumble; //motor
+                    outputData[6] = SmallRumble; //motor
+                    outputData[7] = BigRumble; //motor
                     outputData[8] = LedColor.red; //red
                     outputData[9] = LedColor.green; //green
                     outputData[10] = LedColor.blue; //blue
@@ -416,8 +416,8 @@ namespace ScpControl
                 {
                     outputData[0] = 0x5;
                     outputData[1] = 0xFF;
-                    outputData[4] = BigRumble; //motor
-                    outputData[5] = SmallRumble; //motor
+                    outputData[4] = SmallRumble; //motor
+                    outputData[5] = BigRumble; //motor
                     outputData[6] = LedColor.red; //red
                     outputData[7] = LedColor.green; //green
                     outputData[8] = LedColor.blue; //blue
