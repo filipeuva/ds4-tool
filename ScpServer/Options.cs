@@ -30,7 +30,7 @@ namespace ScpServer
 
             // New settings
             ledColor lowColor = Global.loadLowColor(device);
-            twoFingerRCCheckBox.Checked = Global.getTwoFingerRC(device);
+            lowerRCOffCheckBox.Checked = Global.getTwoFingerRC(device);
             tapSensitivityBar.Value = Global.getTapSensitivity(device);
             scrollSensitivityBar.Value = Global.getScrollSensitivity(device);
             advColorDialog.OnUpdateColor += advColorDialog_OnUpdateColor;
@@ -135,7 +135,7 @@ namespace ScpServer
             scpDevice.setRumble(device, (byte)rumbleBoostBar.Value, (byte)leftMotorBar.Value, (byte)rightMotorBar.Value);
             Global.setTouchSensitivity(device, (byte)touchSensitivityBar.Value);
             // New settings
-            Global.setTwoFingerRC(device, twoFingerRCCheckBox.Checked);
+            Global.setTwoFingerRC(device, lowerRCOffCheckBox.Checked);
             Global.setTapSensitivity(device, (byte)tapSensitivityBar.Value);
             Global.setScrollSensitivity(device, (byte)scrollSensitivityBar.Value);
 
@@ -157,7 +157,7 @@ namespace ScpServer
             Global.saveRumbleBoost(device, (byte)rumbleBoostBar.Value);
             Global.setTouchSensitivity(device,(byte) touchSensitivityBar.Value);
             // New settings
-            Global.setTwoFingerRC(device, twoFingerRCCheckBox.Checked);
+            Global.setTwoFingerRC(device, lowerRCOffCheckBox.Checked);
             Global.setTapSensitivity(device, (byte)tapSensitivityBar.Value);
             Global.setScrollSensitivity(device, (byte)scrollSensitivityBar.Value);
 
@@ -395,7 +395,7 @@ namespace ScpServer
         private void twoFingerRCCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (realTimeChangesCheckBox.Checked)
-            if (twoFingerRCCheckBox.Checked)
+            if (lowerRCOffCheckBox.Checked)
             {
                 Global.setTwoFingerRC(device, true);
             }

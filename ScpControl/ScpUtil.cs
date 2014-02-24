@@ -5,29 +5,30 @@ using System.Text;
 using System.IO;
 using System.Reflection;
 using System.Xml;
-namespace ScpControl 
+namespace ScpControl
 {
-    public enum Ds3PadId :   byte { None = 0xFF, One = 0x00, Two = 0x01, Three = 0x02, Four = 0x03, All = 0x04 };
+    [Flags]
+    public enum DS4KeyType : byte { None = 0, ScanCode = 1, Repeat = 2 }; //Increment by exponents of 2*, starting at 2^0
+    public enum Ds3PadId : byte { None = 0xFF, One = 0x00, Two = 0x01, Three = 0x02, Four = 0x03, All = 0x04 };
+    public enum DS4Controls : byte { LXNeg, LXPos, LYNeg, LYPos, RXNeg, RXPos, RYNeg, RYPos, L1, L2, L3, R1, R2, R3, Square, Triangle, Circle, Cross, DpadUp, DpadRight, DpadDown, DpadLeft, PS, TouchButton, TouchUpper, TouchMulti, Share, Options };
+    public enum X360Controls : byte { LXNeg, LXPos, LYNeg, LYPos, RXNeg, RXPos, RYNeg, RYPos, LB, LT, LS, RB, RT, RS, X, Y, B, A, DpadUp, DpadRight, DpadDown, DpadLeft, Guide, Back, Start, LeftMouse, RightMouse, MiddleMouse, Unbound };
 
-    public enum DS4Controls : byte { LXNeg, LXPos, LYNeg, LYPos, RXNeg, RXPos, RYNeg, RYPos, L1, L2, L3, R1, R2, R3, Square, Triangle, Circle, Cross, DpadUp, DpadRight, DpadDown, DpadLeft, PS, TouchButton, Share, Options };
-    public enum X360Controls : byte { LXNeg, LXPos, LYNeg, LYPos, RXNeg, RXPos, RYNeg, RYPos, LB, LT, LS, RB, RT, RS, X, Y, B, A, DpadUp, DpadRight, DpadDown, DpadLeft, Guide, Back, Start, LeftMouse, RightMouse, MiddleMouse};
-   
-    public class DebugEventArgs   : EventArgs 
+    public class DebugEventArgs : EventArgs
     {
         protected DateTime m_Time = DateTime.Now;
         protected String m_Data = String.Empty;
 
-        public DebugEventArgs(String Data) 
+        public DebugEventArgs(String Data)
         {
             m_Data = Data;
         }
 
-        public DateTime Time 
+        public DateTime Time
         {
             get { return m_Time; }
         }
 
-        public String Data 
+        public String Data
         {
             get { return m_Data; }
         }
@@ -48,44 +49,44 @@ namespace ScpControl
         }
     }
 
-    public class ReportEventArgs  : EventArgs 
+    public class ReportEventArgs : EventArgs
     {
         protected Ds3PadId m_Pad = Ds3PadId.None;
         protected Byte[] m_Report = new Byte[64];
 
-        public ReportEventArgs() 
+        public ReportEventArgs()
         {
         }
 
-        public ReportEventArgs(Ds3PadId Pad) 
+        public ReportEventArgs(Ds3PadId Pad)
         {
             m_Pad = Pad;
         }
 
-        public Ds3PadId Pad 
+        public Ds3PadId Pad
         {
             get { return m_Pad; }
             set { m_Pad = value; }
         }
 
-        public Byte[] Report 
+        public Byte[] Report
         {
             get { return m_Report; }
         }
     }
 
-    public class Global 
+    public class Global
     {
         protected static BackingStore m_Config = new BackingStore();
         protected static Int32 m_IdleTimeout = 600000;
 
         public static ledColor loadColor(int device)
         {
-           ledColor color = new ledColor();
-           color.red = m_Config.m_Leds[device][0];
-           color.green = m_Config.m_Leds[device][1];
-           color.blue = m_Config.m_Leds[device][2];
-           return color;
+            ledColor color = new ledColor();
+            color.red = m_Config.m_Leds[device][0];
+            color.green = m_Config.m_Leds[device][1];
+            color.blue = m_Config.m_Leds[device][2];
+            return color;
         }
         public static void saveColor(int device, byte red, byte green, byte blue)
         {
@@ -110,7 +111,7 @@ namespace ScpControl
         }
         public static void setTouchSensitivity(int device, byte sen)
         {
-             m_Config.touchSensitivity[device] = sen;
+            m_Config.touchSensitivity[device] = sen;
         }
 
         public static void setFlashWhenLowBattery(int device, bool flash)
@@ -131,7 +132,7 @@ namespace ScpControl
         }
         public static bool getLedAsBatteryIndicator(int device)
         {
-            return m_Config.ledAsBattery[device];     
+            return m_Config.ledAsBattery[device];
         }
 
         public static void setTouchEnabled(int device, bool touchEnabled)
@@ -153,7 +154,7 @@ namespace ScpControl
         {
             return m_Config.useExclusiveMode;
         }
-        
+
         // New settings
         public static void saveLowColor(int device, byte red, byte green, byte blue)
         {
@@ -237,17 +238,22 @@ namespace ScpControl
         {
             return m_Config.LoadCustomMapping(getCustomMap(device));
         }
-        public static ushort getCustomKey(DS4Controls controlName)
-        {
-            return m_Config.GetCustomKey(controlName);
-        }
         public static X360Controls getCustomButton(DS4Controls controlName)
         {
             return m_Config.GetCustomButton(controlName);
         }
+        public static ushort getCustomKey(DS4Controls controlName)
+        {
+            return m_Config.GetCustomKey(controlName);
+        }
+        public static DS4KeyType getCustomKeyType(DS4Controls controlName)
+        {
+            return m_Config.GetCustomKeyType(controlName);
+        }
         public static bool getHasCustomKeysorButtons(int device)
         {
-            return m_Config.customMapButtons.Count > 0 || m_Config.customMapKeys.Count > 0;
+            return m_Config.customMapButtons.Count > 0
+                || m_Config.customMapKeys.Count > 0;
         }
         public static Dictionary<DS4Controls, X360Controls> getCustomButtons()
         {
@@ -257,54 +263,16 @@ namespace ScpControl
         {
             return new Dictionary<DS4Controls, ushort>(m_Config.customMapKeys);
         }
-        #region watch sixaxis data
-        static List<SixaxisObserver> observers = new List<SixaxisObserver>();
-        static List<DisposableSixaxisObserver> unregisteringObservers = new List<DisposableSixaxisObserver>();
-        public interface SixaxisObserver
+        public static Dictionary<DS4Controls, DS4KeyType> getCustomKeyTypes()
         {
-            void Update(byte[] data);
+            return new Dictionary<DS4Controls, DS4KeyType>(m_Config.customMapKeyTypes);
         }
-        public interface DisposableSixaxisObserver : SixaxisObserver
-        {
-            void InvokeClose();
-        }
-        public static void registerForSixaxisData(SixaxisObserver observer)
-        {
-            observers.Add(observer);
-        }
-        public static bool unregisterForSixaxisData(DisposableSixaxisObserver observer)
-        {
-            if (!observers.Contains(observer))
-                return false;
-            unregisteringObservers.Add(observer);
-            return true;
-        }
-        public static bool unregisterForSixaxisData(SixaxisObserver observer)
-        {
-            return observers.Remove(observer);
-        }
-        public static bool setSixaxisData(byte[] data)
-        {
-            for (int i = observers.Count -1; i >= 0; i--)
-                observers[i].Update(data);
 
-            if (unregisteringObservers.Count > 0)
-            {
-                DisposableSixaxisObserver observer = unregisteringObservers[0];
-                unregisteringObservers.Remove(observer);
-                observers.Remove(observer);
-                observer.InvokeClose();
-                return false;
-            }
-            return true;
-        }
-        #endregion
-
-        public static void Load() 
+        public static void Load()
         {
             m_Config.Load();
         }
-        public static void Save() 
+        public static void Save()
         {
             m_Config.Save();
         }
@@ -340,13 +308,29 @@ namespace ScpControl
         }
     }
 
-   
 
-    public class BackingStore 
+
+    public class BackingStore
     {
         protected String m_File = Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName + @"\ScpControl.xml";
         protected XmlDocument m_Xdoc = new XmlDocument();
 
+        public Boolean[] twoFingerRC = { false, false, false, false };
+        public Boolean[] ledAsBattery = { false, false, false, false };
+        public Boolean[] flashLedLowBattery = { false, false, false, false };
+        public Boolean[] touchEnabled = { false, false, false, false };
+        public String[] customMapPath = { String.Empty, String.Empty, String.Empty, String.Empty };
+        public Byte[] m_Rumble = { 100, 100, 100, 100 };
+        public Byte[] touchSensitivity = { 100, 100, 100, 100 };
+        public Byte[] tapSensitivity = { 0, 0, 0, 0 };
+        public Byte[] scrollSensitivity = { 0, 0, 0, 0 };
+        public Byte[][] m_LowLeds = new Byte[][]
+        {
+            new Byte[] {0,0,0},
+            new Byte[] {0,0,0},
+            new Byte[] {0,0,0},
+            new Byte[] {0,0,0}
+        };
         public Byte[][] m_Leds = new Byte[][]
         {
             new Byte[] {0,0,255},
@@ -355,32 +339,14 @@ namespace ScpControl
             new Byte[] {255,0,255},
         };
 
-        public Byte[] m_Rumble = { 100, 100, 100, 100 };
-        public bool[] ledAsBattery = { false, false, false, false };
-        public bool[] flashLedLowBattery = { false, false, false, false };
-        public Byte[] touchSensitivity = { 100, 100, 100, 100 };
-        public bool[] touchEnabled = { false, false, false, false };
-
-        public bool useExclusiveMode = false;
-
-        // Add new settings
-        public String[] customMapPath = { String.Empty, String.Empty, String.Empty, String.Empty };
-        public Dictionary<DS4Controls, UInt16> customMapKeys = new Dictionary<DS4Controls, UInt16>();
-        public Dictionary<DS4Controls, X360Controls> customMapButtons = new Dictionary<DS4Controls, X360Controls>();
+        public Boolean useExclusiveMode = false;
         public Int32 formWidth = 782;
         public Int32 formHeight = 550;
         public Boolean startMinimized = false;
-        public Boolean[] twoFingerRC = { false, false, false, false };
-        public Byte[] tapSensitivity = { 0, 0, 0, 0 };
-        public Byte[] scrollSensitivity = { 0, 0, 0, 0 };
-        public Byte[][] m_LowLeds = new Byte[][]
-        {
-            // Default low light for low battery
-            new Byte[] {0,0,0},
-            new Byte[] {0,0,0},
-            new Byte[] {0,0,0},
-            new Byte[] {0,0,0}
-        };
+
+        public Dictionary<DS4Controls, DS4KeyType> customMapKeyTypes = new Dictionary<DS4Controls, DS4KeyType>();
+        public Dictionary<DS4Controls, UInt16> customMapKeys = new Dictionary<DS4Controls, UInt16>();
+        public Dictionary<DS4Controls, X360Controls> customMapButtons = new Dictionary<DS4Controls, X360Controls>();
         public X360Controls GetCustomButton(DS4Controls controlName)
         {
             if (customMapButtons.ContainsKey(controlName))
@@ -393,31 +359,51 @@ namespace ScpControl
                 return customMapKeys[controlName];
             else return 0;
         }
+        public DS4KeyType GetCustomKeyType(DS4Controls controlName)
+        {
+            if (customMapKeyTypes.ContainsKey(controlName))
+                return customMapKeyTypes[controlName];
+            else return 0;
+        }
+
         public Boolean LoadCustomMapping(String customMapPath)
         {
             Boolean Loaded = true;
             customMapButtons.Clear();
             customMapKeys.Clear();
+            customMapKeyTypes.Clear();
             try
             {
                 if (customMapPath != string.Empty && File.Exists(customMapPath))
                 {
                     m_Xdoc.Load(customMapPath);
+                    DS4KeyType keyType;
                     UInt16 wvk;
-                    foreach (XmlNode Item in m_Xdoc.SelectSingleNode("/Control").ChildNodes)
-                        try
-                        {
+                    XmlNode ParentItem = m_Xdoc.SelectSingleNode("/Control/Button");
+                    if (ParentItem != null)
+                        foreach (XmlNode Item in ParentItem.ChildNodes)
+                            customMapButtons.Add(getDS4ControlsByName(Item.Name), getX360ControlsByName(Item.InnerText));
+                    ParentItem = m_Xdoc.SelectSingleNode("/Control/Key");
+                    if (ParentItem != null)
+                        foreach (XmlNode Item in ParentItem.ChildNodes)
                             if (UInt16.TryParse(Item.InnerText, out wvk))
                                 customMapKeys.Add(getDS4ControlsByName(Item.Name), wvk);
-                            else customMapButtons.Add(getDS4ControlsByName(Item.Name), getX360ControlsByName(Item.InnerText));
-                        }
-                        catch
-                        {
-
-                        } 
+                    ParentItem = m_Xdoc.SelectSingleNode("/Control/KeyType");
+                    if (ParentItem != null)
+                        foreach (XmlNode Item in ParentItem.ChildNodes)
+                            if (Item != null)
+                            {
+                                keyType = DS4KeyType.None;
+                                if (Item.InnerText.Contains(DS4KeyType.ScanCode.ToString()))
+                                    keyType |= DS4KeyType.ScanCode;
+                                if (Item.InnerText.Contains(DS4KeyType.Repeat.ToString()))
+                                    keyType |= DS4KeyType.Repeat;
+                                if (keyType != DS4KeyType.None)
+                                    customMapKeyTypes.Add(getDS4ControlsByName(Item.Name), keyType);
+                            }
                 }
             }
-            catch
+            catch (Exception e)
             {
                 Loaded = false;
             }
@@ -428,35 +414,56 @@ namespace ScpControl
             Boolean Loaded = true;
             customMapButtons.Clear();
             customMapKeys.Clear();
+            customMapKeyTypes.Clear();
             try
             {
                 if (customMapPath != string.Empty && File.Exists(customMapPath))
                 {
                     XmlNode Item;
                     m_Xdoc.Load(customMapPath);
+                    DS4KeyType keyType;
                     UInt16 wvk;
                     foreach (var button in buttons)
                         try
                         {
-                            Item = m_Xdoc.SelectSingleNode(String.Format("/Control/{0}", button.Name));
-                            if (Item == null)
-                                Item = m_Xdoc.SelectSingleNode(String.Format("/Control/{0}", button.Name + "Repeat"));
+                            Item = m_Xdoc.SelectSingleNode(String.Format("/Control/Key/{0}", button.Name));
                             if (Item != null)
+                            {
                                 if (UInt16.TryParse(Item.InnerText, out wvk))
                                 {
+                                    customMapKeys.Add(getDS4ControlsByName(Item.Name), wvk);
                                     button.Tag = wvk;
                                     button.Text = ((System.Windows.Forms.Keys)wvk).ToString();
-                                    customMapKeys.Add(getDS4ControlsByName(button.Name), wvk);
 
-                                    if (Item.Name.Contains("Repeat"))
-                                        button.ForeColor = System.Drawing.Color.Red;
+                                    Item = m_Xdoc.SelectSingleNode(String.Format("/Control/KeyType/{0}", button.Name));
+                                    if (Item != null)
+                                    {
+                                        keyType = DS4KeyType.None;
+                                        if (Item.InnerText.Contains(DS4KeyType.ScanCode.ToString()))
+                                        {
+                                            keyType |= DS4KeyType.ScanCode;
+                                            button.Font = new System.Drawing.Font(button.Font, System.Drawing.FontStyle.Bold);
+                                        }
+                                        if (Item.InnerText.Contains(DS4KeyType.Repeat.ToString()))
+                                        {
+                                            keyType |= DS4KeyType.Repeat;
+                                            button.ForeColor = System.Drawing.Color.Red;
+                                        }
+                                        if (keyType != DS4KeyType.None)
+                                            customMapKeyTypes.Add(getDS4ControlsByName(Item.Name), keyType);
+                                    }
                                 }
-                                else
+                            }
+                            else
+                            {
+                                Item = m_Xdoc.SelectSingleNode(String.Format("/Control/Button/{0}", button.Name));
+                                if (Item != null)
                                 {
                                     button.Tag = Item.InnerText;
                                     button.Text = Item.InnerText;
-                                    customMapButtons.Add(getDS4ControlsByName(button.Name), getX360ControlsByName( Item.InnerText));
+                                    customMapButtons.Add(getDS4ControlsByName(button.Name), getX360ControlsByName(Item.InnerText));
                                 }
+                            }
                         }
                         catch
                         {
@@ -464,16 +471,15 @@ namespace ScpControl
                         }
                 }
             }
-            catch 
-            { 
-                Loaded = false; 
+            catch
+            {
+                Loaded = false;
             }
             return Loaded;
         }
         public Boolean SaveCustomMapping(String customMapPath, System.Windows.Forms.Control[] buttons)
         {
             Boolean Saved = true;
-
             try
             {
                 XmlNode Node;
@@ -485,19 +491,34 @@ namespace ScpControl
                 Node = m_Xdoc.CreateWhitespace("\r\n");
                 m_Xdoc.AppendChild(Node);
                 Node = m_Xdoc.CreateNode(XmlNodeType.Element, "Control", null);
-                
+
+                XmlNode Key = m_Xdoc.CreateNode(XmlNodeType.Element, "Key", null);
+                XmlNode KeyType = m_Xdoc.CreateNode(XmlNodeType.Element, "KeyType", null);
+                XmlNode Button = m_Xdoc.CreateNode(XmlNodeType.Element, "Button", null);
+
                 foreach (var button in buttons)
                     try
                     {
                         // Save even if string (for xbox controller buttons)
                         if (button.Tag != null)
                         {
-                            string name = button.Name;
+                            XmlNode buttonNode;
+                            string keyType = String.Empty;
                             if (button.ForeColor == System.Drawing.Color.Red)
-                                name += "Repeat";
-                            XmlNode buttonNode = m_Xdoc.CreateNode(XmlNodeType.Element, name, null);
-                            buttonNode.InnerText = button.Tag.ToString(); 
-                            Node.AppendChild(buttonNode);
+                                keyType += DS4KeyType.Repeat;
+                            if (button.Font.Bold)
+                                keyType += DS4KeyType.ScanCode;
+                            if (keyType != String.Empty)
+                            {
+                                buttonNode = m_Xdoc.CreateNode(XmlNodeType.Element, button.Name, null);
+                                buttonNode.InnerText = keyType;
+                                KeyType.AppendChild(buttonNode);
+                            }
+                            buttonNode = m_Xdoc.CreateNode(XmlNodeType.Element, button.Name, null);
+                            buttonNode.InnerText = button.Tag.ToString();
+                            if (button.Tag is Int32 || button.Tag is UInt16)
+                                Key.AppendChild(buttonNode);
+                            else Button.AppendChild(buttonNode);
                         }
                     }
                     catch
@@ -505,13 +526,18 @@ namespace ScpControl
                         Saved = false;
                     }
                 m_Xdoc.AppendChild(Node);
+                if (Button.HasChildNodes)
+                    Node.AppendChild(Button);
+                if (Key.HasChildNodes)
+                    Node.AppendChild(Key);
+                if (KeyType.HasChildNodes)
+                    Node.AppendChild(KeyType);
                 m_Xdoc.Save(customMapPath);
             }
-            catch 
-            { 
-                Saved = false; 
+            catch (Exception e)
+            {
+                Saved = false;
             }
-
             return Saved;
         }
 
@@ -546,6 +572,10 @@ namespace ScpControl
                 case "cbRY2": return DS4Controls.RYPos;
                 case "cbL2": return DS4Controls.L2;
                 case "cbR2": return DS4Controls.R2;
+
+                case "cbTouchButton": return DS4Controls.TouchButton;
+                case "cbTouchMulti": return DS4Controls.TouchMulti;
+                case "cbTouchUpper": return DS4Controls.TouchUpper;
             }
             return 0;
         }
@@ -580,15 +610,16 @@ namespace ScpControl
                 case "Right X-Axis+": return X360Controls.RXPos;
                 case "Right Y-Axis+": return X360Controls.RYPos;
                 case "Left Trigger": return X360Controls.LT;
-                case "Right Trigger": return X360Controls.RT; 
+                case "Right Trigger": return X360Controls.RT;
                 case "Click": return X360Controls.LeftMouse;
                 case "Right Click": return X360Controls.RightMouse;
                 case "Middle Click": return X360Controls.MiddleMouse;
-                    
+                case "(Unbound)": return X360Controls.Unbound;
+
             }
-            return 0;
+            return X360Controls.Unbound;
         }
-        public Boolean Load() 
+        public Boolean Load()
         {
             Boolean Loaded = true;
             Boolean missingSetting = false;
@@ -664,7 +695,7 @@ namespace ScpControl
 
             return Loaded;
         }
-        public Boolean Save() 
+        public Boolean Save()
         {
             Boolean Saved = true;
 
@@ -689,13 +720,13 @@ namespace ScpControl
                 XmlNode xmlStartMinimized = m_Xdoc.CreateNode(XmlNodeType.Element, "startMinimized", null); xmlStartMinimized.InnerText = startMinimized.ToString(); Node.AppendChild(xmlStartMinimized);
                 XmlNode xmlFormWidth = m_Xdoc.CreateNode(XmlNodeType.Element, "formWidth", null); xmlFormWidth.InnerText = formWidth.ToString(); Node.AppendChild(xmlFormWidth);
                 XmlNode xmlFormHeight = m_Xdoc.CreateNode(XmlNodeType.Element, "formHeight", null); xmlFormHeight.InnerText = formHeight.ToString(); Node.AppendChild(xmlFormHeight);
-                    
+
                 XmlNode cNode1 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller1", null); Node.AppendChild(cNode1);
                 XmlNode cNode2 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller2", null); Node.AppendChild(cNode2);
                 XmlNode cNode3 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller3", null); Node.AppendChild(cNode3);
                 XmlNode cNode4 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller4", null); Node.AppendChild(cNode4);
 
-                XmlNode[] cNodes = {cNode1,cNode2,cNode3,cNode4};
+                XmlNode[] cNodes = { cNode1, cNode2, cNode3, cNode4 };
 
                 for (int i = 0; i < 4; i++)
                 {
@@ -716,7 +747,7 @@ namespace ScpControl
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "tapSensitivity", null); Entry.InnerText = tapSensitivity[i].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "scrollSensitivity", null); Entry.InnerText = scrollSensitivity[i].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "customMapPath", null); Entry.InnerText = customMapPath[i]; cNodes[i].AppendChild(Entry);
-                }               
+                }
                 m_Xdoc.AppendChild(Node);
 
                 m_Xdoc.Save(m_File);

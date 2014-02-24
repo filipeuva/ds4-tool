@@ -57,7 +57,7 @@
             this.touchSensitivityBar = new System.Windows.Forms.TrackBar();
             this.label1 = new System.Windows.Forms.Label();
             this.sensitivityValLabel = new System.Windows.Forms.Label();
-            this.twoFingerRCCheckBox = new System.Windows.Forms.CheckBox();
+            this.lowerRCOffCheckBox = new System.Windows.Forms.CheckBox();
             this.lowRedValLabel = new System.Windows.Forms.Label();
             this.lowGreenValLabel = new System.Windows.Forms.Label();
             this.lowBlueValLabel = new System.Windows.Forms.Label();
@@ -76,8 +76,6 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.realTimeChangesCheckBox = new System.Windows.Forms.CheckBox();
-            //this.tBsixaxisX = new System.Windows.Forms.TrackBar();
-            //this.tBsixaxisY = new System.Windows.Forms.TrackBar();
             this.pictureBox = new System.Windows.Forms.PictureBox();
             this.advColorDialog = new ScpServer.AdvancedColorDialog();
             ((System.ComponentModel.ISupportInitialize)(this.blueBar)).BeginInit();
@@ -91,8 +89,6 @@
             this.fullLedPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.tapSensitivityBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scrollSensitivityBar)).BeginInit();
-            //((System.ComponentModel.ISupportInitialize)(this.tBsixaxisX)).BeginInit();
-            //((System.ComponentModel.ISupportInitialize)(this.tBsixaxisY)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -409,17 +405,17 @@
             this.sensitivityValLabel.Text = "100";
             this.sensitivityValLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // twoFingerRCCheckBox
+            // lowerRCOffCheckBox
             // 
-            this.twoFingerRCCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.twoFingerRCCheckBox.AutoSize = true;
-            this.twoFingerRCCheckBox.Location = new System.Drawing.Point(501, 222);
-            this.twoFingerRCCheckBox.Name = "twoFingerRCCheckBox";
-            this.twoFingerRCCheckBox.Size = new System.Drawing.Size(130, 17);
-            this.twoFingerRCCheckBox.TabIndex = 39;
-            this.twoFingerRCCheckBox.Text = "Two-finger Right Click";
-            this.twoFingerRCCheckBox.UseVisualStyleBackColor = true;
-            this.twoFingerRCCheckBox.CheckedChanged += new System.EventHandler(this.twoFingerRCCheckBox_CheckedChanged);
+            this.lowerRCOffCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.lowerRCOffCheckBox.AutoSize = true;
+            this.lowerRCOffCheckBox.Location = new System.Drawing.Point(501, 222);
+            this.lowerRCOffCheckBox.Name = "lowerRCOffCheckBox";
+            this.lowerRCOffCheckBox.Size = new System.Drawing.Size(151, 17);
+            this.lowerRCOffCheckBox.TabIndex = 39;
+            this.lowerRCOffCheckBox.Text = "Turn Off Lower Right Click";
+            this.lowerRCOffCheckBox.UseVisualStyleBackColor = true;
+            this.lowerRCOffCheckBox.CheckedChanged += new System.EventHandler(this.twoFingerRCCheckBox_CheckedChanged);
             // 
             // lowRedValLabel
             // 
@@ -613,35 +609,6 @@
             this.realTimeChangesCheckBox.Text = "Real-time Changes";
             this.realTimeChangesCheckBox.UseVisualStyleBackColor = true;
             this.realTimeChangesCheckBox.CheckedChanged += new System.EventHandler(this.realTimeChangesCheckBox_CheckedChanged);
-            //// 
-            //// tBsixaxisX
-            //// 
-            //this.tBsixaxisX.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            //this.tBsixaxisX.AutoSize = false;
-            //this.tBsixaxisX.Enabled = false;
-            //this.tBsixaxisX.Location = new System.Drawing.Point(501, 248);
-            //this.tBsixaxisX.Maximum = 64;
-            //this.tBsixaxisX.Name = "tBsixaxisX";
-            //this.tBsixaxisX.Size = new System.Drawing.Size(100, 19);
-            //this.tBsixaxisX.TabIndex = 71;
-            //this.tBsixaxisX.TickFrequency = 25;
-            //this.tBsixaxisX.TickStyle = System.Windows.Forms.TickStyle.None;
-            //this.tBsixaxisX.Value = 32;
-            //// 
-            //// tBsixaxisY
-            //// 
-            //this.tBsixaxisY.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            //this.tBsixaxisY.AutoSize = false;
-            //this.tBsixaxisY.Enabled = false;
-            //this.tBsixaxisY.Location = new System.Drawing.Point(476, 198);
-            //this.tBsixaxisY.Maximum = 64;
-            //this.tBsixaxisY.Name = "tBsixaxisY";
-            //this.tBsixaxisY.Orientation = System.Windows.Forms.Orientation.Vertical;
-            //this.tBsixaxisY.Size = new System.Drawing.Size(19, 100);
-            //this.tBsixaxisY.TabIndex = 72;
-            //this.tBsixaxisY.TickFrequency = 25;
-            //this.tBsixaxisY.TickStyle = System.Windows.Forms.TickStyle.None;
-            //this.tBsixaxisY.Value = 32;
             // 
             // pictureBox
             // 
@@ -669,8 +636,6 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(244)))), ((int)(((byte)(244)))));
             this.ClientSize = new System.Drawing.Size(827, 310);
             this.Controls.Add(this.pictureBox);
-            //this.Controls.Add(this.tBsixaxisY);
-            //this.Controls.Add(this.tBsixaxisX);
             this.Controls.Add(this.realTimeChangesCheckBox);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -682,7 +647,7 @@
             this.Controls.Add(this.colorChooserButton);
             this.Controls.Add(this.fullLedPanel);
             this.Controls.Add(this.lowLedCheckBox);
-            this.Controls.Add(this.twoFingerRCCheckBox);
+            this.Controls.Add(this.lowerRCOffCheckBox);
             this.Controls.Add(this.sensitivityValLabel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.touchSensitivityBar);
@@ -726,8 +691,6 @@
             this.fullLedPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.tapSensitivityBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.scrollSensitivityBar)).EndInit();
-            //((System.ComponentModel.ISupportInitialize)(this.tBsixaxisX)).EndInit();
-            //((System.ComponentModel.ISupportInitialize)(this.tBsixaxisY)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -766,7 +729,7 @@
         private System.Windows.Forms.TrackBar touchSensitivityBar;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label sensitivityValLabel;
-        private System.Windows.Forms.CheckBox twoFingerRCCheckBox;
+        private System.Windows.Forms.CheckBox lowerRCOffCheckBox;
         private System.Windows.Forms.Label lowRedValLabel;
         private System.Windows.Forms.Label lowGreenValLabel;
         private System.Windows.Forms.Label lowBlueValLabel;

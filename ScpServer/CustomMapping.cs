@@ -15,6 +15,7 @@ namespace ScpServer
         private int device;
         private bool handleNextKeyPress = false;
         private List<ComboBox> comboBoxes = new List<ComboBox>();
+        private Dictionary<string, string> defaults = new Dictionary<string, string>();
         private ComboBox lastSelected;
 
         public CustomMapping(int deviceNum)
@@ -29,21 +30,29 @@ namespace ScpServer
                 {
                     comboBoxes.Add((ComboBox)control);
                     availableButtons.Add(control.Text);
+
+                    // Add defaults
+                    defaults.Add(((ComboBox)control).Name, ((ComboBox)control).Text);
+                    // Add events here (easier for modification/addition)
+                    ((ComboBox)control).SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
+                    ((ComboBox)control).Enter += new System.EventHandler(this.EnterCommand);
+                    ((ComboBox)control).KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
+                    ((ComboBox)control).KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
+                    ((ComboBox)control).PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
                 }
-            Comparison<ComboBox> comp = new Comparison<ComboBox>(compare);
-            comboBoxes.Sort(comp);
             availableButtons.Sort();
             foreach (ComboBox comboBox in comboBoxes)
                 comboBox.Items.AddRange(availableButtons.ToArray());
             // Do not add XInput to touchpad
-            cbPad.Items.Clear();
+            cbTouchButtom.Items.Clear();
+            cbTouchButtom.Items.Add(cbTouchButtom.Text);
+            cbTouchUpper.Items.Clear();
+            cbTouchUpper.Items.Add(cbTouchUpper.Text);
+            cbTouchMulti.Items.Clear();
+            cbTouchMulti.Items.Add(cbTouchMulti.Text);
             Global.loadCustomMapping(Global.getCustomMap(device), comboBoxes.ToArray());
         }
 
-        private int compare(ComboBox c1, ComboBox c2)
-        {
-            return c1.Text.CompareTo(c2.Text);
-        }
         private void EnterCommand(object sender, EventArgs e)
         {
             //Change image to represent button
@@ -101,7 +110,11 @@ namespace ScpServer
                         break;
                     case "cbShare": pictureBox.Image = Properties.Resources._21;
                         break;
-                    case "cbPad": pictureBox.Image = Properties.Resources._22;
+                    case "cbTouchButton": pictureBox.Image = Properties.Resources._22;
+                        break;
+                    case "cbTouchUpper": pictureBox.Image = Properties.Resources._22;
+                        break;
+                    case "cbTouchMulti": pictureBox.Image = Properties.Resources._22;
                         break;
                     case "cbPS": pictureBox.Image = Properties.Resources._23;
                         break;
@@ -112,6 +125,9 @@ namespace ScpServer
                 if (lastSelected.ForeColor == Color.Red)
                     cbRepeat.Checked = true;
                 else cbRepeat.Checked = false;
+                if (lastSelected.Font.Bold)
+                    cbScanCode.Checked = true;
+                else cbScanCode.Checked = false;
             }
         }
         private void PreviewKeyDownCommand(object sender, PreviewKeyDownEventArgs e)
@@ -133,7 +149,8 @@ namespace ScpServer
             {
                 if (((ComboBox)sender).Tag is int)
                 {
-                    if (e.KeyValue == (int)(((ComboBox)sender).Tag))
+                    if (e.KeyValue == (int)(((ComboBox)sender).Tag) 
+                        && !((ComboBox)sender).Name.Contains("Touch"))
                     {
                         if (((ComboBox)sender).ForeColor == SystemColors.WindowText)
                         {
@@ -184,9 +201,7 @@ namespace ScpServer
                         comboBox.Text = "(Unbound)";
                         comboBox.Tag = comboBox.Text;
                     }
-                Console.WriteLine(((ComboBox)sender).Name);
-                Console.WriteLine(comboBoxes[((ComboBox)sender).SelectedIndex].Name);
-                if (((ComboBox)sender).Name != comboBoxes[((ComboBox)sender).SelectedIndex].Name)
+                if (((ComboBox)sender).Text != defaults[((ComboBox)sender).Name])
                     ((ComboBox)sender).Tag = ((ComboBox)sender).Text;
 
                 else ((ComboBox)sender).Tag = null;
@@ -194,9 +209,28 @@ namespace ScpServer
         }
         private void cbRepeat_CheckedChanged(object sender, EventArgs e)
         {
-            if (cbRepeat.Checked)
-                lastSelected.ForeColor = Color.Red;
-            else lastSelected.ForeColor = SystemColors.WindowText;
+            if (!lastSelected.Name.Contains("Touch") &&
+                (lastSelected.Tag is int || lastSelected.Tag is UInt16))
+                if (cbRepeat.Checked)
+                    lastSelected.ForeColor = Color.Red;
+                else lastSelected.ForeColor = SystemColors.WindowText;
+            else
+            {
+                cbRepeat.Checked = false;
+                lastSelected.ForeColor = SystemColors.WindowText;
+            }
+        }
+        private void cbScanCode_CheckedChanged(object sender, EventArgs e)
+        {
+            if (lastSelected.Tag is int || lastSelected.Tag is UInt16)
+                if (cbScanCode.Checked)
+                    lastSelected.Font = new Font(lastSelected.Font, FontStyle.Bold);
+                else lastSelected.Font = new Font(lastSelected.Font, FontStyle.Regular);
+            else
+            {
+                cbScanCode.Checked = false;
+                lastSelected.Font = new Font(lastSelected.Font, FontStyle.Regular);
+            }
         }
 
         private void btnSave_Click(object sender, EventArgs e)

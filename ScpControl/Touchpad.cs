@@ -12,20 +12,18 @@ namespace ScpControl
             lastTouchPadX2, lastTouchPadY2;
         internal static bool lastTouchPadIsDown;
         internal static bool lastIsActive;
+        internal static bool lastIsActive2;
         internal static byte lastTouchID;
-        internal static int originalX,originalY;
+        internal static int originalX, originalY;
         internal static INPUT[] sendInputs = new INPUT[1]; // will allow for keyboard + mouse/tablet input within one SendInput call
         internal static int ticks = -1; //incremented every input report, in the future use something more reliable
         public static void handleTouchpad(byte[] data, bool touchPadIsDown)
         {
-            int mouseDeltaX = 0, mouseDeltaY = 0,
-                mouseDeltaX2 = 0, mouseDeltaY2 = 0;
-
+            int mouseDeltaX = 0, mouseDeltaY = 0, mouseDeltaX2 = 0, mouseDeltaY2 = 0;
             bool _isActive = (data[0 + TOUCHPAD_DATA_OFFSET] >> 7) != 0 ? false : true; // >= 1 touch detected
-            // increased scope of _isActive2 
             bool _isActive2 = (data[4 + TOUCHPAD_DATA_OFFSET] >> 7) != 0 ? false : true; // > 1 touch detected
             byte touchID = (byte)(data[0 + TOUCHPAD_DATA_OFFSET] & 0x7F);
-     
+
             if (_isActive)
             {
                 ticks++;
@@ -37,21 +35,18 @@ namespace ScpControl
 
                 if (lastIsActive)
                 {
-
                     double sensitivity = Global.getTouchSensitivity(0) / 100.0;
                     mouseDeltaX = (int)(sensitivity * (currentX - lastTouchPadX));
                     mouseDeltaY = (int)(sensitivity * (currentY - lastTouchPadY));
                     //add mouseDelta for secondary touch data
                     mouseDeltaX2 = (int)(sensitivity * (currentX2 - lastTouchPadX2));
                     mouseDeltaY2 = (int)(sensitivity * (currentY2 - lastTouchPadY2));
-
                     //prevent jitter of  the cursor
                     if (Math.Abs(mouseDeltaX) < 5 && Math.Abs(mouseDeltaY) < 5 && ticks < 100)
                     {
                         mouseDeltaX = 0;
                         mouseDeltaY = 0;
                     }
-
                     if (touchPadIsDown)
                     {
                         if (!lastTouchPadIsDown)
@@ -60,12 +55,16 @@ namespace ScpControl
                             mouseDeltaY = 0;
                             //own right click (more than 1 touch detected) - if enabled.
                             //if its right corner do a right click (resolution of touchpad values is ~ 1920x1080)
-                            if ((Global.getTwoFingerRC(0) && _isActive2)
-                                        || (!Global.getTwoFingerRC(0)
-                                        && currentX > 1500 && currentY > 600))
+                            if (!Global.getTwoFingerRC(0) && currentX > 1500 && currentY > 600)
                                 performRightClick();
+                            else if (_isActive2)
+                            {
+                                if (!mapTouchPad(DS4Controls.TouchMulti))
+                                    performRightClick();
+                            }
                             //perform a mouse down event when touchpad pressed
-                            else MouseEvent(MOUSEEVENTF_LEFTDOWN);
+                            else if (!mapTouchPad(DS4Controls.TouchButton))
+                                MouseEvent(MOUSEEVENTF_LEFTDOWN);
                         }
                     }
                     //perform a mouse up event when touchpad released
@@ -73,10 +72,12 @@ namespace ScpControl
                     {
                         mouseDeltaX = 0;
                         mouseDeltaY = 0;
-                        MouseEvent(MOUSEEVENTF_LEFTUP);
+                        if (lastIsActive2)
+                            mapTouchPad(DS4Controls.TouchMulti, true);
+                        else if (!mapTouchPad(DS4Controls.TouchButton, true))
+                            MouseEvent(MOUSEEVENTF_LEFTUP);
                     }
-
-                    //either zoom or scroll, scroll has X/2/Y/2 within 400 points 
+                    //either zoom or scroll
                     if (_isActive2 &&
                         Math.Abs(currentX - currentX2) < 900
                         && Math.Abs(currentY - currentY2) < 300)
@@ -84,31 +85,23 @@ namespace ScpControl
                         //mouse wheel 120 == 1 wheel click
                         int rotation = (int)(-0.6 * Global.getScrollSensitivity(0));
                         if (mouseDeltaY >= 5)
-                        {
                             MouseWheel(rotation);
-                        }
                         else if (mouseDeltaY <= -5)
-                        {
                             MouseWheel(-rotation);
-                        }
                         mouseDeltaY = 0;
                         mouseDeltaX = 0;
-
                     }
                 }
-
                 else
                 {
                     originalX = currentX;
                     originalY = currentY;
                 }
-
                 lastTouchPadX = currentX;
                 lastTouchPadY = currentY;
                 //secondary touch data
                 lastTouchPadX2 = currentX2;
                 lastTouchPadY2 = currentY2;
-                
                 lastTouchPadIsDown = touchPadIsDown;
             }
             else // finger(s) lifted from touchpad while virtual mouse button(s) clicked
@@ -117,38 +110,54 @@ namespace ScpControl
                 int currentY = ((data[2 + TOUCHPAD_DATA_OFFSET] & 0xF0) >> 4) + (data[3 + TOUCHPAD_DATA_OFFSET] * 16);
                 // Click trackpad's top edge (no touch movement) - configurable
                 if (touchPadIsDown)
+                {
                     if (!lastTouchPadIsDown)
-                    {
-                        ushort key = Global.getCustomKey(DS4Controls.TouchButton);
-                        //Whatever key the config asks for.
-                        if (key != 0)
-                            performKeyPress(key);
-                    }
+                        if (!mapTouchPad(DS4Controls.TouchUpper))
+                            performMiddleClick();
+                }
+                else if (lastTouchPadIsDown)
+                    mapTouchPad(DS4Controls.TouchUpper, true);
                 // Set new last touchpad down value
                 lastTouchPadIsDown = touchPadIsDown;
                 if (!lastIsActive) // neither active before or now
                     return;
                 if (lastIsActive)
-                {
                     //should be configurable (was 100)
                     //was a tap perform mouse left click
-                    if (ticks < Global.getTapSensitivity(0) && Math.Abs(originalX - currentX) < 10 && Math.Abs(originalY - currentY) < 10)
-                    {
+                    if (ticks < Global.getTapSensitivity(0)
+                        && Math.Abs(originalX - currentX) < 10
+                        && Math.Abs(originalY - currentY) < 10)
                         performLeftClick();
-                    }
-                }
             }
-
             if (lastTouchID != touchID)
             {
                 lastTouchID = touchID;
                 ticks = 0;
             }
-
             lastIsActive = _isActive;
-
+            lastIsActive2 = _isActive2;
             MoveCursorBy(mouseDeltaX, mouseDeltaY);
+        }
 
+        static bool mapTouchPad(DS4Controls padControl, bool release = false)
+        {
+            ushort key = Global.getCustomKey(padControl);
+            if (key == 0)
+                return false;
+            else
+            {
+                DS4KeyType keyType = Global.getCustomKeyType(padControl);
+                if (!release)
+                    if (keyType.HasFlag(DS4KeyType.ScanCode))
+                        performSCKeyPress(key);
+                    else performKeyPress(key);
+                else
+                    if (!keyType.HasFlag(DS4KeyType.Repeat))
+                        if (keyType.HasFlag(DS4KeyType.ScanCode))
+                            performSCKeyRelease(key);
+                        else performKeyRelease(key);
+                return true;
+            }
         }
 
         static void MoveCursorBy(int x, int y)
@@ -229,12 +238,34 @@ namespace ScpControl
             uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
         }
 
+        public static void performSCKeyPress(ushort key)
+        {
+            sendInputs[0].Type = INPUT_KEYBOARD;
+            sendInputs[0].Data.Keyboard.ExtraInfo = IntPtr.Zero;
+            sendInputs[0].Data.Keyboard.Flags = KEYEVENTF_SCANCODE;
+            sendInputs[0].Data.Keyboard.Scan = MapVirtualKey(key, MAPVK_VK_TO_VSC); ;
+            sendInputs[0].Data.Keyboard.Time = 0;
+            sendInputs[0].Data.Keyboard.Vk = key;
+            uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
+        }
+
         public static void performKeyPress(ushort key)
         {
             sendInputs[0].Type = INPUT_KEYBOARD;
             sendInputs[0].Data.Keyboard.ExtraInfo = IntPtr.Zero;
             sendInputs[0].Data.Keyboard.Flags = 0;
             sendInputs[0].Data.Keyboard.Scan = 0;
+            sendInputs[0].Data.Keyboard.Time = 0;
+            sendInputs[0].Data.Keyboard.Vk = key;
+            uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
+        }
+
+        public static void performSCKeyRelease(ushort key)
+        {
+            sendInputs[0].Type = INPUT_KEYBOARD;
+            sendInputs[0].Data.Keyboard.ExtraInfo = IntPtr.Zero;
+            sendInputs[0].Data.Keyboard.Flags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
+            sendInputs[0].Data.Keyboard.Scan = MapVirtualKey(key, MAPVK_VK_TO_VSC);
             sendInputs[0].Data.Keyboard.Time = 0;
             sendInputs[0].Data.Keyboard.Vk = key;
             uint result = SendInput(1, sendInputs, Marshal.SizeOf(sendInputs[0]));
@@ -318,9 +349,12 @@ namespace ScpControl
             MOUSEEVENTF_LEFTDOWN = 2, MOUSEEVENTF_LEFTUP = 4,
             MOUSEEVENTF_RIGHTDOWN = 8, MOUSEEVENTF_RIGHTUP = 16,
             MOUSEEVENTF_MIDDLEDOWN = 32, MOUSEEVENTF_MIDDLEUP = 64,
-            KEYEVENTF_KEYUP = 2, MOUSEEVENTF_WHEEL = 0x0800;
+            KEYEVENTF_KEYUP = 2, MOUSEEVENTF_WHEEL = 0x0800,
+            KEYEVENTF_SCANCODE = 0x0008, MAPVK_VK_TO_VSC = 0;
 
         [DllImport("user32.dll", SetLastError = true)]
         private static extern uint SendInput(uint numberOfInputs, INPUT[] inputs, int sizeOfInputs);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern ushort MapVirtualKey(uint uCode, uint uMapType);
     }
 }

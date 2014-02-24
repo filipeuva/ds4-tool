@@ -18,23 +18,26 @@ namespace ScpControl
 
             foreach (KeyValuePair<DS4Controls, ushort> customKey in Global.getCustomKeys())
             {
-
+                DS4KeyType keyType = Global.getCustomKeyType(customKey.Key);
                 bool PrevOn = getBoolMapping(customKey.Key, prevState);
-                bool CurOn = getBoolMapping(customKey.Key, cState);
-                if (CurOn && !PrevOn)
+                if (getBoolMapping(customKey.Key, cState))
                 {
-                    resetToDefaultValue(customKey.Key, cState);
-                    Touchpad.performKeyPress(customKey.Value);
+                    cState = resetToDefaultValue(customKey.Key, cState);
+                    if (!PrevOn)
+                    {
+                        if (keyType.HasFlag(DS4KeyType.ScanCode))
+                            Touchpad.performSCKeyPress(customKey.Value);
+                        else Touchpad.performKeyPress(customKey.Value);
+                    }
+                    else if (keyType.HasFlag(DS4KeyType.Repeat))
+                        if (keyType.HasFlag(DS4KeyType.ScanCode))
+                            Touchpad.performSCKeyPress(customKey.Value);
+                        else Touchpad.performKeyPress(customKey.Value);
                 }
-                else if (PrevOn && !CurOn)
-                {
-                    Touchpad.performKeyRelease(customKey.Value);
-                }
-                else if (PrevOn && CurOn)
-                {
-                   // resetToDefaultValue(customKey.Key, cState);
-                    //Touchpad.performKeyPress(customKey.Value);
-                }
+                else if (PrevOn)
+                    if (keyType.HasFlag(DS4KeyType.ScanCode))
+                        Touchpad.performSCKeyRelease(customKey.Value);
+                    else Touchpad.performKeyRelease(customKey.Value);
             }
 
             foreach (KeyValuePair<DS4Controls, X360Controls> customButton in Global.getCustomButtons())
@@ -162,20 +165,23 @@ namespace ScpControl
                             Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_LEFTUP);
                         break;
                     case X360Controls.RightMouse:
-                         PrevOn = getBoolMapping(customButton.Key, prevState);
-                         CurOn = getBoolMapping(customButton.Key, cState);
+                        PrevOn = getBoolMapping(customButton.Key, prevState);
+                        CurOn = getBoolMapping(customButton.Key, cState);
                         if (!PrevOn && CurOn)
                             Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_RIGHTDOWN);
                         else if (PrevOn && !CurOn)
                             Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_RIGHTUP);
                         break;
                     case X360Controls.MiddleMouse:
-                         PrevOn = getBoolMapping(customButton.Key, prevState);
-                         CurOn = getBoolMapping(customButton.Key, cState);
+                        PrevOn = getBoolMapping(customButton.Key, prevState);
+                        CurOn = getBoolMapping(customButton.Key, cState);
                         if (!PrevOn && CurOn)
                             Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_MIDDLEDOWN);
                         else if (PrevOn && !CurOn)
                             Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_MIDDLEUP);
+                        break;
+                    case X360Controls.Unbound:
+                        cState = resetToDefaultValue(customButton.Key, cState);
                         break;
                 }
             }
@@ -213,7 +219,6 @@ namespace ScpControl
                 case DS4Controls.DpadDown: return (byte)(cState.DpadDown ? 255 : 0);
                 case DS4Controls.DpadLeft: return (byte)(cState.DpadLeft ? 255 : 0);
                 case DS4Controls.DpadRight: return (byte)(cState.DpadRight ? 255 : 0);
-                case DS4Controls.TouchButton: return (byte)(cState.TouchButton ? 255 : 0);
                 case DS4Controls.PS: return (byte)(cState.PS ? 255 : 0);
                 case DS4Controls.Cross: return (byte)(cState.Cross ? 255 : 0);
                 case DS4Controls.Square: return (byte)(cState.Square ? 255 : 0);
@@ -247,7 +252,6 @@ namespace ScpControl
                 case DS4Controls.DpadDown: return cState.DpadDown;
                 case DS4Controls.DpadLeft: return cState.DpadLeft;
                 case DS4Controls.DpadRight: return cState.DpadRight;
-                case DS4Controls.TouchButton: return cState.TouchButton;
                 case DS4Controls.PS: return cState.PS;
                 case DS4Controls.Cross: return cState.Cross;
                 case DS4Controls.Square: return cState.Square;
@@ -287,7 +291,6 @@ namespace ScpControl
                 case DS4Controls.DpadDown: return (byte)(cState.DpadDown ? trueVal : falseVal);
                 case DS4Controls.DpadLeft: return (byte)(cState.DpadLeft ? trueVal : falseVal);
                 case DS4Controls.DpadRight: return (byte)(cState.DpadRight ? trueVal : falseVal);
-                case DS4Controls.TouchButton: return (byte)(cState.TouchButton ? trueVal : falseVal);
                 case DS4Controls.PS: return (byte)(cState.PS ? trueVal : falseVal);
                 case DS4Controls.Cross: return (byte)(cState.Cross ? trueVal : falseVal);
                 case DS4Controls.Square: return (byte)(cState.Square ? trueVal : falseVal);
@@ -345,7 +348,6 @@ namespace ScpControl
                 case DS4Controls.DpadDown: cState.DpadDown = false; break;
                 case DS4Controls.DpadLeft: cState.DpadLeft = false; break;
                 case DS4Controls.DpadRight: cState.DpadRight = false; break;
-                case DS4Controls.TouchButton: cState.TouchButton = false; break;
                 case DS4Controls.PS: cState.PS = false; break;
                 case DS4Controls.Cross: cState.Cross = false; break;
                 case DS4Controls.Square: cState.Square = false; break;

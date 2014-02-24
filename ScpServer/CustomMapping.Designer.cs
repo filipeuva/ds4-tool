@@ -72,18 +72,19 @@
             this.btnLoad = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.cbPS = new System.Windows.Forms.ComboBox();
-            this.cbPad = new System.Windows.Forms.ComboBox();
+            this.cbTouchButtom = new System.Windows.Forms.ComboBox();
             this.label21 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
-            this.label23 = new System.Windows.Forms.Label();
-            this.label24 = new System.Windows.Forms.Label();
             this.cbLY2 = new System.Windows.Forms.ComboBox();
             this.cbLX2 = new System.Windows.Forms.ComboBox();
             this.cbRY2 = new System.Windows.Forms.ComboBox();
             this.cbRX2 = new System.Windows.Forms.ComboBox();
-            this.cbTopPad = new System.Windows.Forms.ComboBox();
-            this.cbMultiTouch = new System.Windows.Forms.ComboBox();
+            this.cbTouchUpper = new System.Windows.Forms.ComboBox();
+            this.cbTouchMulti = new System.Windows.Forms.ComboBox();
             this.cbRepeat = new System.Windows.Forms.CheckBox();
+            this.cbScanCode = new System.Windows.Forms.CheckBox();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -91,7 +92,7 @@
             // 
             this.pictureBox.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.pictureBox.Image = global::ScpServer.Properties.Resources._1;
-            this.pictureBox.Location = new System.Drawing.Point(237, 69);
+            this.pictureBox.Location = new System.Drawing.Point(237, 93);
             this.pictureBox.Name = "pictureBox";
             this.pictureBox.Size = new System.Drawing.Size(348, 173);
             this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -148,11 +149,6 @@
             this.cbSquare.Size = new System.Drawing.Size(90, 21);
             this.cbSquare.TabIndex = 11;
             this.cbSquare.Text = "X Button";
-            this.cbSquare.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbSquare.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbSquare.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbSquare.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbSquare.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbCircle
             // 
@@ -164,11 +160,6 @@
             this.cbCircle.Size = new System.Drawing.Size(90, 21);
             this.cbCircle.TabIndex = 12;
             this.cbCircle.Text = "B Button";
-            this.cbCircle.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbCircle.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbCircle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbCircle.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbCircle.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbTriangle
             // 
@@ -180,11 +171,6 @@
             this.cbTriangle.Size = new System.Drawing.Size(90, 21);
             this.cbTriangle.TabIndex = 10;
             this.cbTriangle.Text = "Y Button";
-            this.cbTriangle.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbTriangle.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbTriangle.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbTriangle.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbTriangle.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbCross
             // 
@@ -196,11 +182,6 @@
             this.cbCross.Size = new System.Drawing.Size(90, 21);
             this.cbCross.TabIndex = 13;
             this.cbCross.Text = "A Button";
-            this.cbCross.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbCross.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbCross.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbCross.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbCross.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbDown
             // 
@@ -211,11 +192,6 @@
             this.cbDown.Size = new System.Drawing.Size(90, 21);
             this.cbDown.TabIndex = 3;
             this.cbDown.Text = "Down Button";
-            this.cbDown.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbDown.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbDown.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbDown.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbDown.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbUp
             // 
@@ -226,11 +202,6 @@
             this.cbUp.Size = new System.Drawing.Size(90, 21);
             this.cbUp.TabIndex = 0;
             this.cbUp.Text = "Up Button";
-            this.cbUp.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbUp.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbUp.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbUp.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbUp.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbRight
             // 
@@ -241,11 +212,6 @@
             this.cbRight.Size = new System.Drawing.Size(90, 21);
             this.cbRight.TabIndex = 2;
             this.cbRight.Text = "Right Button";
-            this.cbRight.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbRight.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbRight.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbRight.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbRight.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbLeft
             // 
@@ -256,11 +222,6 @@
             this.cbLeft.Size = new System.Drawing.Size(90, 21);
             this.cbLeft.TabIndex = 1;
             this.cbLeft.Text = "Left Button";
-            this.cbLeft.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbLeft.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbLeft.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbLeft.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbLeft.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // label5
             // 
@@ -308,11 +269,6 @@
             this.cbR2.Size = new System.Drawing.Size(90, 21);
             this.cbR2.TabIndex = 18;
             this.cbR2.Text = "Right Trigger";
-            this.cbR2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbR2.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbR2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbR2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbR2.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbR3
             // 
@@ -324,11 +280,6 @@
             this.cbR3.Size = new System.Drawing.Size(90, 21);
             this.cbR3.TabIndex = 17;
             this.cbR3.Text = "Right Stick";
-            this.cbR3.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbR3.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbR3.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbR3.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbR3.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // label9
             // 
@@ -360,11 +311,6 @@
             this.cbL3.Size = new System.Drawing.Size(90, 21);
             this.cbL3.TabIndex = 9;
             this.cbL3.Text = "Left Stick";
-            this.cbL3.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbL3.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbL3.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbL3.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbL3.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbL2
             // 
@@ -376,18 +322,13 @@
             this.cbL2.Size = new System.Drawing.Size(90, 21);
             this.cbL2.TabIndex = 8;
             this.cbL2.Text = "Left Trigger";
-            this.cbL2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbL2.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbL2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbL2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbL2.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // label11
             // 
             this.label11.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.label11.Location = new System.Drawing.Point(298, 266);
+            this.label11.Location = new System.Drawing.Point(331, 266);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(90, 17);
+            this.label11.Size = new System.Drawing.Size(29, 17);
             this.label11.TabIndex = 22;
             this.label11.Text = "L3";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -422,11 +363,6 @@
             this.cbOptions.Size = new System.Drawing.Size(90, 21);
             this.cbOptions.TabIndex = 14;
             this.cbOptions.Text = "Start";
-            this.cbOptions.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbOptions.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbOptions.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbOptions.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbOptions.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbRX
             // 
@@ -438,16 +374,11 @@
             this.cbRX.Size = new System.Drawing.Size(90, 21);
             this.cbRX.TabIndex = 15;
             this.cbRX.Text = "Right X-Axis-";
-            this.cbRX.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbRX.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbRX.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbRX.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbRX.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // label14
             // 
             this.label14.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label14.Location = new System.Drawing.Point(594, 172);
+            this.label14.Location = new System.Drawing.Point(599, 172);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(65, 17);
             this.label14.TabIndex = 27;
@@ -464,16 +395,11 @@
             this.cbLX.Size = new System.Drawing.Size(90, 21);
             this.cbLX.TabIndex = 5;
             this.cbLX.Text = "Left X-Axis-";
-            this.cbLX.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbLX.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbLX.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbLX.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbLX.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // label15
             // 
             this.label15.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label15.Location = new System.Drawing.Point(155, 172);
+            this.label15.Location = new System.Drawing.Point(150, 172);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(65, 17);
             this.label15.TabIndex = 31;
@@ -490,11 +416,6 @@
             this.cbShare.Size = new System.Drawing.Size(90, 21);
             this.cbShare.TabIndex = 4;
             this.cbShare.Text = "Back";
-            this.cbShare.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbShare.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbShare.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbShare.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbShare.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // label16
             // 
@@ -516,16 +437,11 @@
             this.cbLY.Size = new System.Drawing.Size(90, 21);
             this.cbLY.TabIndex = 6;
             this.cbLY.Text = "Left Y-Axis-";
-            this.cbLY.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbLY.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbLY.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbLY.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbLY.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // label17
             // 
             this.label17.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.label17.Location = new System.Drawing.Point(156, 226);
+            this.label17.Location = new System.Drawing.Point(151, 226);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(65, 17);
             this.label17.TabIndex = 35;
@@ -542,16 +458,11 @@
             this.cbRY.Size = new System.Drawing.Size(90, 21);
             this.cbRY.TabIndex = 16;
             this.cbRY.Text = "Right Y-Axis-";
-            this.cbRY.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbRY.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbRY.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbRY.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbRY.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // label18
             // 
             this.label18.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label18.Location = new System.Drawing.Point(594, 225);
+            this.label18.Location = new System.Drawing.Point(599, 225);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(65, 17);
             this.label18.TabIndex = 33;
@@ -568,11 +479,6 @@
             this.cbR1.Size = new System.Drawing.Size(90, 21);
             this.cbR1.TabIndex = 19;
             this.cbR1.Text = "Right Bumper";
-            this.cbR1.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbR1.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbR1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbR1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbR1.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // label19
             // 
@@ -594,11 +500,6 @@
             this.cbL1.Size = new System.Drawing.Size(90, 21);
             this.cbL1.TabIndex = 7;
             this.cbL1.Text = "Left Bumper";
-            this.cbL1.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbL1.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbL1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbL1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbL1.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // label20
             // 
@@ -620,7 +521,6 @@
             this.btnLoad.Text = "Load";
             this.btnLoad.UseVisualStyleBackColor = true;
             this.btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
-            this.btnLoad.Move += new System.EventHandler(this.EnterCommand);
             // 
             // btnSave
             // 
@@ -632,45 +532,33 @@
             this.btnSave.Text = "Save";
             this.btnSave.UseVisualStyleBackColor = true;
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
-            this.btnSave.Move += new System.EventHandler(this.EnterCommand);
             // 
             // cbPS
             // 
             this.cbPS.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.cbPS.FormattingEnabled = true;
-            this.cbPS.Location = new System.Drawing.Point(237, 20);
+            this.cbPS.Location = new System.Drawing.Point(232, 42);
             this.cbPS.MaxLength = 1;
             this.cbPS.Name = "cbPS";
             this.cbPS.Size = new System.Drawing.Size(90, 21);
             this.cbPS.TabIndex = 20;
             this.cbPS.Text = "Guide";
-            this.cbPS.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbPS.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbPS.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbPS.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbPS.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
-            // cbPad
+            // cbTouchButton
             // 
-            this.cbPad.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.cbPad.FormattingEnabled = true;
-            this.cbPad.Location = new System.Drawing.Point(303, 42);
-            this.cbPad.MaxLength = 1;
-            this.cbPad.Name = "cbPad";
-            this.cbPad.Size = new System.Drawing.Size(90, 21);
-            this.cbPad.TabIndex = 21;
-            this.cbPad.Text = "Click";
-            this.cbPad.Visible = false;
-            this.cbPad.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbPad.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbPad.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbPad.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbPad.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
+            this.cbTouchButtom.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.cbTouchButtom.FormattingEnabled = true;
+            this.cbTouchButtom.Location = new System.Drawing.Point(329, 42);
+            this.cbTouchButtom.MaxLength = 1;
+            this.cbTouchButtom.Name = "cbTouchButton";
+            this.cbTouchButtom.Size = new System.Drawing.Size(80, 21);
+            this.cbTouchButtom.TabIndex = 21;
+            this.cbTouchButtom.Text = "Click";
             // 
             // label21
             // 
             this.label21.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.label21.Location = new System.Drawing.Point(237, 4);
+            this.label21.Location = new System.Drawing.Point(232, 61);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(90, 17);
             this.label21.TabIndex = 42;
@@ -680,33 +568,12 @@
             // label22
             // 
             this.label22.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.label22.Location = new System.Drawing.Point(237, 41);
+            this.label22.Location = new System.Drawing.Point(329, 58);
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(60, 22);
+            this.label22.Size = new System.Drawing.Size(80, 22);
             this.label22.TabIndex = 43;
             this.label22.Text = "Touchpad";
             this.label22.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.label22.Visible = false;
-            // 
-            // label23
-            // 
-            this.label23.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(368, 8);
-            this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(217, 13);
-            this.label23.TabIndex = 44;
-            this.label23.Text = "Choose from the list or press the desired key.";
-            // 
-            // label24
-            // 
-            this.label24.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(368, 23);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(175, 13);
-            this.label24.TabIndex = 45;
-            this.label24.Text = "Press DEL once to remove a value.";
             // 
             // cbLY2
             // 
@@ -718,11 +585,6 @@
             this.cbLY2.Size = new System.Drawing.Size(90, 21);
             this.cbLY2.TabIndex = 47;
             this.cbLY2.Text = "Left Y-Axis+";
-            this.cbLY2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbLY2.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbLY2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbLY2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbLY2.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbLX2
             // 
@@ -734,11 +596,6 @@
             this.cbLX2.Size = new System.Drawing.Size(90, 21);
             this.cbLX2.TabIndex = 46;
             this.cbLX2.Text = "Left X-Axis+";
-            this.cbLX2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbLX2.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbLX2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbLX2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbLX2.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbRY2
             // 
@@ -750,11 +607,6 @@
             this.cbRY2.Size = new System.Drawing.Size(90, 21);
             this.cbRY2.TabIndex = 49;
             this.cbRY2.Text = "Right Y-Axis+";
-            this.cbRY2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbRY2.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbRY2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbRY2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbRY2.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
             // cbRX2
             // 
@@ -766,40 +618,35 @@
             this.cbRX2.Size = new System.Drawing.Size(90, 21);
             this.cbRX2.TabIndex = 48;
             this.cbRX2.Text = "Right X-Axis+";
-            this.cbRX2.SelectedIndexChanged += new System.EventHandler(this.SelectedIndexChangedCommand);
-            this.cbRX2.Enter += new System.EventHandler(this.EnterCommand);
-            this.cbRX2.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDownCommand);
-            this.cbRX2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.KeyPressCommand);
-            this.cbRX2.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.PreviewKeyDownCommand);
             // 
-            // cbTopPad
+            // cbTouchUpper
             // 
-            this.cbTopPad.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.cbTopPad.FormattingEnabled = true;
-            this.cbTopPad.Location = new System.Drawing.Point(399, 42);
-            this.cbTopPad.MaxLength = 1;
-            this.cbTopPad.Name = "cbTopPad";
-            this.cbTopPad.Size = new System.Drawing.Size(90, 21);
-            this.cbTopPad.TabIndex = 22;
-            this.cbTopPad.Text = "Middle Click";
-            this.cbTopPad.Visible = false;
+            this.cbTouchUpper.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.cbTouchUpper.FormattingEnabled = true;
+            this.cbTouchUpper.Location = new System.Drawing.Point(415, 42);
+            this.cbTouchUpper.MaxLength = 1;
+            this.cbTouchUpper.Name = "cbTouchUpper";
+            this.cbTouchUpper.Size = new System.Drawing.Size(80, 21);
+            this.cbTouchUpper.TabIndex = 22;
+            this.cbTouchUpper.Text = "Middle Click";
             // 
-            // cbMultiTouch
+            // cbTouchMulti
             // 
-            this.cbMultiTouch.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.cbMultiTouch.FormattingEnabled = true;
-            this.cbMultiTouch.Location = new System.Drawing.Point(495, 42);
-            this.cbMultiTouch.MaxLength = 1;
-            this.cbMultiTouch.Name = "cbMultiTouch";
-            this.cbMultiTouch.Size = new System.Drawing.Size(90, 21);
-            this.cbMultiTouch.TabIndex = 23;
-            this.cbMultiTouch.Text = "Right Click";
-            this.cbMultiTouch.Visible = false;
+            this.cbTouchMulti.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.cbTouchMulti.FormattingEnabled = true;
+            this.cbTouchMulti.Location = new System.Drawing.Point(501, 42);
+            this.cbTouchMulti.MaxLength = 1;
+            this.cbTouchMulti.Name = "cbTouchMulti";
+            this.cbTouchMulti.Size = new System.Drawing.Size(80, 21);
+            this.cbTouchMulti.TabIndex = 23;
+            this.cbTouchMulti.Text = "Right Click";
             // 
             // cbRepeat
             // 
+            this.cbRepeat.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.cbRepeat.AutoSize = true;
-            this.cbRepeat.Location = new System.Drawing.Point(13, 259);
+            this.cbRepeat.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.cbRepeat.Location = new System.Drawing.Point(329, 10);
             this.cbRepeat.Name = "cbRepeat";
             this.cbRepeat.Size = new System.Drawing.Size(61, 17);
             this.cbRepeat.TabIndex = 26;
@@ -807,12 +654,46 @@
             this.cbRepeat.UseVisualStyleBackColor = true;
             this.cbRepeat.CheckedChanged += new System.EventHandler(this.cbRepeat_CheckedChanged);
             // 
+            // cbScanCode
+            // 
+            this.cbScanCode.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.cbScanCode.AutoSize = true;
+            this.cbScanCode.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbScanCode.Location = new System.Drawing.Point(413, 10);
+            this.cbScanCode.Name = "cbScanCode";
+            this.cbScanCode.Size = new System.Drawing.Size(79, 17);
+            this.cbScanCode.TabIndex = 50;
+            this.cbScanCode.Text = "Scan Code";
+            this.cbScanCode.UseVisualStyleBackColor = true;
+            this.cbScanCode.CheckedChanged += new System.EventHandler(this.cbScanCode_CheckedChanged);
+            // 
+            // label23
+            // 
+            this.label23.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.label23.Location = new System.Drawing.Point(415, 58);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(80, 22);
+            this.label23.TabIndex = 51;
+            this.label23.Text = "Upperpad";
+            this.label23.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label24
+            // 
+            this.label24.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.label24.Location = new System.Drawing.Point(501, 58);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(80, 22);
+            this.label24.TabIndex = 52;
+            this.label24.Text = "Multitouch";
+            this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // CustomMapping
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(244)))), ((int)(((byte)(244)))));
             this.ClientSize = new System.Drawing.Size(827, 310);
+            this.Controls.Add(this.cbScanCode);
             this.Controls.Add(this.cbRepeat);
             this.Controls.Add(this.cbCross);
             this.Controls.Add(this.cbTriangle);
@@ -823,11 +704,9 @@
             this.Controls.Add(this.cbRY);
             this.Controls.Add(this.cbRX);
             this.Controls.Add(this.cbOptions);
-            this.Controls.Add(this.cbMultiTouch);
-            this.Controls.Add(this.cbTopPad);
-            this.Controls.Add(this.label24);
-            this.Controls.Add(this.label23);
-            this.Controls.Add(this.cbPad);
+            this.Controls.Add(this.cbTouchMulti);
+            this.Controls.Add(this.cbTouchUpper);
+            this.Controls.Add(this.cbTouchButtom);
             this.Controls.Add(this.cbPS);
             this.Controls.Add(this.label22);
             this.Controls.Add(this.label21);
@@ -847,7 +726,6 @@
             this.Controls.Add(this.label5);
             this.Controls.Add(this.cbCircle);
             this.Controls.Add(this.cbSquare);
-            this.Controls.Add(this.pictureBox);
             this.Controls.Add(this.cbUp);
             this.Controls.Add(this.cbLeft);
             this.Controls.Add(this.cbRight);
@@ -869,6 +747,9 @@
             this.Controls.Add(this.cbLY);
             this.Controls.Add(this.cbLX);
             this.Controls.Add(this.cbLX2);
+            this.Controls.Add(this.label23);
+            this.Controls.Add(this.label24);
+            this.Controls.Add(this.pictureBox);
             this.MaximumSize = new System.Drawing.Size(886, 359);
             this.MinimumSize = new System.Drawing.Size(797, 303);
             this.Name = "CustomMapping";
@@ -886,6 +767,24 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.Label label22;
         private System.Windows.Forms.ComboBox cbSquare;
         private System.Windows.Forms.ComboBox cbCircle;
         private System.Windows.Forms.ComboBox cbTriangle;
@@ -894,48 +793,31 @@
         private System.Windows.Forms.ComboBox cbUp;
         private System.Windows.Forms.ComboBox cbRight;
         private System.Windows.Forms.ComboBox cbLeft;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ComboBox cbR1;
         private System.Windows.Forms.ComboBox cbR2;
         private System.Windows.Forms.ComboBox cbR3;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.ComboBox cbL3;
-        private System.Windows.Forms.ComboBox cbL2;
-        private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.ComboBox cbOptions;
-        private System.Windows.Forms.ComboBox cbRX;
-        private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.ComboBox cbLX;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.ComboBox cbShare;
-        private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.ComboBox cbLY;
-        private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.ComboBox cbRY;
-        private System.Windows.Forms.Label label18;
-        private System.Windows.Forms.ComboBox cbR1;
-        private System.Windows.Forms.Label label19;
         private System.Windows.Forms.ComboBox cbL1;
-        private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.Button btnLoad;
-        private System.Windows.Forms.Button btnSave;
+        private System.Windows.Forms.ComboBox cbL2;
+        private System.Windows.Forms.ComboBox cbL3;
+        private System.Windows.Forms.ComboBox cbOptions;
+        private System.Windows.Forms.ComboBox cbShare;
         private System.Windows.Forms.ComboBox cbPS;
-        private System.Windows.Forms.ComboBox cbPad;
-        private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.Label label22;
-        private System.Windows.Forms.Label label23;
-        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.ComboBox cbTouchButtom;
+        private System.Windows.Forms.ComboBox cbLX;
+        private System.Windows.Forms.ComboBox cbLY;
+        private System.Windows.Forms.ComboBox cbRX;
+        private System.Windows.Forms.ComboBox cbRY;
         private System.Windows.Forms.ComboBox cbLY2;
         private System.Windows.Forms.ComboBox cbLX2;
         private System.Windows.Forms.ComboBox cbRY2;
         private System.Windows.Forms.ComboBox cbRX2;
-        private System.Windows.Forms.ComboBox cbTopPad;
-        private System.Windows.Forms.ComboBox cbMultiTouch;
+        private System.Windows.Forms.ComboBox cbTouchUpper;
+        private System.Windows.Forms.ComboBox cbTouchMulti;
         private System.Windows.Forms.CheckBox cbRepeat;
+        private System.Windows.Forms.Button btnLoad;
+        private System.Windows.Forms.Button btnSave;
+        private System.Windows.Forms.CheckBox cbScanCode;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.Label label24;
     }
 }
