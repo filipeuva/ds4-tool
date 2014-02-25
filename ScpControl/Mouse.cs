@@ -146,12 +146,15 @@ namespace ScpControl
 
         public void touchesEnded(object sender, TouchpadEventArgs arg)
         {
-            DateTime test = DateTime.Now;
-            if (test <= (pastTime + TimeSpan.FromMilliseconds(125)) && !arg.touchButtonPressed)
+            if (Global.getTapSensitivity(deviceNum) != 0)
             {
-                if ( Math.Abs(firstTouch.hwX - arg.touches[0].hwX) < 10 &&
-                    Math.Abs(firstTouch.hwY - arg.touches[0].hwY) < 10)
-                performLeftClick();
+                DateTime test = DateTime.Now;
+                if (test <= (pastTime + TimeSpan.FromMilliseconds((double)Global.getTapSensitivity(deviceNum) * 2)) && !arg.touchButtonPressed)
+                {
+                    if (Math.Abs(firstTouch.hwX - arg.touches[0].hwX) < 10 &&
+                        Math.Abs(firstTouch.hwY - arg.touches[0].hwY) < 10)
+                        performLeftClick();
+                }
             }
         }
 
@@ -159,7 +162,7 @@ namespace ScpControl
         {
             if (arg.touches.Length > 1)
                 mapTouchPad(DS4Controls.TouchMulti, true);
-            else if (!rightClick && arg.touches.Length == 0 && !mapTouchPad(DS4Controls.TouchButton, true))
+            else if (!rightClick && arg.touches.Length == 1 && !mapTouchPad(DS4Controls.TouchButton, true))
             {
                 MouseEvent(MOUSEEVENTF_LEFTUP);
             }
