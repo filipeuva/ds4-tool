@@ -105,6 +105,15 @@ namespace ScpControl
 
         }
 
+        public static bool getFlushHIDQueue(int device)
+        {
+            return m_Config.flushHIDQueue[device];
+        }
+        public static void setFlushHIDQueue(int device, bool setting)
+        {
+            m_Config.flushHIDQueue[device] = setting;
+        }
+
         public static byte getTouchSensitivity(int device)
         {
             return m_Config.touchSensitivity[device];
@@ -186,13 +195,21 @@ namespace ScpControl
         {
             return m_Config.scrollSensitivity[device];
         }
-        public static void setTwoFingerRC(int device, bool twoFingerRC)
+        public static void setLowerRCOff(int device, bool twoFingerRC)
         {
-            m_Config.twoFingerRC[device] = twoFingerRC;
+            m_Config.lowerRCOff[device] = twoFingerRC;
         }
-        public static bool getTwoFingerRC(int device)
+        public static bool getLowerRCOff(int device)
         {
-            return m_Config.twoFingerRC[device];
+            return m_Config.lowerRCOff[device];
+        }
+        public static void setTouchpadJitterCompensation(int device, bool enabled)
+        {
+            m_Config.touchpadJitterCompensation[device] = enabled;
+        }
+        public static bool getTouchpadJitterCompensation(int device)
+        {
+            return m_Config.touchpadJitterCompensation[device];
         }
         public static void setStartMinimized(bool startMinimized)
         {
@@ -218,6 +235,25 @@ namespace ScpControl
         {
             return m_Config.formHeight;
         }
+
+        public static double getLeftTriggerMiddle(int device)
+        {
+            return m_Config.m_LeftTriggerMiddle[device];
+        }
+        public static void setLeftTriggerMiddle(int device, double value)
+        {
+            m_Config.m_LeftTriggerMiddle[device] = value;
+        }
+
+        public static double getRightTriggerMiddle(int device)
+        {
+            return m_Config.m_RightTriggerMiddle[device];
+        }
+        public static void setRightTriggerMiddle(int device, double value)
+        {
+            m_Config.m_RightTriggerMiddle[device] = value;
+        }
+
         public static void setCustomMap(int device, string customMap)
         {
             m_Config.customMapPath[device] = customMap;
@@ -315,10 +351,12 @@ namespace ScpControl
         protected String m_File = Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName + @"\ScpControl.xml";
         protected XmlDocument m_Xdoc = new XmlDocument();
 
-        public Boolean[] twoFingerRC = { false, false, false, false };
+        public Boolean[] touchpadJitterCompensation = { true, true, true, true };
+        public Boolean[] lowerRCOff = { false, false, false, false };
         public Boolean[] ledAsBattery = { false, false, false, false };
         public Boolean[] flashLedLowBattery = { false, false, false, false };
         public Boolean[] touchEnabled = { false, false, false, false };
+        public double[] m_LeftTriggerMiddle = { 0.5, 0.5, 0.5, 0.5 }, m_RightTriggerMiddle = { 0.5, 0.5, 0.5, 0.5 };
         public String[] customMapPath = { String.Empty, String.Empty, String.Empty, String.Empty };
         public Byte[] m_Rumble = { 100, 100, 100, 100 };
         public Byte[] touchSensitivity = { 100, 100, 100, 100 };
@@ -338,6 +376,7 @@ namespace ScpControl
             new Byte[] {0,255,0},
             new Byte[] {255,0,255},
         };
+        public bool[] flushHIDQueue = { true, true, true, true };
 
         public Boolean useExclusiveMode = false;
         public Int32 formWidth = 782;
@@ -403,7 +442,7 @@ namespace ScpControl
                             }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Loaded = false;
             }
@@ -534,7 +573,7 @@ namespace ScpControl
                     Node.AppendChild(KeyType);
                 m_Xdoc.Save(customMapPath);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Saved = false;
             }
@@ -635,6 +674,9 @@ namespace ScpControl
 
                     for (int i = 0; i < 4; i++)
                     {
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/flushHIDQueue"); Boolean.TryParse(Item.InnerText, out flushHIDQueue[i]); }
+                        catch { missingSetting = true; }
+
                         try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/Red"); Byte.TryParse(Item.InnerText, out m_Leds[i][0]); }
                         catch { missingSetting = true; }
 
@@ -659,22 +701,29 @@ namespace ScpControl
                         try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/touchEnabled"); Boolean.TryParse(Item.InnerText, out touchEnabled[i]); }
                         catch { missingSetting = true; }
 
-                        // Add new settings
                         try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/LowRed"); Byte.TryParse(Item.InnerText, out m_LowLeds[i][0]); }
                         catch { missingSetting = true; }
                         try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/LowGreen"); Byte.TryParse(Item.InnerText, out m_LowLeds[i][1]); }
                         catch { missingSetting = true; }
                         try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/LowBlue"); Byte.TryParse(Item.InnerText, out m_LowLeds[i][2]); }
                         catch { missingSetting = true; }
-                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/twoFingerRC"); Boolean.TryParse(Item.InnerText, out twoFingerRC[i]); }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/touchpadJitterCompensation"); Boolean.TryParse(Item.InnerText, out touchpadJitterCompensation[i]); }
+                        catch { missingSetting = true; }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/lowerRCOff"); Boolean.TryParse(Item.InnerText, out lowerRCOff[i]); }
                         catch { missingSetting = true; }
                         try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/tapSensitivity"); Byte.TryParse(Item.InnerText, out tapSensitivity[i]); }
                         catch { missingSetting = true; }
                         try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/scrollSensitivity"); Byte.TryParse(Item.InnerText, out scrollSensitivity[i]); }
                         catch { missingSetting = true; }
+                        // XXX This sucks, let's do better at removing old values that are no longer valid....
+                        if (scrollSensitivity[i] > 10)
+                            scrollSensitivity[i] = 5;
                         try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/customMapPath"); customMapPath[i] = Item.InnerText; }
                         catch { missingSetting = true; }
-
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/LeftTriggerMiddle"); Double.TryParse(Item.InnerText, out m_LeftTriggerMiddle[i]); }
+                        catch { missingSetting = true; }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/RightTriggerMiddle"); Double.TryParse(Item.InnerText, out m_RightTriggerMiddle[i]); }
+                        catch { missingSetting = true; }
                     }
 
                     try { Item = m_Xdoc.SelectSingleNode("/ScpControl/useExclusiveMode"); Boolean.TryParse(Item.InnerText, out useExclusiveMode); }
@@ -730,6 +779,7 @@ namespace ScpControl
 
                 for (int i = 0; i < 4; i++)
                 {
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "flushHIDQueue", null); Entry.InnerText = flushHIDQueue[i].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "Red", null); Entry.InnerText = m_Leds[i][0].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "Green", null); Entry.InnerText = m_Leds[i][1].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "Blue", null); Entry.InnerText = m_Leds[i][2].ToString(); cNodes[i].AppendChild(Entry);
@@ -738,15 +788,16 @@ namespace ScpControl
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "lowBatteryFlash", null); Entry.InnerText = flashLedLowBattery[i].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "touchSensitivity", null); Entry.InnerText = touchSensitivity[i].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "touchEnabled", null); Entry.InnerText = touchEnabled[i].ToString(); cNodes[i].AppendChild(Entry);
-
-                    // Add new settings
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "LowRed", null); Entry.InnerText = m_LowLeds[i][0].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "LowGreen", null); Entry.InnerText = m_LowLeds[i][1].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "LowBlue", null); Entry.InnerText = m_LowLeds[i][2].ToString(); cNodes[i].AppendChild(Entry);
-                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "twoFingerRC", null); Entry.InnerText = twoFingerRC[i].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "touchpadJitterCompensation", null); Entry.InnerText = touchpadJitterCompensation[i].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "lowerRCOff", null); Entry.InnerText = lowerRCOff[i].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "tapSensitivity", null); Entry.InnerText = tapSensitivity[i].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "scrollSensitivity", null); Entry.InnerText = scrollSensitivity[i].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "customMapPath", null); Entry.InnerText = customMapPath[i]; cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "LeftTriggerMiddle", null); Entry.InnerText = m_LeftTriggerMiddle[i].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "RightTriggerMiddle", null); Entry.InnerText = m_RightTriggerMiddle[i].ToString(); cNodes[i].AppendChild(Entry);
                 }
                 m_Xdoc.AppendChild(Node);
 

@@ -43,8 +43,9 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Mapping.cs" />
+    <Compile Include="Mouse.cs" />
     <Compile Include="Touchpad.cs" />
+    <Compile Include="Mapping.cs" />
     <Compile Include="DS4Device.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BusDevice.cs">

@@ -33,12 +33,11 @@ namespace ScpControl
         private bool isUSB = true;
         private int deviceNum = 0;
         private bool m_isTouchEnabled = false;
-        private object lastPressed;
 
         private byte rumbleBoost = 100;
         private byte smallRumble = 0;
         private byte bigRumble = 0;
-        private byte ledFlash = 0;
+        private byte ledFlashOn = 0, ledFlashOff = 0;
         private HidDevice hid_device;
         private ledColor m_LedColor;
         private byte[] inputData = new byte[64];
@@ -47,16 +46,32 @@ namespace ScpControl
         private byte[] Report = new byte[64];
         private byte[] btInputData;
         private string MACAddr;
- 
+
+        private readonly static byte[/* Light On duration */, /* Light Off duration */] BatteryIndicatorDurations =
+        {
+            { 255, 255 }, // 0 doesn't happen
+            { 28, 252 },
+            { 56, 224 },
+            { 84, 196 },
+            { 112, 168 },
+            { 140, 140 },
+            { 168, 112 },
+            { 196, 84 },
+            { 224, 56}, // on 80% of the time at 80, etc.
+            { 252, 28 }, // on 90% of the time at 90
+            { 0, 0 } // no flash at 100
+        };
+
+
         // Publicize Input Data
-        public byte[] InputData 
+        public byte[] InputData
         {
             get
             {
                 return inputData;
             }
         }
- 
+
         public HidDevice Device
         {
             get { return hid_device; }
@@ -64,17 +79,18 @@ namespace ScpControl
 
         public byte SmallRumble
         {
-            get {
-                uint boosted = ((uint)smallRumble * (uint)rumbleBoost)/100;
+            get
+            {
+                uint boosted = ((uint)smallRumble * (uint)rumbleBoost) / 100;
                 if (boosted > 255)
                     boosted = 255;
-                return (byte)boosted; 
+                return (byte)boosted;
             }
-            set 
+            set
             {
                 if (value == smallRumble) return;
-                smallRumble = value; 
-                isDirty = true; 
+                smallRumble = value;
+                isDirty = true;
             }
         }
 
@@ -87,11 +103,11 @@ namespace ScpControl
                     boosted = 255;
                 return (byte)boosted;
             }
-            set 
+            set
             {
                 if (value == bigRumble) return;
-                bigRumble = value; 
-                isDirty = true; 
+                bigRumble = value;
+                isDirty = true;
             }
         }
 
@@ -121,7 +137,7 @@ namespace ScpControl
         public ledColor LedColor
         {
             get { return m_LedColor; }
-            set 
+            set
             {
                 if (m_LedColor.red != value.red || m_LedColor.green != value.green || m_LedColor.blue != value.blue)
                 {
@@ -131,14 +147,26 @@ namespace ScpControl
             }
         }
 
-        public byte FlashLed
+        public byte FlashLedOn
         {
-            get { return ledFlash; }
-            set 
+            get { return ledFlashOn; }
+            set
             {
-                if (ledFlash != value)
+                if (ledFlashOn != value)
                 {
-                    ledFlash = value;
+                    ledFlashOn = value;
+                    isDirty = true;
+                }
+            }
+        }
+        public byte FlashLedOff
+        {
+            get { return ledFlashOff; }
+            set
+            {
+                if (ledFlashOff != value)
+                {
+                    ledFlashOff = value;
                     isDirty = true;
                 }
             }
@@ -163,9 +191,17 @@ namespace ScpControl
                 outputData = new byte[78];
             }
             isTouchEnabled = Global.getTouchEnabled(deviceNum);
+            touchpad = new Touchpad(deviceNum);
+            mouse = new Mouse(deviceNum);
+            touchpad.TouchButtonDown += mouse.touchButtonDown;
+            touchpad.TouchButtonUp += mouse.touchButtonUp;
+            touchpad.TouchesBegan += mouse.touchesBegan;
+            touchpad.TouchesMoved += mouse.touchesMoved;
+            touchpad.TouchesEnded += mouse.touchesEnded;
             Device.MonitorDeviceEvents = true;
         }
-
+        internal Touchpad touchpad;
+        internal Mouse mouse;
         public byte[] retrieveData()
         {
             if (!isUSB)
@@ -177,17 +213,18 @@ namespace ScpControl
             else if (Device.ReadFile(inputData) == HidDevice.ReadStatus.Success) { }
             else return null;
 
-            Device.flush_Queue();
+            if (Global.getFlushHIDQueue(deviceNum))
+                Device.flush_Queue();
 
             readButtons(inputData);
             toggleTouchpad(inputData[8], inputData[9], cState.TouchButton);
             updateBatteryStatus(inputData[30], isUSB);
             if (isTouchEnabled)
-                Touchpad.handleTouchpad(inputData, cState.TouchButton);
+                touchpad.handleTouchpad(inputData, cState.TouchButton);
 
             if (Global.getHasCustomKeysorButtons(deviceNum))
             {
-                DS4State state = Mapping.mapButtons(cState,PrevState);
+                DS4State state = Mapping.mapButtons(cState, PrevState, mouse);
                 PrevState = cState;
                 cState = state;
                 return ConvertTo360();
@@ -215,10 +252,10 @@ namespace ScpControl
             Report[17] = cState.RY; //Right Stick Y
 
 
-            Report[26] = cState.L2; //Left Trigger
+            Report[26] = Mapping.mapLeftTrigger(cState.L2, deviceNum); //Left Trigger
 
 
-            Report[27] = cState.R2; //Right Trigger
+            Report[27] = Mapping.mapRightTrigger(cState.R2, deviceNum); //Right Trigger
 
 
             bool[] r11 = { false, false, cState.L1, cState.R1, cState.Triangle, cState.Circle, cState.Cross, cState.Square };
@@ -323,11 +360,11 @@ namespace ScpControl
 
         private void toggleTouchpad(byte lt, byte rt, bool touchPressed)
         {
-            if (lt == 255 && rt == 255 && touchPressed)
+            if (lt > 127 && rt > 127 && touchPressed)
             {
                 isTouchEnabled = true;
             }
-            else if (lt == 255 && touchPressed && rt == 0)
+            else if (lt > 127 && touchPressed && rt <= 127)
             {
                 isTouchEnabled = false;
             }
@@ -349,7 +386,7 @@ namespace ScpControl
                     battery = 100;
             }
 
-            this.charge = (short) battery;
+            this.charge = (short)battery;
             if (Global.getLedAsBatteryIndicator(deviceNum))
             {
                 byte[] fullColor = { 
@@ -376,18 +413,12 @@ namespace ScpControl
 
             if (Global.getFlashWhenLowBattery(deviceNum))
             {
-                if (battery < 20)
-                {
-                    FlashLed = 0x80;
-                }
-                else
-                {
-                    FlashLed = 0;
-                }
+                FlashLedOn = BatteryIndicatorDurations[battery / 10, 0];
+                FlashLedOff = BatteryIndicatorDurations[battery / 10, 1];
             }
             else
             {
-                FlashLed = 0;
+                FlashLedOn = FlashLedOff = 0;
             }
         }
 
@@ -401,13 +432,13 @@ namespace ScpControl
                     outputData[0] = 0x11;
                     outputData[1] = 128;
                     outputData[3] = 0xff;
-                    outputData[6] = SmallRumble; //motor
-                    outputData[7] = BigRumble; //motor
+                    outputData[6] = SmallRumble; //fast motor
+                    outputData[7] = BigRumble; //slow motor
                     outputData[8] = LedColor.red; //red
                     outputData[9] = LedColor.green; //green
                     outputData[10] = LedColor.blue; //blue
-                    outputData[11] = FlashLed; //flash;
-                    outputData[12] = FlashLed; //flash;
+                    outputData[11] = FlashLedOn; //flash on duration
+                    outputData[12] = FlashLedOff; //flash off duration
 
                     if (Device.WriteOutputReportViaControl(outputData))
                         isDirty = false;
@@ -416,13 +447,13 @@ namespace ScpControl
                 {
                     outputData[0] = 0x5;
                     outputData[1] = 0xFF;
-                    outputData[4] = SmallRumble; //motor
-                    outputData[5] = BigRumble; //motor
+                    outputData[4] = SmallRumble; //fast motor
+                    outputData[5] = BigRumble; //slow  motor
                     outputData[6] = LedColor.red; //red
                     outputData[7] = LedColor.green; //green
                     outputData[8] = LedColor.blue; //blue
-                    outputData[9] = FlashLed; //flash;
-                    outputData[10] = FlashLed; //flash;
+                    outputData[9] = FlashLedOn; //flash on duration
+                    outputData[10] = FlashLedOff; //flash off duration
                     if (Device.WriteOutputReportViaInterrupt(outputData, 8))
                     {
                         isDirty = false;
@@ -437,8 +468,8 @@ namespace ScpControl
         }
 
     }
-    
 
- 
+
+
 
 }

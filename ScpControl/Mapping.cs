@@ -7,7 +7,7 @@ namespace ScpControl
 {
     class Mapping
     {
-        public static DS4State mapButtons(DS4State cState, DS4State prevState)
+        public static DS4State mapButtons(DS4State cState, DS4State prevState, Mouse touchpad)
         {
             DS4State MappedState = cState;
             bool LX = false, LY = false, RX = false, RY = false;
@@ -25,19 +25,20 @@ namespace ScpControl
                     cState = resetToDefaultValue(customKey.Key, cState);
                     if (!PrevOn)
                     {
+
                         if (keyType.HasFlag(DS4KeyType.ScanCode))
-                            Touchpad.performSCKeyPress(customKey.Value);
-                        else Touchpad.performKeyPress(customKey.Value);
+                            touchpad.performSCKeyPress(customKey.Value);
+                        else touchpad.performKeyPress(customKey.Value);
                     }
                     else if (keyType.HasFlag(DS4KeyType.Repeat))
                         if (keyType.HasFlag(DS4KeyType.ScanCode))
-                            Touchpad.performSCKeyPress(customKey.Value);
-                        else Touchpad.performKeyPress(customKey.Value);
+                            touchpad.performSCKeyPress(customKey.Value);
+                        else touchpad.performKeyPress(customKey.Value);
                 }
                 else if (PrevOn)
                     if (keyType.HasFlag(DS4KeyType.ScanCode))
-                        Touchpad.performSCKeyRelease(customKey.Value);
-                    else Touchpad.performKeyRelease(customKey.Value);
+                        touchpad.performSCKeyRelease(customKey.Value);
+                    else touchpad.performKeyRelease(customKey.Value);
             }
 
             foreach (KeyValuePair<DS4Controls, X360Controls> customButton in Global.getCustomButtons())
@@ -160,28 +161,29 @@ namespace ScpControl
                         bool PrevOn = getBoolMapping(customButton.Key, prevState);
                         bool CurOn = getBoolMapping(customButton.Key, cState);
                         if (!PrevOn && CurOn)
-                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_LEFTDOWN);
+                            touchpad.MouseEvent(Mouse.MOUSEEVENTF_LEFTDOWN);
                         else if (PrevOn && !CurOn)
-                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_LEFTUP);
+                            touchpad.MouseEvent(Mouse.MOUSEEVENTF_LEFTUP);
                         break;
                     case X360Controls.RightMouse:
                         PrevOn = getBoolMapping(customButton.Key, prevState);
                         CurOn = getBoolMapping(customButton.Key, cState);
                         if (!PrevOn && CurOn)
-                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_RIGHTDOWN);
+                            touchpad.MouseEvent(Mouse.MOUSEEVENTF_RIGHTDOWN);
                         else if (PrevOn && !CurOn)
-                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_RIGHTUP);
+                            touchpad.MouseEvent(Mouse.MOUSEEVENTF_RIGHTUP);
                         break;
                     case X360Controls.MiddleMouse:
                         PrevOn = getBoolMapping(customButton.Key, prevState);
                         CurOn = getBoolMapping(customButton.Key, cState);
                         if (!PrevOn && CurOn)
-                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_MIDDLEDOWN);
+                            touchpad.MouseEvent(Mouse.MOUSEEVENTF_MIDDLEDOWN);
                         else if (PrevOn && !CurOn)
-                            Touchpad.MouseEvent(Touchpad.MOUSEEVENTF_MIDDLEUP);
+                            touchpad.MouseEvent(Mouse.MOUSEEVENTF_MIDDLEUP);
                         break;
                     case X360Controls.Unbound:
-                        cState = resetToDefaultValue(customButton.Key, cState);
+                        Console.WriteLine("ungs");
+                        MappedState = resetToDefaultValue(customButton.Key, cState);
                         break;
                 }
             }
@@ -366,6 +368,47 @@ namespace ScpControl
             }
 
             return cState;
+        }
+
+
+        // Arthritis mode, compensate for cumulative pressure F=kx on the triggers by allowing the user to remap the entire trigger to just the initial portion.
+        private static byte[,]  leftTriggerMap = new byte[4,256], rightTriggerMap = new byte[4,256];
+        private static double[] leftTriggerMiddle = new double[4], // linear trigger remapping, 0.5 is in the middle of 0 and 255 from the native controller.
+            oldLeftTriggerMiddle = new double[4],
+            rightTriggerMiddle = new double[4], oldRightTriggerMiddle = new double[4];
+        private static void initializeTriggerMap(byte[,] map, double triggerMiddle, int deviceNum)
+        {
+            double midpoint = 256.0 * triggerMiddle;
+            for (uint x = 0; x <= 255; x++)
+            {
+                double mapped;
+                if (x < midpoint) // i.e. with standard 0.5, 0..127->0..127, etc.; with 0.25, 0..63->0..127 and 64..255->128..255\
+                    mapped = (x * 0.5 / triggerMiddle);
+                else
+                    mapped = 128.0 + 128.0 * (x - midpoint) / (256.0 - midpoint);
+                map[deviceNum, x] = (byte)mapped;
+            }
+
+        }
+        public static byte mapLeftTrigger(byte orig, int deviceNum)
+        {
+            leftTriggerMiddle[deviceNum] = Global.getLeftTriggerMiddle(deviceNum);
+            if (leftTriggerMiddle[deviceNum] != oldLeftTriggerMiddle[deviceNum])
+            {
+                oldLeftTriggerMiddle[deviceNum] = leftTriggerMiddle[deviceNum];
+                initializeTriggerMap(leftTriggerMap, leftTriggerMiddle[deviceNum],deviceNum);
+            }
+            return leftTriggerMap[deviceNum, orig];
+        }
+        public static byte mapRightTrigger(byte orig, int deviceNum)
+        {
+            rightTriggerMiddle[deviceNum] = Global.getRightTriggerMiddle(deviceNum);
+            if (rightTriggerMiddle[deviceNum] != oldRightTriggerMiddle[deviceNum])
+            {
+                oldRightTriggerMiddle[deviceNum] = rightTriggerMiddle[deviceNum];
+                initializeTriggerMap(rightTriggerMap, rightTriggerMiddle[deviceNum], deviceNum);
+            }
+            return rightTriggerMap[deviceNum,orig];
         }
     }
 }

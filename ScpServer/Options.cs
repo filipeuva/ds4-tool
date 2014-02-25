@@ -11,7 +11,8 @@ namespace ScpServer
         private int device;
 
         Byte[] oldLedColor, oldLowLedColor;
-        TrackBar tBsixaxisX, tBsixaxisY;
+        TrackBar tBsixaxisGyroX, tBsixaxisGyroY, tBsixaxisGyroZ,
+            tBsixaxisAccelX, tBsixaxisAccelY, tBsixaxisAccelZ;
 
         public Options(BusDevice bus_device, int deviceNum)
         {
@@ -27,12 +28,14 @@ namespace ScpServer
             flashLed.Checked = ScpControl.Global.getFlashWhenLowBattery(device);
             touchCheckBox.Checked = Global.getTouchEnabled(device);
             touchSensitivityBar.Value = Global.getTouchSensitivity(device);
-
-            // New settings
+            leftTriggerMiddlePoint.Text = Global.getLeftTriggerMiddle(device).ToString();
+            rightTriggerMiddlePoint.Text = Global.getRightTriggerMiddle(device).ToString();
             ledColor lowColor = Global.loadLowColor(device);
-            lowerRCOffCheckBox.Checked = Global.getTwoFingerRC(device);
+            touchpadJitterCompensation.Checked = Global.getTouchpadJitterCompensation(device);
+            lowerRCOffCheckBox.Checked = Global.getLowerRCOff(device);
             tapSensitivityBar.Value = Global.getTapSensitivity(device);
             scrollSensitivityBar.Value = Global.getScrollSensitivity(device);
+            flushHIDQueue.Checked = Global.getFlushHIDQueue(device);
             advColorDialog.OnUpdateColor += advColorDialog_OnUpdateColor;
 
             // Force update of color choosers
@@ -48,64 +51,80 @@ namespace ScpServer
             sixaxisTimer.Tick +=
             (delegate
                 {
-                    if (tBsixaxisX == null || tBsixaxisY == null)
+                    if (tBsixaxisGyroX == null)
                     {
-                        tBsixaxisX = new TrackBar();
-                        tBsixaxisY = new TrackBar();
-                        ((System.ComponentModel.ISupportInitialize)(tBsixaxisX)).BeginInit();
-                        ((System.ComponentModel.ISupportInitialize)(tBsixaxisY)).BeginInit();
-                        // tBsixaxisX
-                        tBsixaxisX.Anchor = AnchorStyles.Bottom;
-                        tBsixaxisX.AutoSize = false;
-                        tBsixaxisX.Enabled = false;
-                        tBsixaxisX.Location = new Point(501, 248);
-                        tBsixaxisX.Maximum = 64;
-                        tBsixaxisX.Name = "tBsixaxisX";
-                        tBsixaxisX.Size = new Size(100, 19);
-                        tBsixaxisX.TabIndex = 71;
-                        tBsixaxisX.TickFrequency = 25;
-                        tBsixaxisX.TickStyle = TickStyle.None;
-                        // tBsixaxisY
-                        tBsixaxisY.Anchor = AnchorStyles.Bottom;
-                        tBsixaxisY.AutoSize = false;
-                        tBsixaxisY.Enabled = false;
-                        tBsixaxisY.Location = new Point(476, 198);
-                        tBsixaxisY.Maximum = 64;
-                        tBsixaxisY.Name = "tBsixaxisY";
-                        tBsixaxisY.Orientation = Orientation.Vertical;
-                        tBsixaxisY.Size = new Size(19, 100);
-                        tBsixaxisY.TabIndex = 72;
-                        tBsixaxisY.TickFrequency = 25;
-                        tBsixaxisY.TickStyle = TickStyle.None;
-                        Controls.Add(tBsixaxisY);
-                        Controls.Add(tBsixaxisX);
-                        ((System.ComponentModel.ISupportInitialize)(tBsixaxisX)).EndInit();
-                        ((System.ComponentModel.ISupportInitialize)(tBsixaxisY)).EndInit();
+                        tBsixaxisGyroX = new TrackBar();
+                        tBsixaxisGyroY = new TrackBar();
+                        tBsixaxisGyroZ = new TrackBar();
+                        tBsixaxisAccelX = new TrackBar();
+                        tBsixaxisAccelY = new TrackBar();
+                        tBsixaxisAccelZ = new TrackBar();
+                        TrackBar[] allSixAxes = { tBsixaxisGyroX, tBsixaxisGyroY, tBsixaxisGyroZ,
+                                                tBsixaxisAccelX, tBsixaxisAccelY, tBsixaxisAccelZ};
+                        foreach (TrackBar t in allSixAxes)
+                        {
+                            ((System.ComponentModel.ISupportInitialize)(t)).BeginInit();
+                            t.Anchor = AnchorStyles.Bottom;
+                            t.AutoSize = false;
+                            t.Enabled = false;
+                            t.Minimum = -0x8000;
+                            t.Maximum = 0x7fff;
+                            t.Size = new Size(100, 19);
+                            t.TickFrequency = 0x2000; // calibrated to ~1G
+                        }
+                        // tBsixaxisGyroX
+                        tBsixaxisGyroX.Location = new Point(450, 248);
+                        tBsixaxisGyroX.Name = "tBsixaxisGyroX";
+                        // tBsixaxisGyroY
+                        tBsixaxisGyroY.Location = new Point(450, 248 + 20);
+                        tBsixaxisGyroY.Name = "tBsixaxisGyroY";
+                        // tBsixaxisGyroZ
+                        tBsixaxisGyroZ.Location = new Point(450, 248 + 20 + 20);
+                        tBsixaxisGyroZ.Name = "tBsixaxisGyroZ";
+                        // tBsixaxisAccelX
+                        tBsixaxisAccelX.Location = new Point(450 + 100 + 10, 248);
+                        tBsixaxisAccelX.Name = "tBsixaxisAccelX";
+                        // tBsixaxisAccelY
+                        tBsixaxisAccelY.Location = new Point(450 + 100 + 10, 248 + 20);
+                        tBsixaxisAccelY.Name = "tBsixaxisAccelY";
+                        // tBsixaxisAccelZ
+                        tBsixaxisAccelZ.Location = new Point(450 + 100 + 10, 248 + 20 + 20);
+                        tBsixaxisAccelZ.Name = "tBsixaxisAccelZ";
+                        foreach (TrackBar t in allSixAxes)
+                        {
+                            Controls.Add(t);
+                            ((System.ComponentModel.ISupportInitialize)(t)).EndInit();
+                        }
                     }
                     byte[] inputData = scpDevice.GetInputData(device);
                     if (inputData != null)
                     {
-                        int x = inputData[20];
-                        if (x > 150)
-                            x -= 254;
-                        x += 32;
-                        if (x < 0)
-                            x = 0;
-                        else if (x > 64)
-                            x = 64;
-                        tBsixaxisX.Value = x;
-                        x = inputData[24];
-                        if (x > 150)
-                            x -= 254;
-                        x += 32;
-                        if (x < 0)
-                            x = 0;
-                        else if (x > 64)
-                            x = 64;
-                        tBsixaxisY.Value = x;
+                        // MEMS gyro data is all calibrated to roughly -1G..1G for values -0x2000..0x1fff
+                        // Enough additional acceleration and we are no longer mostly measuring Earth's gravity...
+                        // We should try to indicate setpoints of the calibration when exposing this measurement....
+
+                        // R side of controller upward
+                        Int16 x = (Int16)((UInt16)(inputData[20] << 8) | inputData[21]);
+                        tBsixaxisGyroX.Value = (x + tBsixaxisGyroX.Value * 2) / 3;
+                        // touchpad and button face side of controller upward
+                        Int16 y = (Int16)((UInt16)(inputData[22] << 8) | inputData[23]);
+                        tBsixaxisGyroY.Value = (y + tBsixaxisGyroY.Value * 2) / 3;
+                        // audio/expansion ports upward and light bar/shoulders/bumpers/USB port downward
+                        Int16 z = (Int16)((UInt16)(inputData[24] << 8) | inputData[25]);
+                        tBsixaxisGyroZ.Value = (z + tBsixaxisGyroZ.Value * 2) / 3;
+                        // pitch upward/backward
+                        Int16 pitch = (Int16)((UInt16)(inputData[14] << 8) | inputData[15]);
+                        tBsixaxisAccelX.Value = (pitch + tBsixaxisAccelX.Value * 2) / 3; // smooth out
+                        // yaw leftward/counter-clockwise/turn to port or larboard side
+                        Int16 yaw = (Int16)((UInt16)(inputData[16] << 8) | inputData[17]);
+                        tBsixaxisAccelY.Value = (yaw + tBsixaxisAccelY.Value * 2) / 3;
+                        // roll left/L side of controller down/starboard raising up
+                        Int16 roll = (Int16)((UInt16)(inputData[18] << 8) | inputData[19]);
+                        tBsixaxisAccelZ.Value = (roll + tBsixaxisAccelZ.Value * 2) / 3;
+
                     }
                 });
-            sixaxisTimer.Interval = 10;
+            sixaxisTimer.Interval = 1000 / 60;
             this.FormClosing += delegate { sixaxisTimer.Stop(); };
             sixaxisTimer.Start();
             #endregion
@@ -121,46 +140,30 @@ namespace ScpServer
 
         private void setButton_Click(object sender, EventArgs e)
         {
-            // New implementation
             Global.saveColor(device, 
                 colorChooserButton.BackColor.R, 
                 colorChooserButton.BackColor.G, 
                 colorChooserButton.BackColor.B);
-            // New setting
             Global.saveLowColor(device,
                 lowColorChooserButton.BackColor.R, 
                 lowColorChooserButton.BackColor.G, 
                 lowColorChooserButton.BackColor.B);
-
+            double middle;
+            if (Double.TryParse(leftTriggerMiddlePoint.Text, out middle))
+                Global.setLeftTriggerMiddle(device, middle);
+            if (Double.TryParse(rightTriggerMiddlePoint.Text, out middle))
+                Global.setRightTriggerMiddle(device, middle);
             scpDevice.setRumble(device, (byte)rumbleBoostBar.Value, (byte)leftMotorBar.Value, (byte)rightMotorBar.Value);
             Global.setTouchSensitivity(device, (byte)touchSensitivityBar.Value);
-            // New settings
-            Global.setTwoFingerRC(device, lowerRCOffCheckBox.Checked);
+            Global.setTouchpadJitterCompensation(device, touchpadJitterCompensation.Checked);
+            Global.setLowerRCOff(device, lowerRCOffCheckBox.Checked);
             Global.setTapSensitivity(device, (byte)tapSensitivityBar.Value);
             Global.setScrollSensitivity(device, (byte)scrollSensitivityBar.Value);
-
         }
+
         private void saveButton_Click(object sender, EventArgs e)
         {
-            // New implementation
-            Global.saveColor(device,
-                colorChooserButton.BackColor.R,
-                colorChooserButton.BackColor.G,
-                colorChooserButton.BackColor.B);
-            // New setting
-            Global.saveLowColor(device,
-                lowColorChooserButton.BackColor.R,
-                lowColorChooserButton.BackColor.G,
-                lowColorChooserButton.BackColor.B);
-
-            scpDevice.setRumble(device, (byte)rumbleBoostBar.Value, (byte)leftMotorBar.Value, (byte)rightMotorBar.Value);
-            Global.saveRumbleBoost(device, (byte)rumbleBoostBar.Value);
-            Global.setTouchSensitivity(device,(byte) touchSensitivityBar.Value);
-            // New settings
-            Global.setTwoFingerRC(device, lowerRCOffCheckBox.Checked);
-            Global.setTapSensitivity(device, (byte)tapSensitivityBar.Value);
-            Global.setScrollSensitivity(device, (byte)scrollSensitivityBar.Value);
-
+            setButton_Click(null, null);
             Global.Save();
             this.Close();
         }
@@ -392,17 +395,16 @@ namespace ScpServer
         {
             Global.setTouchEnabled(device,touchCheckBox.Checked);
         }
-        private void twoFingerRCCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void lowerRCOffCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (realTimeChangesCheckBox.Checked)
-            if (lowerRCOffCheckBox.Checked)
-            {
-                Global.setTwoFingerRC(device, true);
-            }
-            else
-            {
-                Global.setTwoFingerRC(device, false);
-            }
+                Global.setLowerRCOff(device, lowerRCOffCheckBox.Checked);
+        }
+
+        private void touchpadJitterCompensation_CheckedChanged(object sender, EventArgs e)
+        {
+            if (realTimeChangesCheckBox.Checked)
+                Global.setTouchpadJitterCompensation(device, touchpadJitterCompensation.Checked);
         }
         private void realTimeChangesCheckBox_CheckedChanged(object sender, EventArgs e)
         {
@@ -483,6 +485,11 @@ namespace ScpServer
                 Global.saveColor(device, color.R, color.G, color.B);
                 Global.saveLowColor(device, color.R, color.G, color.B);
             }
+        }
+
+        private void flushHIDQueue_CheckedChanged(object sender, EventArgs e)
+        {
+            Global.setFlushHIDQueue(device, flushHIDQueue.Checked);
         }
 
     }
