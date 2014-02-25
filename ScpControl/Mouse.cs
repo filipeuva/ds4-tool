@@ -159,7 +159,7 @@ namespace ScpControl
         {
             if (arg.touches.Length > 1)
                 mapTouchPad(DS4Controls.TouchMulti, true);
-            else if (!rightClick && !mapTouchPad(DS4Controls.TouchButton, true))
+            else if (!rightClick && arg.touches.Length == 0 && !mapTouchPad(DS4Controls.TouchButton, true))
             {
                 MouseEvent(MOUSEEVENTF_LEFTUP);
             }
@@ -176,7 +176,7 @@ namespace ScpControl
             {
                 performRightClick();
             }
-            else if (!mapTouchPad(DS4Controls.TouchButton))
+            else if (arg.touches.Length==1 && !mapTouchPad(DS4Controls.TouchButton))
             {
                 rightClick = false;
                 MouseEvent(MOUSEEVENTF_LEFTDOWN);
