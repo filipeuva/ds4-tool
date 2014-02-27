@@ -46,6 +46,7 @@ namespace ScpControl
         private byte[] Report = new byte[64];
         private byte[] btInputData;
         private string MACAddr;
+        public event EventHandler<DebugEventArgs> Debug = null;
 
         private readonly static byte[/* Light On duration */, /* Light Off duration */] BatteryIndicatorDurations =
         {
@@ -77,6 +78,10 @@ namespace ScpControl
             get { return hid_device; }
         }
 
+        public string MACAddress
+        {
+            get { return MACAddr; }
+        }
         public byte SmallRumble
         {
             get
@@ -189,6 +194,11 @@ namespace ScpControl
             {
                 btInputData = new byte[Device.Capabilities.InputReportByteLength];
                 outputData = new byte[78];
+                MACAddr = Device.readSerial();
+                MACAddr = String.Format("{0}{1}:{2}{3}:{4}{5}:{6}{7}:{8}{9}:{10}{11}",
+                    MACAddr[0], MACAddr[1], MACAddr[2], MACAddr[3], MACAddr[4],
+                    MACAddr[5], MACAddr[6], MACAddr[7], MACAddr[8],
+                    MACAddr[9], MACAddr[10], MACAddr[11]);
             }
             isTouchEnabled = Global.getTouchEnabled(deviceNum);
             touchpad = new Touchpad(deviceNum);
@@ -199,6 +209,9 @@ namespace ScpControl
             touchpad.TouchesMoved += mouse.touchesMoved;
             touchpad.TouchesEnded += mouse.touchesEnded;
             Device.MonitorDeviceEvents = true;
+
+          
+
         }
         internal Touchpad touchpad;
         internal Mouse mouse;
@@ -347,6 +360,11 @@ namespace ScpControl
             cState.PS = ((byte)data[7] & (1 << 0)) != 0;
             cState.TouchButton = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
 
+            if (cState.PS && cState.Options && !isUSB)
+            {
+                DisconnectBT();
+            }
+
         }
 
         private void toggleTouchpad(bool enable)
@@ -464,8 +482,80 @@ namespace ScpControl
 
         public String toString()
         {
-            return "Controller " + (deviceNum + 1) + ": " + "Battery = " + charge + "%," + " Touchpad Enabled = " + isTouchEnabled + (isUSB ? " (USB)" : " (BT)");
+            return "Controller " + (deviceNum + 1) + ": " + MACAddress + ", Battery = " + charge + "%," + " Touchpad Enabled = " + isTouchEnabled + (isUSB ? " (USB)" : " (BT)");
         }
+
+        public bool DisconnectBT()
+        {
+            if (MACAddr != null)
+            {
+                Console.WriteLine("Trying to disonnect BT device");
+                IntPtr btHandle = IntPtr.Zero;
+                int IOCTL_BTH_DISCONNECT_DEVICE = 0x41000c;
+
+                byte[] btAddr = new byte[8];
+                string[] sbytes = MACAddr.Split(':');
+                for (int i = 0; i < 6; i++)
+                {
+                    //parse hex byte in reverse order
+                    btAddr[5 - i] = Convert.ToByte(sbytes[i], 16);
+                }
+                long lbtAddr = BitConverter.ToInt64(btAddr, 0);
+
+
+                BLUETOOTH_FIND_RADIO_PARAMS p = new BLUETOOTH_FIND_RADIO_PARAMS();
+                p.dwSize = Marshal.SizeOf(typeof(BLUETOOTH_FIND_RADIO_PARAMS));
+                IntPtr searchHandle = BluetoothFindFirstRadio(ref p, ref btHandle);
+                int bytesReturned = 0;
+                bool success  = false;
+                while (!success && btHandle != IntPtr.Zero)
+                {
+                    success = DeviceIoControl(btHandle, IOCTL_BTH_DISCONNECT_DEVICE, ref lbtAddr, 8, IntPtr.Zero, 0, ref bytesReturned, IntPtr.Zero);
+                    CloseHandle(btHandle);
+                    if (!success)
+                        if (!BluetoothFindNextRadio(searchHandle, ref btHandle))
+                            btHandle = IntPtr.Zero;
+
+                }              
+                BluetoothFindRadioClose(searchHandle);
+                Console.WriteLine("Disconnect successul: "+success);
+                return success;
+            }
+            return false;
+        }
+
+        protected virtual Boolean LogDebug(String Data)
+        {
+            DebugEventArgs args = new DebugEventArgs(Data);
+
+            if(Debug!=null)
+                Debug(this, args);
+
+            return true;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct BLUETOOTH_FIND_RADIO_PARAMS
+        {
+            [MarshalAs(UnmanagedType.U4)]
+            public int dwSize;
+        }
+
+        [DllImport("bthprops.cpl", CharSet = CharSet.Auto)]
+        private extern static IntPtr BluetoothFindFirstRadio(ref BLUETOOTH_FIND_RADIO_PARAMS pbtfrp, ref IntPtr phRadio);
+
+        [DllImport("bthprops.cpl", CharSet = CharSet.Auto)]
+        private extern static bool BluetoothFindNextRadio(IntPtr hFind, ref IntPtr phRadio);
+
+        [DllImport("bthprops.cpl", CharSet = CharSet.Auto)]
+        private extern static bool BluetoothFindRadioClose(IntPtr hFind);
+
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        protected static extern Boolean DeviceIoControl(IntPtr DeviceHandle, Int32 IoControlCode, ref long InBuffer, Int32 InBufferSize, IntPtr OutBuffer, Int32 OutBufferSize, ref Int32 BytesReturned, IntPtr Overlapped);
+
+        [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Auto)]
+        static internal extern bool CloseHandle(IntPtr hObject);
 
     }
 

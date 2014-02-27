@@ -35,7 +35,6 @@ namespace ScpControl
         private Thread[] workers = new Thread[4];
         protected bool isWorkersShouldRun = false;
         private object[] ds4locks = new object[4];
-        private ManagementEventWatcher watcher = null;
         protected virtual Int32 Scale(Int32 Value, Boolean Flip)
         {
             Value -= 0x80;
@@ -100,25 +99,6 @@ namespace ScpControl
                 int[] pid = { 0x05C4 };
                 try
                 {
-                    /*
-                    WqlEventQuery q;
-                    ManagementOperationObserver observer = new ManagementOperationObserver();
-                    ManagementScope scope = new ManagementScope("root\\CIMV2");
-                    scope.Options.EnablePrivileges = false;
-                    try
-                    {
-                        q = new WqlEventQuery();
-                        q.EventClassName = "__InstanceCreationEvent";
-                        q.WithinInterval = new TimeSpan(0, 0, 1);
-
-                        q.Condition = @"TargetInstance ISA 'Win32_USBControllerDevice' ";
-                        Console.WriteLine(q.QueryString);
-                        watcher = new ManagementEventWatcher(scope, q);
-                        watcher.EventArrived += new EventArrivedEventHandler(DeviceArrived);
-                        //watcher.Start();
-                    }
-                    catch (Exception e) { Console.WriteLine(e.Message); }
-                    */
                     IEnumerable<HidDevice> devices = HidDevices.Enumerate(0x054C, pid);
                     foreach (HidDevice device in devices)
                     {
@@ -195,14 +175,6 @@ namespace ScpControl
             Monitor.Enter(this);
             if (IsActive)
             {
-                try
-                {
-                    watcher.Stop();
-                    watcher.Dispose();
-                    watcher = null;
-                }
-                catch (Exception e)
-                { Console.WriteLine(e.Message); }
                 isWorkersShouldRun = false;
                 for (int i = 1; i <= 4; i++)
                 {               
@@ -457,9 +429,6 @@ namespace ScpControl
             if (IsActive)
             {
                 int[] pid = { 0x05C4 };
-                byte[] buffer = new byte[16];
-                buffer[0] = 18;
-
                 try
                 {
                     IEnumerable<HidDevice> devices = HidDevices.Enumerate(0x054C, pid);
@@ -469,10 +438,6 @@ namespace ScpControl
                             device.OpenDevice(Global.getUseExclusiveMode());
                         if (device.IsOpen)
                         {
-                            // device.readFeatureData(buffer);
-                            //string mac = String.Format(
-                            //   "{0:X02}:{1:X}:{2:X02}:{3:X02}:{4:X02}:{5:X02}",
-                            //  buffer[6], buffer[5], buffer[4], buffer[3], buffer[2], buffer[1]);
                             if (((Func<bool>)delegate
                             {
                                 for (Int32 Index = 0; Index < DS4Controllers.Length; Index++)
@@ -512,6 +477,8 @@ namespace ScpControl
                                     LogDebug("Could not open the controller " + (Index + 1) + " for exclusive access");
                                     LogDebug("Try to quit any applications that can be using the controller");
                                     LogDebug("Then press Stop and Start to try accessing device again");
+                                    
+                                   
                                 }
                             }
                     }

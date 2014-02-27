@@ -386,5 +386,12 @@ namespace HidLibrary
         {
             return NativeMethods.HidD_GetFeature(safeReadHandle.DangerousGetHandle(), inputBuffer, inputBuffer.Length);
         }
+
+        public string readSerial()
+        {
+            byte[] buffer = new byte[126];
+            NativeMethods.HidD_GetSerialNumberString(safeReadHandle.DangerousGetHandle(), buffer,(ulong) buffer.Length);
+            return System.Text.Encoding.Unicode.GetString(buffer).Replace("\0", string.Empty).ToUpper();
+        }
     }
 }

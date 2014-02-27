@@ -160,7 +160,12 @@ namespace ScpControl
 
         public void touchButtonUp(object sender, TouchpadEventArgs arg)
         {
-            if (arg.touches.Length > 1)
+            if (arg.touches == null)
+            {
+                //No touches, finger on upper portion of touchpad
+                mapTouchPad(DS4Controls.TouchUpper,true);
+            }
+            else if (arg.touches.Length > 1)
                 mapTouchPad(DS4Controls.TouchMulti, true);
             else if (!rightClick && arg.touches.Length == 1 && !mapTouchPad(DS4Controls.TouchButton, true))
             {
@@ -170,7 +175,13 @@ namespace ScpControl
 
         public void touchButtonDown(object sender, TouchpadEventArgs arg)
         {
-            if (!Global.getLowerRCOff(deviceNum) && arg.touches[0].hwX > (1920 * 3)/4
+            if (arg.touches == null)
+            {
+                //No touches, finger on upper portion of touchpad
+                if(!mapTouchPad(DS4Controls.TouchUpper))
+                    performMiddleClick();
+            }
+            else if (!Global.getLowerRCOff(deviceNum) && arg.touches[0].hwX > (1920 * 3)/4
                 && arg.touches[0].hwY > (960 * 3)/4)
             {
                 performRightClick();

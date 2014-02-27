@@ -79,35 +79,36 @@ namespace ScpControl
             int currentX2 = data[5 + TOUCHPAD_DATA_OFFSET] + ((data[6 + TOUCHPAD_DATA_OFFSET] & 0xF) * 255);
             int currentY2 = ((data[6 + TOUCHPAD_DATA_OFFSET] & 0xF0) >> 4) + (data[7 + TOUCHPAD_DATA_OFFSET] * 16);
 
-            if (!lastTouchPadIsDown && touchPadIsDown && TouchButtonDown != null)
-            {
-                TouchpadEventArgs args = null;
-                Touch t0 = new Touch(currentX, currentY, touchID);
-                if (_isActive2)
-                {
-                    Touch t1 = new Touch(currentX2, currentY2, touchID2);
-                    args = new TouchpadEventArgs(touchPadIsDown, t0, t1);
-                }
-                else
-                    args = new TouchpadEventArgs(touchPadIsDown, t0);
-                TouchButtonDown(this, args);
-            }
-            else if (lastTouchPadIsDown && !touchPadIsDown && TouchButtonUp != null)
-            {
-                TouchpadEventArgs args = null;
-                Touch t0 = new Touch(currentX, currentY, touchID);
-                if (_isActive2)
-                {
-                    Touch t1 = new Touch(currentX2, currentY2, touchID2);
-                    args = new TouchpadEventArgs(touchPadIsDown, t0, t1);
-                }
-                else
-                    args = new TouchpadEventArgs(touchPadIsDown, t0);
-                TouchButtonUp(this, args);
-            }
-
             if (_isActive)
             {
+
+                if (!lastTouchPadIsDown && touchPadIsDown && TouchButtonDown != null)
+                {
+                    TouchpadEventArgs args = null;
+                    Touch t0 = new Touch(currentX, currentY, touchID);
+                    if (_isActive2)
+                    {
+                        Touch t1 = new Touch(currentX2, currentY2, touchID2);
+                        args = new TouchpadEventArgs(touchPadIsDown, t0, t1);
+                    }
+                    else
+                        args = new TouchpadEventArgs(touchPadIsDown, t0);
+                    TouchButtonDown(this, args);
+                }
+                else if (lastTouchPadIsDown && !touchPadIsDown && TouchButtonUp != null)
+                {
+                    TouchpadEventArgs args = null;
+                    Touch t0 = new Touch(currentX, currentY, touchID);
+                    if (_isActive2)
+                    {
+                        Touch t1 = new Touch(currentX2, currentY2, touchID2);
+                        args = new TouchpadEventArgs(touchPadIsDown, t0, t1);
+                    }
+                    else
+                        args = new TouchpadEventArgs(touchPadIsDown, t0);
+                    TouchButtonUp(this, args);
+                }
+
                 if (!lastIsActive || (_isActive2 && !lastIsActive2))
                 {
                     if (TouchesBegan != null)
@@ -171,6 +172,15 @@ namespace ScpControl
                             args = new TouchpadEventArgs(touchPadIsDown, t0);
                         TouchesEnded(this, args);
                     }
+                }
+
+                if (touchPadIsDown && !lastTouchPadIsDown)
+                {
+                   TouchButtonDown(this, new TouchpadEventArgs(touchPadIsDown, null, null));
+                }
+                else if (!touchPadIsDown && lastTouchPadIsDown)
+                {
+                    TouchButtonUp(this, new TouchpadEventArgs(touchPadIsDown, null, null));
                 }
             }
 

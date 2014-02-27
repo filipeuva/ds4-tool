@@ -9,13 +9,6 @@ namespace ScpControl
     {
         public static DS4State mapButtons(DS4State cState, DS4State prevState, Mouse touchpad)
         {
-            DS4State MappedState = cState;
-            bool LX = false, LY = false, RX = false, RY = false;
-            MappedState.LX = 127;
-            MappedState.LY = 127;
-            MappedState.RX = 127;
-            MappedState.RY = 127;
-
             foreach (KeyValuePair<DS4Controls, ushort> customKey in Global.getCustomKeys())
             {
                 DS4KeyType keyType = Global.getCustomKeyType(customKey.Key);
@@ -40,6 +33,13 @@ namespace ScpControl
                         touchpad.performSCKeyRelease(customKey.Value);
                     else touchpad.performKeyRelease(customKey.Value);
             }
+
+            DS4State MappedState = cState;
+            bool LX = false, LY = false, RX = false, RY = false;
+            MappedState.LX = 127;
+            MappedState.LY = 127;
+            MappedState.RX = 127;
+            MappedState.RY = 127;
 
             foreach (KeyValuePair<DS4Controls, X360Controls> customButton in Global.getCustomButtons())
             {
@@ -182,8 +182,7 @@ namespace ScpControl
                             touchpad.MouseEvent(Mouse.MOUSEEVENTF_MIDDLEUP);
                         break;
                     case X360Controls.Unbound:
-                        Console.WriteLine("ungs");
-                        MappedState = resetToDefaultValue(customButton.Key, cState);
+                        MappedState = resetToDefaultValue(customButton.Key, MappedState);
                         break;
                 }
             }
