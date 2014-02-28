@@ -182,23 +182,15 @@ namespace ScpControl
             hid_device = device;
             deviceNum = controllerID;
             isUSB = Device.Capabilities.InputReportByteLength == 64;
+            MACAddr = Device.readSerial();
             if (isUSB)
             {
                 outputData = new byte[Device.Capabilities.OutputReportByteLength];
-                byte[] buffer = new byte[16];
-                buffer[0] = 18;
-                Device.readFeatureData(buffer);
-                MACAddr = String.Format("{0:X02}:{1:X02}:{2:X02}:{3:X02}:{4:X02}:{5:X02}", buffer[6], buffer[5], buffer[4], buffer[3], buffer[2], buffer[1]);
             }
             else
             {
                 btInputData = new byte[Device.Capabilities.InputReportByteLength];
                 outputData = new byte[78];
-                MACAddr = Device.readSerial();
-                MACAddr = String.Format("{0}{1}:{2}{3}:{4}{5}:{6}{7}:{8}{9}:{10}{11}",
-                    MACAddr[0], MACAddr[1], MACAddr[2], MACAddr[3], MACAddr[4],
-                    MACAddr[5], MACAddr[6], MACAddr[7], MACAddr[8],
-                    MACAddr[9], MACAddr[10], MACAddr[11]);
             }
             isTouchEnabled = Global.getTouchEnabled(deviceNum);
             touchpad = new Touchpad(deviceNum);
@@ -230,6 +222,11 @@ namespace ScpControl
                 Device.flush_Queue();
 
             readButtons(inputData);
+            if ((!PrevState.Options || !PrevState.PS) && cState.PS && cState.Options && !isUSB)
+            {
+                DisconnectBT();
+                return null;
+            }
             toggleTouchpad(inputData[8], inputData[9], cState.TouchButton);
             updateBatteryStatus(inputData[30], isUSB);
             if (isTouchEnabled)
@@ -242,7 +239,11 @@ namespace ScpControl
                 cState = state;
                 return ConvertTo360();
             }
-            else return ConvertTo360();
+            else
+            {
+                PrevState = cState;
+                return ConvertTo360();
+            }
         }
 
 
@@ -359,12 +360,6 @@ namespace ScpControl
 
             cState.PS = ((byte)data[7] & (1 << 0)) != 0;
             cState.TouchButton = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
-
-            if (cState.PS && cState.Options && !isUSB)
-            {
-                DisconnectBT();
-            }
-
         }
 
         private void toggleTouchpad(bool enable)

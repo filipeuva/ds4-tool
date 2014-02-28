@@ -106,6 +106,16 @@ namespace ScpControl
                         device.OpenDevice(Global.getUseExclusiveMode());
                         if (device.IsOpen)
                         {
+                            bool alredyExists = false;
+                            for (int i = 0; i < DS4Controllers.Length; i++)
+                            { 
+                                if (DS4Controllers[i]!= null && DS4Controllers[i].MACAddress == device.readSerial())
+                                alredyExists =  true;
+                                break;
+                            }
+                            if (alredyExists)
+                                continue;
+
                             DS4Controllers[ind] = new DS4Device(device, ind);
                             ledColor color = Global.loadColor(ind);
                             DS4Controllers[ind].LedColor = color;
@@ -441,10 +451,13 @@ namespace ScpControl
                             if (((Func<bool>)delegate
                             {
                                 for (Int32 Index = 0; Index < DS4Controllers.Length; Index++)
-                                    if (DS4Controllers[Index] != null
-                                        && DS4Controllers[Index].Device != null
-                                        )
-                                        return true;
+                                    lock (ds4locks[Index])
+                                    {
+                                        if (DS4Controllers[Index] != null
+                                            && DS4Controllers[Index].Device != null &&
+                                            DS4Controllers[Index].MACAddress == device.readSerial())
+                                            return true;
+                                    }
                                 return false;
                             })())
                                 continue;
@@ -458,17 +471,17 @@ namespace ScpControl
                                         + " PID:" + device.Attributes.ProductHexId);
                                 if (device.IsOpen)
                                 {
-                                    DS4Controllers[Index] = new DS4Device(device, Index);
-                                    ledColor color = Global.loadColor(Index);
-                                    DS4Controllers[Index].sendOutputReport();
-                                    Plugin(Index + 1);
-                                    isWorkersShouldRun = true;
-                                    int t = Index;
-                                    if (workers
-                                        [Index].ThreadState == System.Threading.ThreadState.Aborted || workers[Index].ThreadState == System.Threading.ThreadState.Stopped)
-                                        workers[Index] = new Thread(() =>
-                                        { ProcessData(t); });
-                                    workers[Index].Start();
+                                        DS4Controllers[Index] = new DS4Device(device, Index);
+                                        ledColor color = Global.loadColor(Index);
+                                        DS4Controllers[Index].sendOutputReport();
+                                        Plugin(Index + 1);
+                                        isWorkersShouldRun = true;
+                                        int t = Index;
+                                        if (workers
+                                            [Index].ThreadState == System.Threading.ThreadState.Aborted || workers[Index].ThreadState == System.Threading.ThreadState.Stopped)
+                                            workers[Index] = new Thread(() =>
+                                            { ProcessData(t); });
+                                        workers[Index].Start();
                                     LogDebug("Controller " + (Index + 1) + " ready to use");
                                     break;
                                 }

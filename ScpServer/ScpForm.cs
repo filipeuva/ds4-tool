@@ -133,8 +133,10 @@ namespace ScpServer
                 if (m.Msg == ScpDevice.WM_DEVICECHANGE)
                 {
                     Int32 Type = m.WParam.ToInt32();
-                    //Console.WriteLine(Type);
-                    rootHub.StartNewControllers();
+                    lock (this)
+                    {
+                        rootHub.StartNewControllers();
+                    }
                 }
             }
             catch { }
