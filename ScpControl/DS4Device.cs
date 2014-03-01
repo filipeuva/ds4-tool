@@ -27,7 +27,7 @@ namespace ScpControl
 
     public class DS4Device
     {
-        private DS4State pState = new DS4State(), cState = new DS4State(), nState = new DS4State(); // previous/current/next-state flipping
+        private DS4State pState, cState, nState; // previous/current/next-state flipping
         private short charge = 0;
         private bool isUSB = true;
         private int deviceNum = 0;
@@ -229,7 +229,7 @@ namespace ScpControl
 
             if (Global.getHasCustomKeysorButtons(deviceNum))
             {
-                Mapping.mapButtons(nState, cState, pState, mouse);
+                Mapping.mapButtons(ref nState, ref cState, ref pState, mouse);
                 DS4State swap = pState;
                 pState = cState;
                 cState = nState;

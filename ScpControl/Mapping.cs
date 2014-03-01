@@ -7,7 +7,7 @@ namespace ScpControl
 {
     class Mapping
     {
-        public static DS4State mapButtons(DS4State nextState, DS4State cState, DS4State prevState, Mouse touchpad)
+        public static DS4State mapButtons(ref DS4State nextState, ref DS4State cState, ref DS4State prevState, Mouse touchpad)
         {
             foreach (KeyValuePair<DS4Controls, ushort> customKey in Global.getCustomKeys())
             {
