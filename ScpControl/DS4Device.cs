@@ -222,11 +222,7 @@ namespace ScpControl
                 Device.flush_Queue();
 
             readButtons(inputData);
-            if ((!PrevState.Options || !PrevState.PS) && cState.PS && cState.Options && !isUSB)
-            {
-                DisconnectBT();
-                return null;
-            }
+            checkQuickDisconnect();
             toggleTouchpad(inputData[8], inputData[9], cState.TouchButton);
             updateBatteryStatus(inputData[30], isUSB);
             if (isTouchEnabled)
@@ -246,6 +242,26 @@ namespace ScpControl
             }
         }
 
+        // Make quick disconnet send a bus disconnect and in the meantime pretend all input is idle.
+        private bool disconnecting = false;
+        private readonly static DS4State IdleDS4State = new DS4State {
+            DpadDown = false, DpadLeft = false, DpadRight = false, DpadUp = false,
+            Circle = false, Cross = false, Square = false, Triangle = false,
+            Options = false, PS = false, Share = false, TouchButton = false,
+            L1 = false, L2 = 0, L3 = false, LX = 127, LY = 127,
+            R1 = false, R2 = 0, R3 = false, RX = 128, RY = 128
+        };
+        private void checkQuickDisconnect()
+        {
+            if (disconnecting)
+                cState = IdleDS4State;
+            else if (!isUSB && (!PrevState.Options || !PrevState.PS) && cState.PS && cState.Options)
+            {
+                DisconnectBT();
+                disconnecting = true;
+                cState = IdleDS4State;
+            }
+        }
 
         private byte[] ConvertTo360()
         {
