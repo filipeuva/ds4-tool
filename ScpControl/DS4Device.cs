@@ -27,8 +27,7 @@ namespace ScpControl
 
     public class DS4Device
     {
-        private DS4State PrevState = new DS4State();
-        private DS4State cState = new DS4State();
+        private DS4State pState = new DS4State(), cState = new DS4State(), nState = new DS4State(); // previous/current/next-state flipping
         private short charge = 0;
         private bool isUSB = true;
         private int deviceNum = 0;
@@ -222,7 +221,7 @@ namespace ScpControl
                 Device.flush_Queue();
 
             readButtons(inputData);
-            checkQuickDisconnect();
+            checkQuickDisconnect(); // XXX race when first connecting, quick disconnect will only half-work in the first moments
             toggleTouchpad(inputData[8], inputData[9], cState.TouchButton);
             updateBatteryStatus(inputData[30], isUSB);
             if (isTouchEnabled)
@@ -230,14 +229,16 @@ namespace ScpControl
 
             if (Global.getHasCustomKeysorButtons(deviceNum))
             {
-                DS4State state = Mapping.mapButtons(cState, PrevState, mouse);
-                PrevState = cState;
-                cState = state;
+                Mapping.mapButtons(nState, cState, pState, mouse);
+                DS4State swap = pState;
+                pState = cState;
+                cState = nState;
+                nState = swap;
                 return ConvertTo360();
             }
             else
             {
-                PrevState = cState;
+                pState = cState;
                 return ConvertTo360();
             }
         }
@@ -255,7 +256,7 @@ namespace ScpControl
         {
             if (disconnecting)
                 cState = IdleDS4State;
-            else if (!isUSB && (!PrevState.Options || !PrevState.PS) && cState.PS && cState.Options)
+            else if (!isUSB && cState.Options && cState.PS)
             {
                 DisconnectBT();
                 disconnecting = true;

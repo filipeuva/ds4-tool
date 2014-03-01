@@ -7,7 +7,7 @@ namespace ScpControl
 {
     class Mapping
     {
-        public static DS4State mapButtons(DS4State cState, DS4State prevState, Mouse touchpad)
+        public static DS4State mapButtons(DS4State nextState, DS4State cState, DS4State prevState, Mouse touchpad)
         {
             foreach (KeyValuePair<DS4Controls, ushort> customKey in Global.getCustomKeys())
             {
@@ -15,7 +15,7 @@ namespace ScpControl
                 bool PrevOn = getBoolMapping(customKey.Key, prevState);
                 if (getBoolMapping(customKey.Key, cState))
                 {
-                    cState = resetToDefaultValue(customKey.Key, cState);
+                    resetToDefaultValue(customKey.Key, cState);
                     if (!PrevOn)
                     {
 
@@ -34,7 +34,7 @@ namespace ScpControl
                     else touchpad.performKeyRelease(customKey.Value);
             }
 
-            DS4State MappedState = cState;
+            DS4State MappedState = nextState;
             bool LX = false, LY = false, RX = false, RY = false;
             MappedState.LX = 127;
             MappedState.LY = 127;
@@ -182,7 +182,7 @@ namespace ScpControl
                             touchpad.MouseEvent(Mouse.MOUSEEVENTF_MIDDLEUP);
                         break;
                     case X360Controls.Unbound:
-                        MappedState = resetToDefaultValue(customButton.Key, MappedState);
+                        resetToDefaultValue(customButton.Key, MappedState);
                         break;
                 }
             }
@@ -335,7 +335,7 @@ namespace ScpControl
         //Returns false for any bool, 
         //if control is one of the xy axis returns 127
         //if its a trigger returns 0
-        public static DS4State resetToDefaultValue(DS4Controls control, DS4State cState)
+        public static void resetToDefaultValue(DS4Controls control, DS4State cState)
         {
             switch (control)
             {
@@ -365,8 +365,6 @@ namespace ScpControl
                 case DS4Controls.L2: cState.L2 = 0; break;
                 case DS4Controls.R2: cState.R2 = 0; break;
             }
-
-            return cState;
         }
 
 

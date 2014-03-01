@@ -187,9 +187,9 @@
             this.label15.AutoSize = true;
             this.label15.Location = new System.Drawing.Point(22, 145);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(103, 13);
+            this.label15.Size = new System.Drawing.Size(107, 13);
             this.label15.TabIndex = 15;
-            this.label15.Text = "PS Button + Options";
+            this.label15.Text = "Options + PS buttons";
             // 
             // Hotkeys
             // 
