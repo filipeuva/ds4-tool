@@ -106,14 +106,10 @@ namespace ScpControl
                         device.OpenDevice(Global.getUseExclusiveMode());
                         if (device.IsOpen)
                         {
-                            bool alredyExists = false;
-                            for (int i = 0; i < DS4Controllers.Length; i++)
-                            { 
-                                if (DS4Controllers[i]!= null && DS4Controllers[i].MACAddress == device.readSerial())
-                                alredyExists =  true;
-                                break;
-                            }
-                            if (alredyExists)
+                            bool alreadyAttached = false;
+                            for (int i = 0; i < DS4Controllers.Length && !alreadyAttached; i++)
+                                alreadyAttached = DS4Controllers[i] != null && DS4Controllers[i].MACAddress == device.readSerial();
+                            if (alreadyAttached)
                                 continue;
 
                             DS4Controllers[ind] = new DS4Device(device, ind);
