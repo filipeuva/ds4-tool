@@ -179,6 +179,14 @@ namespace ScpControl
             color.blue = m_Config.m_LowLeds[device][2];
             return color;
         }
+        public static ledColor loadHighColor(int device)
+        {
+            ledColor color = new ledColor();
+            color.red = m_Config.m_Leds[device][0];
+            color.green = m_Config.m_Leds[device][1];
+            color.blue = m_Config.m_Leds[device][2];
+            return color;
+        }
         public static void setTapSensitivity(int device, byte sen)
         {
             m_Config.tapSensitivity[device] = sen;
@@ -293,15 +301,15 @@ namespace ScpControl
         }
         public static Dictionary<DS4Controls, X360Controls> getCustomButtons()
         {
-            return new Dictionary<DS4Controls, X360Controls>(m_Config.customMapButtons);
+            return m_Config.customMapButtons;
         }
         public static Dictionary<DS4Controls, ushort> getCustomKeys()
         {
-            return new Dictionary<DS4Controls, ushort>(m_Config.customMapKeys);
+            return m_Config.customMapKeys;
         }
         public static Dictionary<DS4Controls, DS4KeyType> getCustomKeyTypes()
         {
-            return new Dictionary<DS4Controls, DS4KeyType>(m_Config.customMapKeyTypes);
+            return m_Config.customMapKeyTypes;
         }
 
         public static void Load()
@@ -325,21 +333,12 @@ namespace ScpControl
             byte bdif = (byte)(bmax - bmin);
             return (byte)(bmin + (bdif * ratio / 100));
         }
-        public static ledColor getTransitionedColor(byte[] c1, byte[] c2, uint ratio)
+        public static ledColor getTransitionedColor(ledColor c1, ledColor c2, uint ratio)
         {
             ledColor color = new ledColor();
-            color.red = 255;
-            color.green = 255;
-            color.blue = 255;
-            uint r = ratio % 101;
-            if (c1.Length != 3 || c2.Length != 3 || ratio < 0)
-            {
-                return color;
-            }
-            color.red = applyRatio(c1[0], c2[0], ratio);
-            color.green = applyRatio(c1[1], c2[1], ratio);
-            color.blue = applyRatio(c1[2], c2[2], ratio);
-
+            color.red = applyRatio(c1.red, c2.red, ratio);
+            color.green = applyRatio(c1.green, c2.green, ratio);
+            color.blue = applyRatio(c1.blue, c2.blue, ratio);
             return color;
         }
     }
@@ -408,9 +407,9 @@ namespace ScpControl
         public Boolean LoadCustomMapping(String customMapPath)
         {
             Boolean Loaded = true;
-            customMapButtons.Clear();
-            customMapKeys.Clear();
-            customMapKeyTypes.Clear();
+            Dictionary<DS4Controls, X360Controls> buttons = new Dictionary<DS4Controls, X360Controls>();
+            Dictionary<DS4Controls, ushort> keys = new Dictionary<DS4Controls, ushort>();
+            Dictionary<DS4Controls, DS4KeyType> keyTypes = new Dictionary<DS4Controls, DS4KeyType>();
             try
             {
                 if (customMapPath != string.Empty && File.Exists(customMapPath))
@@ -421,12 +420,12 @@ namespace ScpControl
                     XmlNode ParentItem = m_Xdoc.SelectSingleNode("/Control/Button");
                     if (ParentItem != null)
                         foreach (XmlNode Item in ParentItem.ChildNodes)
-                            customMapButtons.Add(getDS4ControlsByName(Item.Name), getX360ControlsByName(Item.InnerText));
+                            buttons.Add(getDS4ControlsByName(Item.Name), getX360ControlsByName(Item.InnerText));
                     ParentItem = m_Xdoc.SelectSingleNode("/Control/Key");
                     if (ParentItem != null)
                         foreach (XmlNode Item in ParentItem.ChildNodes)
                             if (UInt16.TryParse(Item.InnerText, out wvk))
-                                customMapKeys.Add(getDS4ControlsByName(Item.Name), wvk);
+                                keys.Add(getDS4ControlsByName(Item.Name), wvk);
                     ParentItem = m_Xdoc.SelectSingleNode("/Control/KeyType");
                     if (ParentItem != null)
                         foreach (XmlNode Item in ParentItem.ChildNodes)
@@ -441,6 +440,9 @@ namespace ScpControl
                                     customMapKeyTypes.Add(getDS4ControlsByName(Item.Name), keyType);
                             }
                 }
+                customMapButtons = buttons;
+                customMapKeys = keys;
+                customMapKeyTypes = keyTypes;
             }
             catch (Exception)
             {
@@ -448,12 +450,12 @@ namespace ScpControl
             }
             return Loaded;
         }
-        public Boolean LoadCustomMapping(String customMapPath, System.Windows.Forms.Control[] buttons)
+        public Boolean LoadCustomMapping(String customMapPath, System.Windows.Forms.Control[] formButtons)
         {
             Boolean Loaded = true;
-            customMapButtons.Clear();
-            customMapKeys.Clear();
-            customMapKeyTypes.Clear();
+            Dictionary<DS4Controls, X360Controls> buttons = new Dictionary<DS4Controls, X360Controls>();
+            Dictionary<DS4Controls, ushort> keys = new Dictionary<DS4Controls, ushort>();
+            Dictionary<DS4Controls, DS4KeyType> keyTypes = new Dictionary<DS4Controls, DS4KeyType>();
             try
             {
                 if (customMapPath != string.Empty && File.Exists(customMapPath))
@@ -462,7 +464,7 @@ namespace ScpControl
                     m_Xdoc.Load(customMapPath);
                     DS4KeyType keyType;
                     UInt16 wvk;
-                    foreach (var button in buttons)
+                    foreach (var button in formButtons)
                         try
                         {
                             Item = m_Xdoc.SelectSingleNode(String.Format("/Control/Key/{0}", button.Name));
@@ -470,7 +472,7 @@ namespace ScpControl
                             {
                                 if (UInt16.TryParse(Item.InnerText, out wvk))
                                 {
-                                    customMapKeys.Add(getDS4ControlsByName(Item.Name), wvk);
+                                    keys.Add(getDS4ControlsByName(Item.Name), wvk);
                                     button.Tag = wvk;
                                     button.Text = ((System.Windows.Forms.Keys)wvk).ToString();
 
@@ -489,7 +491,7 @@ namespace ScpControl
                                             button.ForeColor = System.Drawing.Color.Red;
                                         }
                                         if (keyType != DS4KeyType.None)
-                                            customMapKeyTypes.Add(getDS4ControlsByName(Item.Name), keyType);
+                                            keyTypes.Add(getDS4ControlsByName(Item.Name), keyType);
                                     }
                                 }
                             }
@@ -500,19 +502,29 @@ namespace ScpControl
                                 {
                                     button.Tag = Item.InnerText;
                                     button.Text = Item.InnerText;
-                                    customMapButtons.Add(getDS4ControlsByName(button.Name), getX360ControlsByName(Item.InnerText));
+                                    buttons.Add(getDS4ControlsByName(button.Name), getX360ControlsByName(Item.InnerText));
                                 }
                             }
                         }
                         catch
                         {
-
+                            Loaded = false;
                         }
+                }
+                else
+                {
+                    Loaded = false;
                 }
             }
             catch
             {
                 Loaded = false;
+            }
+            if (Loaded)
+            {
+                customMapButtons = buttons;
+                customMapKeys = keys;
+                customMapKeyTypes = keyTypes;
             }
             return Loaded;
         }

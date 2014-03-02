@@ -271,6 +271,28 @@ namespace ScpControl
             Report[2] = 0x05;
             Report[3] = 0x12;
 
+            Report[10] = (byte)(
+                ((cState.Share ? 1 : 0) << 0) |
+                ((cState.L3 ? 1 : 0) << 1) |
+                ((cState.R3 ? 1 : 0) << 2) |
+                ((cState.Options ? 1 : 0) << 3) |
+                ((cState.DpadUp ? 1 : 0) << 4) |
+                ((cState.DpadRight ? 1 : 0) << 5) |
+                ((cState.DpadDown ? 1 : 0) << 6) |
+                ((cState.DpadLeft ? 1 : 0) << 7));
+
+            Report[11] = (byte)(
+                ((cState.L1 ? 1 : 0) << 2) |
+                ((cState.R1 ? 1 : 0) << 3) |
+                ((cState.Triangle ? 1 : 0) << 4) |
+                ((cState.Circle ? 1 : 0) << 5) |
+                ((cState.Cross ? 1 : 0) << 6) |
+                ((cState.Square ? 1 : 0) << 7));
+
+            //Guide
+            Report[12] = (byte)(cState.PS ? 0xFF : 0x00);
+
+
             Report[14] = cState.LX; //Left Stick X
 
 
@@ -287,34 +309,6 @@ namespace ScpControl
 
 
             Report[27] = Mapping.mapRightTrigger(cState.R2, deviceNum); //Right Trigger
-
-
-            bool[] r11 = { false, false, cState.L1, cState.R1, cState.Triangle, cState.Circle, cState.Cross, cState.Square };
-
-            byte b11 = 0;
-            for (int i = 0; i < 8; ++i)
-            {
-                if (r11[i])
-                {
-                    b11 |= (byte)(1 << i);
-                }
-            }
-            Report[11] = b11;
-
-            bool[] r10 = { cState.Share, cState.L3, cState.R3, cState.Options, cState.DpadUp, cState.DpadRight, cState.DpadDown, cState.DpadLeft };
-            byte b10 = 0;
-            for (int i = 0; i < 8; ++i)
-            {
-                if (r10[i])
-                {
-                    b10 |= (byte)(1 << i);
-                }
-            }
-
-            Report[10] = b10;
-
-            //Guide
-            Report[12] = (byte)(cState.PS ? 0xFF : 0x00);
 
             return Report;
 
@@ -344,17 +338,10 @@ namespace ScpControl
             cState.DpadRight = ((byte)data[5] & (1 << 0)) != 0;
 
             //Convert dpad into individual On/Off bits instead of a clock representation
-            bool[] dpad = { cState.DpadRight, cState.DpadLeft, cState.DpadDown, cState.DpadUp };
-            byte c = 0;
-            for (int i = 0; i < 4; ++i)
-            {
-                if (dpad[i])
-                {
-                    c |= (byte)(1 << i);
-                }
-            }
-
-            int dpad_state = c;
+            int dpad_state = ((cState.DpadRight ? 1 : 0) << 0) |
+                ((cState.DpadLeft ? 1 : 0) << 1) |
+                ((cState.DpadDown ? 1 : 0) << 2) |
+                ((cState.DpadUp ? 1 : 0) << 3);
             switch (dpad_state)
             {
                 case 0: cState.DpadUp = true; cState.DpadDown = false; cState.DpadLeft = false; cState.DpadRight = false; break;
@@ -376,7 +363,7 @@ namespace ScpControl
             cState.L1 = ((byte)data[6] & (1 << 0)) != 0;
 
             cState.PS = ((byte)data[7] & (1 << 0)) != 0;
-            cState.TouchButton = (inputData[7] & (1 << 2 - 1)) != 0 ? true : false;
+            cState.TouchButton = (inputData[7] & (1 << 2 - 1)) != 0;
         }
 
         private void toggleTouchpad(bool enable)
@@ -418,28 +405,9 @@ namespace ScpControl
 
             this.charge = (short)battery;
             if (Global.getLedAsBatteryIndicator(deviceNum))
-            {
-                byte[] fullColor = { 
-                                   Global.loadColor(deviceNum).red, 
-                                   Global.loadColor(deviceNum).green, 
-                                   Global.loadColor(deviceNum).blue 
-                               };
-
-                // New Setting
-                ledColor color = Global.loadLowColor(deviceNum);
-                byte[] lowColor = { color.red, color.green, color.blue };
-
-                uint ratio = (uint)battery;
-                color = Global.getTransitionedColor(lowColor, fullColor, ratio);
-                LedColor = color;
-
-
-            }
+                LedColor = Global.getTransitionedColor(Global.loadLowColor(deviceNum), Global.loadHighColor(deviceNum), (uint)battery);
             else
-            {
-                ledColor color = Global.loadColor(deviceNum);
-                LedColor = color;
-            }
+                LedColor = Global.loadColor(deviceNum);
 
             if (Global.getFlashWhenLowBattery(deviceNum))
             {
