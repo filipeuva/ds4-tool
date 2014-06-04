@@ -47,6 +47,9 @@ namespace ScpControl
         private string MACAddr;
         public event EventHandler<DebugEventArgs> Debug = null;
 
+        public long lastMovedTimestamp;
+        public long lastZ;
+
         private readonly static byte[/* Light On duration */, /* Light Off duration */] BatteryIndicatorDurations =
         {
             { 255, 255 }, // 0 doesn't happen
@@ -178,6 +181,19 @@ namespace ScpControl
 
         public DS4Device(HidDevice device, int controllerID)
         {
+            init(device, controllerID);
+            isTouchEnabled = Global.getTouchEnabled(deviceNum);
+            touchpad = new Touchpad(deviceNum);
+            mouse = new Mouse(deviceNum);
+            touchpad.TouchButtonDown += mouse.touchButtonDown;
+            touchpad.TouchButtonUp += mouse.touchButtonUp;
+            touchpad.TouchesBegan += mouse.touchesBegan;
+            touchpad.TouchesMoved += mouse.touchesMoved;
+            touchpad.TouchesEnded += mouse.touchesEnded;
+        }
+
+        public void init(HidDevice device, int controllerID)
+        {
             hid_device = device;
             deviceNum = controllerID;
             isUSB = Device.Capabilities.InputReportByteLength == 64;
@@ -191,19 +207,12 @@ namespace ScpControl
                 btInputData = new byte[Device.Capabilities.InputReportByteLength];
                 outputData = new byte[78];
             }
-            isTouchEnabled = Global.getTouchEnabled(deviceNum);
-            touchpad = new Touchpad(deviceNum);
-            mouse = new Mouse(deviceNum);
-            touchpad.TouchButtonDown += mouse.touchButtonDown;
-            touchpad.TouchButtonUp += mouse.touchButtonUp;
-            touchpad.TouchesBegan += mouse.touchesBegan;
-            touchpad.TouchesMoved += mouse.touchesMoved;
-            touchpad.TouchesEnded += mouse.touchesEnded;
+
             Device.MonitorDeviceEvents = true;
 
-          
-
+            lastMovedTimestamp = DateTime.UtcNow.Ticks;
         }
+
         internal Touchpad touchpad;
         internal Mouse mouse;
         public byte[] retrieveData()
@@ -223,9 +232,33 @@ namespace ScpControl
             readButtons(inputData);
             checkQuickDisconnect(); // XXX race when first connecting, quick disconnect will only half-work in the first moments
             toggleTouchpad(inputData[8], inputData[9], cState.TouchButton);
-            updateBatteryStatus(inputData[30], isUSB);
+            
             if (isTouchEnabled)
                 touchpad.handleTouchpad(inputData, cState.TouchButton);
+
+            // audio/expansion ports upward and light bar/shoulders/bumpers/USB port downward
+            Int16 newZ = (Int16)((UInt16)(inputData[24] << 8) | inputData[25]);
+
+            bool shouldUpdate = lastZ == 0l || Math.Abs(newZ - lastZ) > 500l;
+            bool isLightUp = shouldUpdate ? newZ < -4500 : lastZ < -4500;
+
+            updateBatteryStatus(inputData[30], isUSB, isLightUp);
+
+            if (!isUSB)
+            {
+                if (newZ != lastZ)
+                {
+                    lastMovedTimestamp = DateTime.UtcNow.Ticks;
+                }
+                else if (DateTime.UtcNow.Ticks - lastMovedTimestamp > (10000000l * 900l))
+                {
+                    //turn off
+                    DisconnectBT();
+                }
+            }
+
+            lastZ = shouldUpdate ? newZ : lastZ;
+            
 
             if (Global.getHasCustomKeysorButtons(deviceNum))
             {
@@ -241,6 +274,7 @@ namespace ScpControl
                 pState = cState;
                 return ConvertTo360();
             }
+
         }
 
         // Make quick disconnet send a bus disconnect and in the meantime pretend all input is idle.
@@ -387,7 +421,7 @@ namespace ScpControl
             }
         }
 
-        private void updateBatteryStatus(int status, bool isUsb)
+        private void updateBatteryStatus(int status, bool isUsb,bool isLightUp)
         {
             int battery = 0;
             if (isUsb)
@@ -404,20 +438,29 @@ namespace ScpControl
             }
 
             this.charge = (short)battery;
-            if (Global.getLedAsBatteryIndicator(deviceNum))
-                LedColor = Global.getTransitionedColor(Global.loadLowColor(deviceNum), Global.loadHighColor(deviceNum), (uint)battery);
-            else
-                LedColor = Global.loadColor(deviceNum);
+            if (isLightUp)
+            {
+                if (Global.getLedAsBatteryIndicator(deviceNum))
+                    LedColor = Global.getTransitionedColor(Global.loadLowColor(deviceNum), Global.loadHighColor(deviceNum), (uint)battery);
+                else
+                    LedColor = Global.loadColor(deviceNum);
 
-            if (Global.getFlashWhenLowBattery(deviceNum))
-            {
-                FlashLedOn = BatteryIndicatorDurations[battery / 10, 0];
-                FlashLedOff = BatteryIndicatorDurations[battery / 10, 1];
+                if (Global.getFlashWhenLowBattery(deviceNum))
+                {
+                    FlashLedOn = BatteryIndicatorDurations[battery / 10, 0];
+                    FlashLedOff = BatteryIndicatorDurations[battery / 10, 1];
+                }
+                else
+                {
+                    FlashLedOn = FlashLedOff = 0;
+                }
             }
             else
             {
-                FlashLedOn = FlashLedOff = 0;
+                ledColor color = new ledColor();
+                LedColor = color;
             }
+
         }
 
         public void sendOutputReport()

@@ -452,7 +452,12 @@ namespace ScpControl
                                         if (DS4Controllers[Index] != null
                                             && DS4Controllers[Index].Device != null &&
                                             DS4Controllers[Index].MACAddress == device.readSerial())
+                                        {
+
+                                            DS4Controllers[Index].init(device,Index);
                                             return true;
+                                        }
+                                            
                                     }
                                 return false;
                             })())
