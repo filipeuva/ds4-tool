@@ -237,20 +237,20 @@ namespace ScpControl
                 touchpad.handleTouchpad(inputData, cState.TouchButton);
 
             // audio/expansion ports upward and light bar/shoulders/bumpers/USB port downward
-            Int16 newZ = (Int16)((UInt16)(inputData[24] << 8) | inputData[25]);
+            Int16 newZ = (Int16)((UInt16)(inputData[22] << 8) | inputData[23]);
 
-            bool shouldUpdate = lastZ == 0l || Math.Abs(newZ - lastZ) > 500l;
-            bool isLightUp = shouldUpdate ? newZ < -4500 : lastZ < -4500;
+            bool shouldUpdate = lastZ == 0l || Math.Abs(newZ - lastZ) > 2000l;
+            bool isLightUp = shouldUpdate ? newZ < -4000 : lastZ < -4000;
 
             updateBatteryStatus(inputData[30], isUSB, isLightUp);
 
             if (!isUSB)
             {
-                if (newZ != lastZ)
+                if (shouldUpdate)
                 {
                     lastMovedTimestamp = DateTime.UtcNow.Ticks;
                 }
-                else if (DateTime.UtcNow.Ticks - lastMovedTimestamp > (10000000l * 900l))
+                else if ((DateTime.UtcNow.Ticks - lastMovedTimestamp) > 900 * 10000000L) //900
                 {
                     //turn off
                     DisconnectBT();
