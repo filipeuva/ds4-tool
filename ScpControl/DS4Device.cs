@@ -50,6 +50,9 @@ namespace ScpControl
         public long lastMovedTimestamp;
         public long lastZ;
 
+        public long startFlashTimestamp;
+        public static long TIME_TO_FLASH = 10000000L * 1;
+
         private readonly static byte[/* Light On duration */, /* Light Off duration */] BatteryIndicatorDurations =
         {
             { 255, 255 }, // 0 doesn't happen
@@ -196,7 +199,7 @@ namespace ScpControl
         {
             hid_device = device;
             deviceNum = controllerID;
-            isUSB = Device.Capabilities.InputReportByteLength == 64;
+            isUSB = Device.Capabilities.InputReportByteLength == 64; //547
             MACAddr = Device.readSerial();
             if (isUSB)
             {
@@ -250,7 +253,7 @@ namespace ScpControl
                 {
                     lastMovedTimestamp = DateTime.UtcNow.Ticks;
                 }
-                else if ((DateTime.UtcNow.Ticks - lastMovedTimestamp) > 900 * 10000000L) //900
+                else if ((DateTime.UtcNow.Ticks - lastMovedTimestamp) > 300 * 10000000L) //5m
                 {
                     //turn off
                     DisconnectBT();
@@ -441,9 +444,27 @@ namespace ScpControl
             if (isLightUp)
             {
                 if (Global.getLedAsBatteryIndicator(deviceNum))
+                {
+
                     LedColor = Global.getTransitionedColor(Global.loadLowColor(deviceNum), Global.loadHighColor(deviceNum), (uint)battery);
+
+                }
                 else
-                    LedColor = Global.loadColor(deviceNum);
+                {
+                    long currentTime = DateTime.UtcNow.Ticks;
+                    
+                    if (startFlashTimestamp == 0l || DateTime.UtcNow.Ticks >= startFlashTimestamp + TIME_TO_FLASH)
+                    {
+                        startFlashTimestamp =currentTime;
+                    }
+
+
+
+                    double factor = Math.Max(0.1,Math.Abs(Math.Cos(((float)(currentTime - startFlashTimestamp) / TIME_TO_FLASH) * Math.PI)));
+                    LedColor = Global.getPercentageColor(Global.loadColor(deviceNum), factor);
+
+                    //LedColor = Global.loadColor(deviceNum);
+                }
 
                 if (Global.getFlashWhenLowBattery(deviceNum))
                 {

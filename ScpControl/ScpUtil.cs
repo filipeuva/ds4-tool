@@ -341,6 +341,14 @@ namespace ScpControl
             color.blue = applyRatio(c1.blue, c2.blue, ratio);
             return color;
         }
+        public static ledColor getPercentageColor(ledColor color, double ratio)
+        {
+            color.red =  (byte) (color.red * ratio);
+            color.green = (byte)(color.green * ratio);
+            color.blue = (byte)(color.blue * ratio);
+
+            return color;
+        }
     }
 
 
