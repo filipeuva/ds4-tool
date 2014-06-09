@@ -55,8 +55,11 @@ namespace ScpServer
 
         protected RadioButton[] Pad = new RadioButton[4];
 
+
         public ScpForm()
         {
+            
+
             InitializeComponent();
 
             ThemeUtil.SetTheme(lvDebug);
