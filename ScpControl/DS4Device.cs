@@ -9,6 +9,9 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using Microsoft.Win32;
+using System.IO;
+
 namespace ScpControl
 {
     public struct ledColor
@@ -234,6 +237,22 @@ namespace ScpControl
 
             readButtons(inputData);
             checkQuickDisconnect(); // XXX race when first connecting, quick disconnect will only half-work in the first moments
+
+            //STEAM
+            if (cState.PS)
+            {
+                
+                var runningProcessByName = Process.GetProcessesByName("steam");
+                if (true || runningProcessByName.Length == 0)
+                {
+                    string filePath = Registry.GetValue("HKEY_USERS\\.DEFAULT\\Software\\Classes\\steam\\Shell\\Open\\Command", null, null).ToString();
+
+                    filePath = filePath.Substring(0, filePath.IndexOf(".exe") + 4);
+
+                    Process.Start(filePath.Replace("\"", ""), "-bigpicture");
+                }
+            }
+
             toggleTouchpad(inputData[8], inputData[9], cState.TouchButton);
             
             if (isTouchEnabled)

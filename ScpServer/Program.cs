@@ -26,7 +26,7 @@ namespace ScpServer
 
             
                 rk.SetValue("DS4 to XInput Mapper", Application.ExecutablePath.ToString());
-            //rk.DeleteValue(AppName,false);           TODO: or use as fixme to remove  
+            //rk.DeleteValue("DS4 to XInput Mapper",false);//           TODO: or use as fixme to remove  
 
         }
     }
