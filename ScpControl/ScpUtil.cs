@@ -157,11 +157,12 @@ namespace ScpControl
 
         public static void setUseExclusiveMode(bool exclusive)
         {
-            m_Config.useExclusiveMode = exclusive;
+            //m_Config.useExclusiveMode = exclusive;
+            m_Config.useExclusiveMode = false;
         }
         public static bool getUseExclusiveMode()
         {
-            return m_Config.useExclusiveMode;
+            return false;// m_Config.useExclusiveMode;
         }
 
         // New settings

@@ -29,8 +29,11 @@ namespace HidLibrary
             if ((!_device.IsConnected || _device.IsTimedOut) && Removed != null)
                 Removed();
 
-            Thread.Sleep(500);
+            Thread.Sleep(1000);
             if (_device.MonitorDeviceEvents) Init();
+            
+
+            
         }
 
         private static void DisposeDeviceEventMonitor(IAsyncResult ar)

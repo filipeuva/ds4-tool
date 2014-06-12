@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Windows.Forms;
+using System.Threading;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using ScpControl;
+
+
 namespace ScpServer
 {
     public partial class ScpForm : Form
@@ -136,10 +140,10 @@ namespace ScpServer
                 if (m.Msg == ScpDevice.WM_DEVICECHANGE)
                 {
                     Int32 Type = m.WParam.ToInt32();
-                    lock (this)
-                    {
+                    /*lock (this)
+                    {*/
                         rootHub.StartNewControllers();
-                    }
+                    //}
                 }
             }
             catch { }
@@ -180,6 +184,8 @@ namespace ScpServer
             if (checkFirst && btnClear.Enabled)
                 Pad[0].Checked = true;
             optionsButton.Enabled = optionsEnabled;
+
+            rootHub.StartNewControllers();
         }
         protected void On_Debug(object sender, ScpControl.DebugEventArgs e)
         {

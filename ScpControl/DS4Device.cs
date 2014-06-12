@@ -237,21 +237,8 @@ namespace ScpControl
 
             readButtons(inputData);
             checkQuickDisconnect(); // XXX race when first connecting, quick disconnect will only half-work in the first moments
-
-            //STEAM
-            if (cState.PS)
-            {
-                
-                var runningProcessByName = Process.GetProcessesByName("steam");
-                if (true || runningProcessByName.Length == 0)
-                {
-                    string filePath = Registry.GetValue("HKEY_USERS\\.DEFAULT\\Software\\Classes\\steam\\Shell\\Open\\Command", null, null).ToString();
-
-                    filePath = filePath.Substring(0, filePath.IndexOf(".exe") + 4);
-
-                    Process.Start(filePath.Replace("\"", ""), "-bigpicture");
-                }
-            }
+            checkLaunchSteam();
+            
 
             toggleTouchpad(inputData[8], inputData[9], cState.TouchButton);
             
@@ -319,6 +306,23 @@ namespace ScpControl
                 cState = IdleDS4State;
             }
         }
+        private bool launchingSteam = false;
+        private void checkLaunchSteam()
+        {
+            var runningProcessByName = Process.GetProcessesByName("steam");
+            if (launchingSteam) {
+                 launchingSteam = runningProcessByName.Length == 0;
+            } 
+            else if (cState.PS && cState.Share)
+            {
+                string filePath = Registry.GetValue("HKEY_USERS\\.DEFAULT\\Software\\Classes\\steam\\Shell\\Open\\Command", null, null).ToString();
+
+                filePath = filePath.Substring(0, filePath.IndexOf(".exe") + 4);
+
+                Process.Start(filePath.Replace("\"", ""), runningProcessByName.Length == 0 ?  "-bigpicture" : "steam://open/bigpicture");
+            }
+        }
+
 
         private byte[] ConvertTo360()
         {
