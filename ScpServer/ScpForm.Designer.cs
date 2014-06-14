@@ -73,7 +73,7 @@
             this.lvDebug.FullRowSelect = true;
             this.lvDebug.Location = new System.Drawing.Point(0, 0);
             this.lvDebug.Name = "lvDebug";
-            this.lvDebug.Size = new System.Drawing.Size(766, 353);
+            this.lvDebug.Size = new System.Drawing.Size(973, 353);
             this.lvDebug.TabIndex = 0;
             this.lvDebug.UseCompatibleStateImageBehavior = false;
             this.lvDebug.View = System.Windows.Forms.View.Details;
@@ -101,13 +101,13 @@
             this.pnlButton.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.pnlButton.Location = new System.Drawing.Point(0, 477);
             this.pnlButton.Name = "pnlButton";
-            this.pnlButton.Size = new System.Drawing.Size(766, 35);
+            this.pnlButton.Size = new System.Drawing.Size(973, 35);
             this.pnlButton.TabIndex = 10;
             // 
             // btnStartStop
             // 
             this.btnStartStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnStartStop.Location = new System.Drawing.Point(635, 5);
+            this.btnStartStop.Location = new System.Drawing.Point(842, 5);
             this.btnStartStop.Name = "btnStartStop";
             this.btnStartStop.Size = new System.Drawing.Size(119, 23);
             this.btnStartStop.TabIndex = 1;
@@ -121,15 +121,16 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(6, 15);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(314, 13);
+            this.label1.Size = new System.Drawing.Size(513, 13);
             this.label1.TabIndex = 10;
-            this.label1.Text = "Created by InhexSTER,  based on open source by Scarlet.Crush ";
+            this.label1.Text = "Created by InhexSTER, based on open source by Scarlet.Crush, additional modificat" +
+    "ions made by Phenicks";
             // 
             // btnClear
             // 
             this.btnClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnClear.Enabled = false;
-            this.btnClear.Location = new System.Drawing.Point(532, 6);
+            this.btnClear.Location = new System.Drawing.Point(739, 6);
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(97, 23);
             this.btnClear.TabIndex = 9;
@@ -141,7 +142,7 @@
             // 
             this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnStop.Enabled = false;
-            this.btnStop.Location = new System.Drawing.Point(679, 6);
+            this.btnStop.Location = new System.Drawing.Point(886, 6);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(75, 23);
             this.btnStop.TabIndex = 2;
@@ -154,7 +155,7 @@
             // 
             this.lnkControllers.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lnkControllers.AutoSize = true;
-            this.lnkControllers.Location = new System.Drawing.Point(341, 95);
+            this.lnkControllers.Location = new System.Drawing.Point(548, 95);
             this.lnkControllers.Name = "lnkControllers";
             this.lnkControllers.Size = new System.Drawing.Size(56, 13);
             this.lnkControllers.TabIndex = 11;
@@ -168,7 +169,7 @@
             this.pnlDebug.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pnlDebug.Location = new System.Drawing.Point(0, 124);
             this.pnlDebug.Name = "pnlDebug";
-            this.pnlDebug.Size = new System.Drawing.Size(766, 353);
+            this.pnlDebug.Size = new System.Drawing.Size(973, 353);
             this.pnlDebug.TabIndex = 11;
             // 
             // pnlStatus
@@ -177,7 +178,7 @@
             this.pnlStatus.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlStatus.Location = new System.Drawing.Point(0, 0);
             this.pnlStatus.Name = "pnlStatus";
-            this.pnlStatus.Size = new System.Drawing.Size(766, 124);
+            this.pnlStatus.Size = new System.Drawing.Size(973, 124);
             this.pnlStatus.TabIndex = 9;
             // 
             // gpPads
@@ -197,7 +198,7 @@
             this.gpPads.Controls.Add(this.rbPad_1);
             this.gpPads.Location = new System.Drawing.Point(3, 3);
             this.gpPads.Name = "gpPads";
-            this.gpPads.Size = new System.Drawing.Size(763, 117);
+            this.gpPads.Size = new System.Drawing.Size(970, 117);
             this.gpPads.TabIndex = 1;
             this.gpPads.TabStop = false;
             // 
@@ -206,7 +207,7 @@
             this.startWithWindowsCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.startWithWindowsCheckBox.AutoSize = true;
             this.startWithWindowsCheckBox.Cursor = System.Windows.Forms.Cursors.Default;
-            this.startWithWindowsCheckBox.Location = new System.Drawing.Point(506, 94);
+            this.startWithWindowsCheckBox.Location = new System.Drawing.Point(713, 94);
             this.startWithWindowsCheckBox.Name = "startWithWindowsCheckBox";
             this.startWithWindowsCheckBox.Size = new System.Drawing.Size(120, 17);
             this.startWithWindowsCheckBox.TabIndex = 42;
@@ -220,7 +221,7 @@
             this.lbLastMessage.ForeColor = System.Drawing.SystemColors.GrayText;
             this.lbLastMessage.Location = new System.Drawing.Point(58, 95);
             this.lbLastMessage.Name = "lbLastMessage";
-            this.lbLastMessage.Size = new System.Drawing.Size(278, 16);
+            this.lbLastMessage.Size = new System.Drawing.Size(485, 16);
             this.lbLastMessage.TabIndex = 41;
             this.lbLastMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lbLastMessage.Visible = false;
@@ -229,7 +230,7 @@
             // 
             this.startMinimizedCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.startMinimizedCheckBox.AutoSize = true;
-            this.startMinimizedCheckBox.Location = new System.Drawing.Point(403, 94);
+            this.startMinimizedCheckBox.Location = new System.Drawing.Point(610, 94);
             this.startMinimizedCheckBox.Name = "startMinimizedCheckBox";
             this.startMinimizedCheckBox.Size = new System.Drawing.Size(97, 17);
             this.startMinimizedCheckBox.TabIndex = 40;
@@ -241,7 +242,7 @@
             // 
             this.hideDS4CheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.hideDS4CheckBox.AutoSize = true;
-            this.hideDS4CheckBox.Location = new System.Drawing.Point(632, 94);
+            this.hideDS4CheckBox.Location = new System.Drawing.Point(839, 94);
             this.hideDS4CheckBox.Name = "hideDS4CheckBox";
             this.hideDS4CheckBox.Size = new System.Drawing.Size(119, 17);
             this.hideDS4CheckBox.TabIndex = 13;
@@ -252,7 +253,7 @@
             // hotkeysButton
             // 
             this.hotkeysButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.hotkeysButton.Location = new System.Drawing.Point(676, 50);
+            this.hotkeysButton.Location = new System.Drawing.Point(883, 50);
             this.hotkeysButton.Name = "hotkeysButton";
             this.hotkeysButton.Size = new System.Drawing.Size(75, 23);
             this.hotkeysButton.TabIndex = 12;
@@ -263,7 +264,7 @@
             // optionsButton
             // 
             this.optionsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.optionsButton.Location = new System.Drawing.Point(676, 10);
+            this.optionsButton.Location = new System.Drawing.Point(883, 10);
             this.optionsButton.Name = "optionsButton";
             this.optionsButton.Size = new System.Drawing.Size(75, 23);
             this.optionsButton.TabIndex = 11;
@@ -339,11 +340,11 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(766, 512);
+            this.ClientSize = new System.Drawing.Size(973, 512);
             this.Controls.Add(this.pnlDebug);
             this.Controls.Add(this.pnlButton);
             this.Controls.Add(this.pnlStatus);
-            this.MinimumSize = new System.Drawing.Size(610, 192);
+            this.MinimumSize = new System.Drawing.Size(800, 280);
             this.Name = "ScpForm";
             this.Text = "DS4 to XInput Mapper 1.2.2";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form_Close);
