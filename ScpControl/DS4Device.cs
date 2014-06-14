@@ -319,8 +319,26 @@ namespace ScpControl
 
                 filePath = filePath.Substring(0, filePath.IndexOf(".exe") + 4);
 
-                Process.Start(filePath.Replace("\"", ""), runningProcessByName.Length == 0 ?  "steam://open/bigpicture" :"-bigpicture" );
+                
+                /*bool gameOverlayIsRunning = false;
+                if (runningProcessByName != null && runningProcessByName.Length > 0)
+                {
+                    foreach (Process process in runningProcessByName)
+                    {
+                        if (process.MainModule.FileName.EndsWith(@"GameOverlayUI.exe"))
+                        {
+                            gameOverlayIsRunning = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!gameOverlayIsRunning)
+                {*/
+                Process.Start(filePath.Replace("\"", ""), runningProcessByName.Length > 0 ? "steam://open/bigpicture" : "-bigpicture");
                 launchingSteam = true;
+                //}
+                
             }
         }
 

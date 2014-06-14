@@ -538,7 +538,7 @@ namespace ScpServer
             int value = turnOffMinuteBar.Value;
             String caption = turnOffMinuteBar.Value > 0 ? (value > 60 ? value / 60 + " hours and " + value % 60 + " minutes" : value + " minutes") : "Off";
 
-            turnOffLabel.Text = "Turn inactive Controller off after :" + caption ;
+            turnOffLabel.Text = "Turn inactive Controller off after : " + caption ;
 
             Global.saveTurnOffTime(device, turnOffMinuteBar.Value);
         }

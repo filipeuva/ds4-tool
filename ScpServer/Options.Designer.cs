@@ -728,7 +728,7 @@
             this.turnToUserCheckBox.Name = "turnToUserCheckBox";
             this.turnToUserCheckBox.Size = new System.Drawing.Size(239, 17);
             this.turnToUserCheckBox.TabIndex = 82;
-            this.turnToUserCheckBox.Text = "Light Bar Color only activates if turned to user";
+            this.turnToUserCheckBox.Text = "Light Bar only activates if turned to user";
             this.turnToUserCheckBox.UseVisualStyleBackColor = true;
             this.turnToUserCheckBox.CheckedChanged += new System.EventHandler(this.turnToUserCheckBox_CheckedChanged);
             // 
