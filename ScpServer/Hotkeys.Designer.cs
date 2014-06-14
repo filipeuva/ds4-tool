@@ -44,6 +44,8 @@
             this.label13 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -120,7 +122,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(164, 202);
+            this.button1.Location = new System.Drawing.Point(163, 239);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 8;
@@ -158,7 +160,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(22, 167);
+            this.label11.Location = new System.Drawing.Point(22, 197);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(200, 13);
             this.label11.TabIndex = 13;
@@ -167,7 +169,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(22, 180);
+            this.label13.Location = new System.Drawing.Point(22, 210);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(372, 13);
             this.label13.TabIndex = 14;
@@ -187,15 +189,35 @@
             this.label15.AutoSize = true;
             this.label15.Location = new System.Drawing.Point(22, 145);
             this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(107, 13);
+            this.label15.Size = new System.Drawing.Size(102, 13);
             this.label15.TabIndex = 15;
-            this.label15.Text = "Options + PS buttons";
+            this.label15.Text = "Options + PS button";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(23, 167);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(94, 13);
+            this.label16.TabIndex = 17;
+            this.label16.Text = "Share + PS button";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(222, 167);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(128, 13);
+            this.label17.TabIndex = 18;
+            this.label17.Text = "Open Steam ( If installed )";
             // 
             // Hotkeys
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(399, 236);
+            this.ClientSize = new System.Drawing.Size(399, 274);
+            this.Controls.Add(this.label17);
+            this.Controls.Add(this.label16);
             this.Controls.Add(this.label14);
             this.Controls.Add(this.label15);
             this.Controls.Add(this.label13);
@@ -237,5 +259,7 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label label17;
     }
 }

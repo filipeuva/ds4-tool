@@ -91,63 +91,7 @@ namespace ScpControl
 
         public override Boolean Start()
         {
-            if (IsActive)
-            {
-                int ind = 0;
-                LogDebug("Starting....");
-                LogDebug("Searching for controllers....");
-                int[] pid = { 0x05C4 };
-                try
-                {
-                    IEnumerable<HidDevice> devices = HidDevices.Enumerate(0x054C, pid);
-                    foreach (HidDevice device in devices)
-                    {
-                        LogDebug("Found Controller: VID:" + device.Attributes.VendorHexId + " PID:" + device.Attributes.ProductHexId);
-                        device.OpenDevice(Global.getUseExclusiveMode());
-                        if (device.IsOpen)
-                        {
-                            bool alreadyAttached = false;
-                            for (int i = 0; i < DS4Controllers.Length && !alreadyAttached; i++)
-                                alreadyAttached = DS4Controllers[i] != null && DS4Controllers[i].MACAddress == device.readSerial();
-                            if (alreadyAttached)
-                                continue;
-
-                            DS4Controllers[ind] = new DS4Device(device, ind);
-                            ledColor color = Global.loadColor(ind);
-                            DS4Controllers[ind].LedColor = color;
-                            DS4Controllers[ind].sendOutputReport();
-                            Plugin(ind + 1);
-                            isWorkersShouldRun = true;
-                            int t = ind;
-                            if(workers
-                                [ind].ThreadState == System.Threading.ThreadState.Aborted || workers[ind].ThreadState == System.Threading.ThreadState.Stopped)
-                                workers[ind] = new Thread(() =>
-                                { ProcessData(t); });
-                            workers[ind].Start();
-                            LogDebug("Controller " + (ind + 1) + " ready to use");
-                        }
-                        else
-                        {
-                            LogDebug("Could not open the controller " + (ind + 1) + " for exclusive access");
-                            LogDebug("Try to quit any applications that can be using the controller");
-                            LogDebug("Then press Stop and Start to try accessing device again");
-                        }
-
-
-                        ind++;
-                    }
-
-                    if (ind == 0 && DS4Controllers[0] == null)
-                    {
-                        LogDebug("No controllers found");
-                    }
-                }
-                catch (Exception e)
-                {
-                    LogDebug(e.ToString());
-                }
-
-            }
+            StartNewControllers();
             return true;
         }
 
@@ -428,7 +372,6 @@ namespace ScpControl
             }
         }
 
-
         // Hot plug
         public void StartNewControllers()
         {
@@ -440,8 +383,9 @@ namespace ScpControl
                     IEnumerable<HidDevice> devices = HidDevices.Enumerate(0x054C, pid);
                     foreach (HidDevice device in devices)
                     {
-                        if (!device.IsOpen)
-                            device.OpenDevice(Global.getUseExclusiveMode());
+
+                        device.OpenDevice(Global.getUseExclusiveMode());
+
                         if (device.IsOpen)
                         {
                             if (((Func<bool>)delegate
@@ -484,6 +428,7 @@ namespace ScpControl
                                             { ProcessData(t); });
                                         workers[Index].Start();
                                     LogDebug("Controller " + (Index + 1) + " ready to use");
+
                                     break;
                                 }
                                 else

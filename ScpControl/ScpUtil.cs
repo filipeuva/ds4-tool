@@ -157,15 +157,34 @@ namespace ScpControl
 
         public static void setUseExclusiveMode(bool exclusive)
         {
-            //m_Config.useExclusiveMode = exclusive;
-            m_Config.useExclusiveMode = false;
+            m_Config.useExclusiveMode = exclusive;
         }
         public static bool getUseExclusiveMode()
         {
-            return false;// m_Config.useExclusiveMode;
+            return m_Config.useExclusiveMode;
         }
 
         // New settings
+        public static void saveTurnOffTime(int device, int time)
+        {
+            m_Config.turnOffTime[device] = time;
+        }
+
+        public static int getTurnOffTime(int device)
+        {
+            return m_Config.turnOffTime[device];
+        }
+
+        public static void saveTurnToUser(int device, bool turnToUser)
+        {
+            m_Config.turnToUser[device] = turnToUser;
+        }
+
+        public static bool getTurnToUser(int device)
+        {
+            return m_Config.turnToUser[device];
+        }
+
         public static void saveLowColor(int device, byte red, byte green, byte blue)
         {
             m_Config.m_LowLeds[device][0] = red;
@@ -228,6 +247,16 @@ namespace ScpControl
         {
             return m_Config.startMinimized;
         }
+        public static void setStartWithWindows(bool startWithWindows)
+        {
+            m_Config.startWithWindows = startWithWindows;
+        }
+        public static bool getStartWithWindows()
+        {
+            return m_Config.startWithWindows;
+        }
+
+
         public static void setFormWidth(int size)
         {
             m_Config.formWidth = size;
@@ -386,10 +415,13 @@ namespace ScpControl
         };
         public bool[] flushHIDQueue = { true, true, true, true };
 
-        public Boolean useExclusiveMode = false;
+        public Boolean useExclusiveMode = true;
         public Int32 formWidth = 782;
         public Int32 formHeight = 550;
         public Boolean startMinimized = false;
+        public Boolean startWithWindows = true;
+        public int[] turnOffTime = {15,15,15,15};
+        public Boolean[] turnToUser = {true,true,true,true};
 
         public Dictionary<DS4Controls, DS4KeyType> customMapKeyTypes = new Dictionary<DS4Controls, DS4KeyType>();
         public Dictionary<DS4Controls, UInt16> customMapKeys = new Dictionary<DS4Controls, UInt16>();
@@ -745,9 +777,15 @@ namespace ScpControl
                         catch { missingSetting = true; }
                         try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/RightTriggerMiddle"); Double.TryParse(Item.InnerText, out m_RightTriggerMiddle[i]); }
                         catch { missingSetting = true; }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/TurnToUser"); Boolean.TryParse(Item.InnerText, out turnToUser[i]); }
+                        catch { missingSetting = true; }
+                        try { Item = m_Xdoc.SelectSingleNode("/ScpControl/Controller" + (i + 1) + "/TurnOffTime"); Int32.TryParse(Item.InnerText, out turnOffTime[i]); }
+                        catch { missingSetting = true; }
                     }
 
                     try { Item = m_Xdoc.SelectSingleNode("/ScpControl/useExclusiveMode"); Boolean.TryParse(Item.InnerText, out useExclusiveMode); }
+                    catch { missingSetting = true; }
+                    try { Item = m_Xdoc.SelectSingleNode("/ScpControl/startWithWindows"); Boolean.TryParse(Item.InnerText, out startWithWindows); }
                     catch { missingSetting = true; }
                     try { Item = m_Xdoc.SelectSingleNode("/ScpControl/startMinimized"); Boolean.TryParse(Item.InnerText, out startMinimized); }
                     catch { missingSetting = true; }
@@ -787,6 +825,7 @@ namespace ScpControl
                 Node = m_Xdoc.CreateNode(XmlNodeType.Element, "ScpControl", null);
 
                 XmlNode xmlUseExclNode = m_Xdoc.CreateNode(XmlNodeType.Element, "useExclusiveMode", null); xmlUseExclNode.InnerText = useExclusiveMode.ToString(); Node.AppendChild(xmlUseExclNode);
+                XmlNode xmlStartWithWindows = m_Xdoc.CreateNode(XmlNodeType.Element, "startWithWindows", null); xmlStartWithWindows.InnerText = startWithWindows.ToString(); Node.AppendChild(xmlStartWithWindows);
                 XmlNode xmlStartMinimized = m_Xdoc.CreateNode(XmlNodeType.Element, "startMinimized", null); xmlStartMinimized.InnerText = startMinimized.ToString(); Node.AppendChild(xmlStartMinimized);
                 XmlNode xmlFormWidth = m_Xdoc.CreateNode(XmlNodeType.Element, "formWidth", null); xmlFormWidth.InnerText = formWidth.ToString(); Node.AppendChild(xmlFormWidth);
                 XmlNode xmlFormHeight = m_Xdoc.CreateNode(XmlNodeType.Element, "formHeight", null); xmlFormHeight.InnerText = formHeight.ToString(); Node.AppendChild(xmlFormHeight);
@@ -819,6 +858,8 @@ namespace ScpControl
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "customMapPath", null); Entry.InnerText = customMapPath[i]; cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "LeftTriggerMiddle", null); Entry.InnerText = m_LeftTriggerMiddle[i].ToString(); cNodes[i].AppendChild(Entry);
                     Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "RightTriggerMiddle", null); Entry.InnerText = m_RightTriggerMiddle[i].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "TurnToUser", null); Entry.InnerText = turnToUser[i].ToString(); cNodes[i].AppendChild(Entry);
+                    Entry = m_Xdoc.CreateNode(XmlNodeType.Element, "TurnOffTime", null); Entry.InnerText = turnOffTime[i].ToString(); cNodes[i].AppendChild(Entry);
                 }
                 m_Xdoc.AppendChild(Node);
 

@@ -85,6 +85,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.flushHIDQueue = new System.Windows.Forms.CheckBox();
             this.touchpadJitterCompensation = new System.Windows.Forms.CheckBox();
+            this.turnToUserCheckBox = new System.Windows.Forms.CheckBox();
+            this.turnOffMinuteBar = new System.Windows.Forms.TrackBar();
+            this.turnOffOffLabel = new System.Windows.Forms.Label();
+            this.turnOffLabel = new System.Windows.Forms.Label();
             this.advColorDialog = new ScpServer.AdvancedColorDialog();
             ((System.ComponentModel.ISupportInitialize)(this.blueBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.greenBar)).BeginInit();
@@ -98,6 +102,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.tapSensitivityBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.scrollSensitivityBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.turnOffMinuteBar)).BeginInit();
             this.SuspendLayout();
             // 
             // BlueLabel
@@ -119,6 +124,7 @@
             this.GreenLabel.Size = new System.Drawing.Size(36, 13);
             this.GreenLabel.TabIndex = 14;
             this.GreenLabel.Text = "Green";
+            this.GreenLabel.Click += new System.EventHandler(this.GreenLabel_Click);
             // 
             // RedLabel
             // 
@@ -140,6 +146,7 @@
             this.blueBar.TabIndex = 12;
             this.blueBar.TickFrequency = 25;
             this.blueBar.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.blueBar.Scroll += new System.EventHandler(this.blueBar_Scroll);
             this.blueBar.ValueChanged += new System.EventHandler(this.blueBar_ValueChanged);
             // 
             // greenBar
@@ -152,6 +159,7 @@
             this.greenBar.TabIndex = 11;
             this.greenBar.TickFrequency = 25;
             this.greenBar.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.greenBar.Scroll += new System.EventHandler(this.greenBar_Scroll);
             this.greenBar.ValueChanged += new System.EventHandler(this.greenBar_ValueChanged);
             // 
             // redBar
@@ -164,6 +172,7 @@
             this.redBar.TabIndex = 10;
             this.redBar.TickFrequency = 25;
             this.redBar.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.redBar.Scroll += new System.EventHandler(this.redBar_Scroll);
             this.redBar.ValueChanged += new System.EventHandler(this.redBar_ValueChanged);
             // 
             // blueValLabel
@@ -313,7 +322,7 @@
             // setButton
             // 
             this.setButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.setButton.Location = new System.Drawing.Point(659, 269);
+            this.setButton.Location = new System.Drawing.Point(659, 369);
             this.setButton.Name = "setButton";
             this.setButton.Size = new System.Drawing.Size(75, 23);
             this.setButton.TabIndex = 30;
@@ -324,7 +333,7 @@
             // CustomMappingButton
             // 
             this.CustomMappingButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.CustomMappingButton.Location = new System.Drawing.Point(54, 246);
+            this.CustomMappingButton.Location = new System.Drawing.Point(54, 346);
             this.CustomMappingButton.Name = "CustomMappingButton";
             this.CustomMappingButton.Size = new System.Drawing.Size(172, 23);
             this.CustomMappingButton.TabIndex = 31;
@@ -335,7 +344,7 @@
             // saveButton
             // 
             this.saveButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.saveButton.Location = new System.Drawing.Point(740, 269);
+            this.saveButton.Location = new System.Drawing.Point(740, 369);
             this.saveButton.Name = "saveButton";
             this.saveButton.Size = new System.Drawing.Size(75, 23);
             this.saveButton.TabIndex = 32;
@@ -347,7 +356,7 @@
             // 
             this.batteryLed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.batteryLed.AutoSize = true;
-            this.batteryLed.Location = new System.Drawing.Point(54, 199);
+            this.batteryLed.Location = new System.Drawing.Point(54, 299);
             this.batteryLed.Name = "batteryLed";
             this.batteryLed.Size = new System.Drawing.Size(200, 17);
             this.batteryLed.TabIndex = 33;
@@ -359,11 +368,11 @@
             // 
             this.flashLed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.flashLed.AutoSize = true;
-            this.flashLed.Location = new System.Drawing.Point(54, 222);
+            this.flashLed.Location = new System.Drawing.Point(54, 322);
             this.flashLed.Name = "flashLed";
-            this.flashLed.Size = new System.Drawing.Size(192, 17);
+            this.flashLed.Size = new System.Drawing.Size(193, 17);
             this.flashLed.TabIndex = 34;
-            this.flashLed.Text = "Flash pattern indicates battery level";
+            this.flashLed.Text = "Pulse pattern indicates battery level";
             this.flashLed.UseVisualStyleBackColor = true;
             this.flashLed.CheckedChanged += new System.EventHandler(this.flashWhenLowBattery_CheckedChanged);
             // 
@@ -371,7 +380,7 @@
             // 
             this.touchCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.touchCheckBox.AutoSize = true;
-            this.touchCheckBox.Location = new System.Drawing.Point(667, 177);
+            this.touchCheckBox.Location = new System.Drawing.Point(667, 277);
             this.touchCheckBox.Name = "touchCheckBox";
             this.touchCheckBox.Size = new System.Drawing.Size(148, 17);
             this.touchCheckBox.TabIndex = 35;
@@ -417,7 +426,7 @@
             // 
             this.lowerRCOffCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.lowerRCOffCheckBox.AutoSize = true;
-            this.lowerRCOffCheckBox.Location = new System.Drawing.Point(667, 200);
+            this.lowerRCOffCheckBox.Location = new System.Drawing.Point(667, 300);
             this.lowerRCOffCheckBox.Name = "lowerRCOffCheckBox";
             this.lowerRCOffCheckBox.Size = new System.Drawing.Size(151, 17);
             this.lowerRCOffCheckBox.TabIndex = 39;
@@ -474,7 +483,7 @@
             // 
             this.lowLedCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.lowLedCheckBox.AutoSize = true;
-            this.lowLedCheckBox.Location = new System.Drawing.Point(193, 144);
+            this.lowLedCheckBox.Location = new System.Drawing.Point(193, 244);
             this.lowLedCheckBox.Name = "lowLedCheckBox";
             this.lowLedCheckBox.Size = new System.Drawing.Size(173, 17);
             this.lowLedCheckBox.TabIndex = 45;
@@ -609,7 +618,7 @@
             // 
             this.realTimeChangesCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.realTimeChangesCheckBox.AutoSize = true;
-            this.realTimeChangesCheckBox.Location = new System.Drawing.Point(700, 246);
+            this.realTimeChangesCheckBox.Location = new System.Drawing.Point(700, 346);
             this.realTimeChangesCheckBox.Name = "realTimeChangesCheckBox";
             this.realTimeChangesCheckBox.Size = new System.Drawing.Size(115, 17);
             this.realTimeChangesCheckBox.TabIndex = 56;
@@ -622,7 +631,7 @@
             this.pictureBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.pictureBox.BackColor = System.Drawing.Color.Aqua;
             this.pictureBox.Image = global::ScpServer.Properties.Resources._1;
-            this.pictureBox.Location = new System.Drawing.Point(270, 222);
+            this.pictureBox.Location = new System.Drawing.Point(270, 322);
             this.pictureBox.Name = "pictureBox";
             this.pictureBox.Size = new System.Drawing.Size(140, 70);
             this.pictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -691,7 +700,7 @@
             this.flushHIDQueue.AccessibleName = "flushHIDQueue";
             this.flushHIDQueue.AutoSize = true;
             this.flushHIDQueue.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.flushHIDQueue.Location = new System.Drawing.Point(43, 279);
+            this.flushHIDQueue.Location = new System.Drawing.Point(43, 373);
             this.flushHIDQueue.Name = "flushHIDQueue";
             this.flushHIDQueue.Size = new System.Drawing.Size(220, 19);
             this.flushHIDQueue.TabIndex = 80;
@@ -703,13 +712,59 @@
             // 
             this.touchpadJitterCompensation.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.touchpadJitterCompensation.AutoSize = true;
-            this.touchpadJitterCompensation.Location = new System.Drawing.Point(667, 223);
+            this.touchpadJitterCompensation.Location = new System.Drawing.Point(667, 323);
             this.touchpadJitterCompensation.Name = "touchpadJitterCompensation";
             this.touchpadJitterCompensation.Size = new System.Drawing.Size(153, 17);
             this.touchpadJitterCompensation.TabIndex = 81;
             this.touchpadJitterCompensation.Text = "Perform jitter compensation";
             this.touchpadJitterCompensation.UseVisualStyleBackColor = true;
             this.touchpadJitterCompensation.CheckedChanged += new System.EventHandler(this.touchpadJitterCompensation_CheckedChanged);
+            // 
+            // turnToUserCheckBox
+            // 
+            this.turnToUserCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.turnToUserCheckBox.AutoSize = true;
+            this.turnToUserCheckBox.Location = new System.Drawing.Point(54, 277);
+            this.turnToUserCheckBox.Name = "turnToUserCheckBox";
+            this.turnToUserCheckBox.Size = new System.Drawing.Size(239, 17);
+            this.turnToUserCheckBox.TabIndex = 82;
+            this.turnToUserCheckBox.Text = "Light Bar Color only activates if turned to user";
+            this.turnToUserCheckBox.UseVisualStyleBackColor = true;
+            this.turnToUserCheckBox.CheckedChanged += new System.EventHandler(this.turnToUserCheckBox_CheckedChanged);
+            // 
+            // turnOffMinuteBar
+            // 
+            this.turnOffMinuteBar.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.turnOffMinuteBar.LargeChange = 15;
+            this.turnOffMinuteBar.Location = new System.Drawing.Point(54, 194);
+            this.turnOffMinuteBar.Maximum = 360;
+            this.turnOffMinuteBar.Name = "turnOffMinuteBar";
+            this.turnOffMinuteBar.Size = new System.Drawing.Size(223, 45);
+            this.turnOffMinuteBar.SmallChange = 5;
+            this.turnOffMinuteBar.TabIndex = 83;
+            this.turnOffMinuteBar.TickFrequency = 15;
+            this.turnOffMinuteBar.Scroll += new System.EventHandler(this.turnOffMinuteBar_ValueChanged);
+            // 
+            // turnOffOffLabel
+            // 
+            this.turnOffOffLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.turnOffOffLabel.AutoSize = true;
+            this.turnOffOffLabel.Location = new System.Drawing.Point(27, 195);
+            this.turnOffOffLabel.Name = "turnOffOffLabel";
+            this.turnOffOffLabel.Size = new System.Drawing.Size(21, 13);
+            this.turnOffOffLabel.TabIndex = 85;
+            this.turnOffOffLabel.Text = "Off";
+            // 
+            // turnOffLabel
+            // 
+            this.turnOffLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.turnOffLabel.AutoSize = true;
+            this.turnOffLabel.Location = new System.Drawing.Point(55, 177);
+            this.turnOffLabel.Name = "turnOffLabel";
+            this.turnOffLabel.Size = new System.Drawing.Size(161, 13);
+            this.turnOffLabel.TabIndex = 86;
+            this.turnOffLabel.Text = "Turn inactive Controller off after :";
+            this.turnOffLabel.Click += new System.EventHandler(this.label8_Click);
             // 
             // advColorDialog
             // 
@@ -722,7 +777,11 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(244)))), ((int)(((byte)(244)))), ((int)(((byte)(244)))));
-            this.ClientSize = new System.Drawing.Size(827, 310);
+            this.ClientSize = new System.Drawing.Size(827, 410);
+            this.Controls.Add(this.turnOffLabel);
+            this.Controls.Add(this.turnOffOffLabel);
+            this.Controls.Add(this.turnOffMinuteBar);
+            this.Controls.Add(this.turnToUserCheckBox);
             this.Controls.Add(this.touchpadJitterCompensation);
             this.Controls.Add(this.flushHIDQueue);
             this.Controls.Add(this.label2);
@@ -771,7 +830,7 @@
             this.Controls.Add(this.greenBar);
             this.Controls.Add(this.redBar);
             this.Controls.Add(this.lowLedPanel);
-            this.MaximumSize = new System.Drawing.Size(886, 359);
+            this.MaximumSize = new System.Drawing.Size(886, 459);
             this.MinimumSize = new System.Drawing.Size(797, 303);
             this.Name = "Options";
             this.Text = "Options";
@@ -788,6 +847,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.tapSensitivityBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.scrollSensitivityBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.turnOffMinuteBar)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -855,5 +915,9 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox flushHIDQueue;
         private System.Windows.Forms.CheckBox touchpadJitterCompensation;
+        private System.Windows.Forms.CheckBox turnToUserCheckBox;
+        private System.Windows.Forms.TrackBar turnOffMinuteBar;
+        private System.Windows.Forms.Label turnOffOffLabel;
+        private System.Windows.Forms.Label turnOffLabel;
     }
 }

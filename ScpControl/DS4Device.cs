@@ -54,7 +54,7 @@ namespace ScpControl
         public long lastZ;
 
         public long startFlashTimestamp;
-        public static long TIME_TO_FLASH = 10000000L * 1;
+        public static long TIME_TO_FLASH = 1000000L * 18;
 
         private readonly static byte[/* Light On duration */, /* Light Off duration */] BatteryIndicatorDurations =
         {
@@ -249,7 +249,7 @@ namespace ScpControl
             Int16 newZ = (Int16)((UInt16)(inputData[22] << 8) | inputData[23]);
 
             bool shouldUpdate = lastZ == 0l || Math.Abs(newZ - lastZ) > 2000l;
-            bool isLightUp = shouldUpdate ? newZ < -4000 : lastZ < -4000;
+            bool isLightUp = Global.getTurnToUser(deviceNum) ? (shouldUpdate ? newZ < -4000 : lastZ < -4000) : true;
 
             updateBatteryStatus(inputData[30], isUSB, isLightUp);
 
@@ -259,7 +259,7 @@ namespace ScpControl
                 {
                     lastMovedTimestamp = DateTime.UtcNow.Ticks;
                 }
-                else if ((DateTime.UtcNow.Ticks - lastMovedTimestamp) > 300 * 10000000L) //5m
+                else if (Global.getTurnOffTime(deviceNum) > 0 && (DateTime.UtcNow.Ticks - lastMovedTimestamp) > Global.getTurnOffTime(deviceNum) * 600000000L) 
                 {
                     //turn off
                     DisconnectBT();
@@ -319,10 +319,10 @@ namespace ScpControl
 
                 filePath = filePath.Substring(0, filePath.IndexOf(".exe") + 4);
 
-                Process.Start(filePath.Replace("\"", ""), runningProcessByName.Length == 0 ?  "-bigpicture" : "steam://open/bigpicture");
+                Process.Start(filePath.Replace("\"", ""), runningProcessByName.Length == 0 ?  "steam://open/bigpicture" :"-bigpicture" );
+                launchingSteam = true;
             }
         }
-
 
         private byte[] ConvertTo360()
         {
@@ -474,25 +474,27 @@ namespace ScpControl
                 }
                 else
                 {
-                    long currentTime = DateTime.UtcNow.Ticks;
-                    
-                    if (startFlashTimestamp == 0l || DateTime.UtcNow.Ticks >= startFlashTimestamp + TIME_TO_FLASH)
-                    {
-                        startFlashTimestamp =currentTime;
-                    }
-
-
-
-                    double factor = Math.Max(0.1,Math.Abs(Math.Cos(((float)(currentTime - startFlashTimestamp) / TIME_TO_FLASH) * Math.PI)));
-                    LedColor = Global.getPercentageColor(Global.loadColor(deviceNum), factor);
-
-                    //LedColor = Global.loadColor(deviceNum);
+                    LedColor = Global.loadColor(deviceNum);
                 }
 
                 if (Global.getFlashWhenLowBattery(deviceNum))
                 {
-                    FlashLedOn = BatteryIndicatorDurations[battery / 10, 0];
-                    FlashLedOff = BatteryIndicatorDurations[battery / 10, 1];
+                    /*FlashLedOn = BatteryIndicatorDurations[battery / 10, 0];
+                    FlashLedOff = BatteryIndicatorDurations[battery / 10, 1];*/
+                    long currentTime = DateTime.UtcNow.Ticks;
+                    long updatedTimeToFlash = (long) ((battery / 100f) * TIME_TO_FLASH);
+
+
+                    if (startFlashTimestamp == 0l || currentTime >= startFlashTimestamp + updatedTimeToFlash)
+                    {
+                        startFlashTimestamp = currentTime;
+                    }
+
+
+
+                    double factor = Math.Max(0.1,Math.Abs(Math.Cos(((float)(currentTime - startFlashTimestamp) / updatedTimeToFlash) * Math.PI)));
+                    LedColor = Global.getPercentageColor(LedColor, factor);
+
                 }
                 else
                 {

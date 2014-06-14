@@ -4,6 +4,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using ScpControl;
+using Microsoft.Win32;
 
 
 namespace ScpServer
@@ -85,6 +86,10 @@ namespace ScpServer
             if (btnStartStop.Enabled)
                 btnStartStop_Click(sender, e);
 
+            startWithWindowsCheckBox.CheckedChanged -= startWithWindows_CheckedChanged;
+            startWithWindowsCheckBox.Checked = Global.getStartWithWindows();
+            startWithWindowsCheckBox.CheckedChanged += startWithWindows_CheckedChanged;
+
             // New settings
             this.Width = Global.getFormWidth();
             this.Height = Global.getFormHeight();
@@ -98,9 +103,22 @@ namespace ScpServer
                 Form_Resize(sender, e);
             }
             Global.loadCustomMapping(0);
-
-
         }
+
+        private void setRegistryKey(bool startWithWindows)
+        {
+            RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+
+            if (startWithWindows)
+            {
+                rk.SetValue("DS4 to XInput Mapper", Application.ExecutablePath.ToString());
+            }
+            else
+            {
+                rk.DeleteValue("DS4 to XInput Mapper", false);
+            }
+        }
+
         protected void Form_Close(object sender, FormClosingEventArgs e)
         {
             Global.setFormWidth(this.Width);
@@ -238,6 +256,13 @@ namespace ScpServer
         private void startMinimizedCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Global.setStartMinimized(startMinimizedCheckBox.Checked);
+            Global.Save();
+        }
+
+        private void startWithWindows_CheckedChanged(object sender, EventArgs e)
+        {
+            setRegistryKey(startWithWindowsCheckBox.Checked);
+            Global.setStartWithWindows(startWithWindowsCheckBox.Checked);
             Global.Save();
         }
 

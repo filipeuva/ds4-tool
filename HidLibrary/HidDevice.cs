@@ -35,6 +35,8 @@ namespace HidLibrary
         private byte idleTicks = 0;
         private bool _monitorDeviceEvents;
 
+       
+
         internal HidDevice(string devicePath, string description = null)
         {
             _deviceEventMonitor = new HidDeviceEventMonitor(this);
@@ -64,6 +66,7 @@ namespace HidLibrary
         public bool IsOpen { get; private set; }
         public bool IsConnected { get { return HidDevices.IsConnected(_devicePath); } }
         public bool IsTimedOut { get { return idleTicks > 5; } }
+
         public string Description { get { return _description; } }
         public HidDeviceCapabilities Capabilities { get { return _deviceCapabilities; } }
         public HidDeviceAttributes Attributes { get { return _deviceAttributes; } }

@@ -46,6 +46,10 @@ namespace ScpServer
             lowGreenValLabel.Text = lowColor.green.ToString();
             lowBlueValLabel.Text = lowColor.blue.ToString();
 
+            turnToUserCheckBox.Checked = Global.getTurnToUser(device);
+            turnOffMinuteBar.Value = Global.getTurnOffTime(device);
+            turnOffMinuteBar_ValueChanged(null, null);
+
             #region watch sixaxis data
             Timer sixaxisTimer = new Timer();
             sixaxisTimer.Tick +=
@@ -490,6 +494,58 @@ namespace ScpServer
         private void flushHIDQueue_CheckedChanged(object sender, EventArgs e)
         {
             Global.setFlushHIDQueue(device, flushHIDQueue.Checked);
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label8_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void blueBar_Scroll(object sender, EventArgs e)
+        {
+
+        }
+
+        private void greenBar_Scroll(object sender, EventArgs e)
+        {
+
+        }
+
+        private void GreenLabel_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void redBar_Scroll(object sender, EventArgs e)
+        {
+
+        }
+
+
+        private void turnOffMinuteBar_ValueChanged(object sender, EventArgs e)
+        {
+
+            int value = turnOffMinuteBar.Value;
+            String caption = turnOffMinuteBar.Value > 0 ? (value > 60 ? value / 60 + " hours and " + value % 60 + " minutes" : value + " minutes") : "Off";
+
+            turnOffLabel.Text = "Turn inactive Controller off after :" + caption ;
+
+            Global.saveTurnOffTime(device, turnOffMinuteBar.Value);
+        }
+
+        private void turnToUserCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Global.saveTurnToUser(device, turnToUserCheckBox.Checked);
         }
 
     }

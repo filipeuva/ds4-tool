@@ -43,6 +43,7 @@
             this.pnlDebug = new System.Windows.Forms.Panel();
             this.pnlStatus = new System.Windows.Forms.Panel();
             this.gpPads = new System.Windows.Forms.GroupBox();
+            this.startWithWindowsCheckBox = new System.Windows.Forms.CheckBox();
             this.lbLastMessage = new System.Windows.Forms.Label();
             this.startMinimizedCheckBox = new System.Windows.Forms.CheckBox();
             this.hideDS4CheckBox = new System.Windows.Forms.CheckBox();
@@ -153,7 +154,7 @@
             // 
             this.lnkControllers.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lnkControllers.AutoSize = true;
-            this.lnkControllers.Location = new System.Drawing.Point(467, 96);
+            this.lnkControllers.Location = new System.Drawing.Point(341, 95);
             this.lnkControllers.Name = "lnkControllers";
             this.lnkControllers.Size = new System.Drawing.Size(56, 13);
             this.lnkControllers.TabIndex = 11;
@@ -183,6 +184,7 @@
             // 
             this.gpPads.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.gpPads.Controls.Add(this.startWithWindowsCheckBox);
             this.gpPads.Controls.Add(this.lnkControllers);
             this.gpPads.Controls.Add(this.lbLastMessage);
             this.gpPads.Controls.Add(this.startMinimizedCheckBox);
@@ -199,13 +201,26 @@
             this.gpPads.TabIndex = 1;
             this.gpPads.TabStop = false;
             // 
+            // startWithWindowsCheckBox
+            // 
+            this.startWithWindowsCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.startWithWindowsCheckBox.AutoSize = true;
+            this.startWithWindowsCheckBox.Cursor = System.Windows.Forms.Cursors.Default;
+            this.startWithWindowsCheckBox.Location = new System.Drawing.Point(506, 94);
+            this.startWithWindowsCheckBox.Name = "startWithWindowsCheckBox";
+            this.startWithWindowsCheckBox.Size = new System.Drawing.Size(120, 17);
+            this.startWithWindowsCheckBox.TabIndex = 42;
+            this.startWithWindowsCheckBox.Text = "Start With Windows";
+            this.startWithWindowsCheckBox.UseVisualStyleBackColor = true;
+            this.startWithWindowsCheckBox.CheckedChanged += new System.EventHandler(this.startWithWindows_CheckedChanged);
+            // 
             // lbLastMessage
             // 
             this.lbLastMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.lbLastMessage.ForeColor = System.Drawing.SystemColors.GrayText;
-            this.lbLastMessage.Location = new System.Drawing.Point(58, 94);
+            this.lbLastMessage.Location = new System.Drawing.Point(58, 95);
             this.lbLastMessage.Name = "lbLastMessage";
-            this.lbLastMessage.Size = new System.Drawing.Size(410, 17);
+            this.lbLastMessage.Size = new System.Drawing.Size(278, 16);
             this.lbLastMessage.TabIndex = 41;
             this.lbLastMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lbLastMessage.Visible = false;
@@ -214,7 +229,7 @@
             // 
             this.startMinimizedCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.startMinimizedCheckBox.AutoSize = true;
-            this.startMinimizedCheckBox.Location = new System.Drawing.Point(529, 94);
+            this.startMinimizedCheckBox.Location = new System.Drawing.Point(403, 94);
             this.startMinimizedCheckBox.Name = "startMinimizedCheckBox";
             this.startMinimizedCheckBox.Size = new System.Drawing.Size(97, 17);
             this.startMinimizedCheckBox.TabIndex = 40;
@@ -370,6 +385,7 @@
         private System.Windows.Forms.CheckBox startMinimizedCheckBox;
         private System.Windows.Forms.Label lbLastMessage;
         private System.Windows.Forms.LinkLabel lnkControllers;
+        private System.Windows.Forms.CheckBox startWithWindowsCheckBox;
     }
 }
 
