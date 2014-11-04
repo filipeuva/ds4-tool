@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Runtime.InteropServices;
 using HidLibrary;
 using System.Threading;
 using System.Threading.Tasks;
@@ -238,6 +239,7 @@ namespace ScpControl
             readButtons(inputData);
             checkQuickDisconnect(); // XXX race when first connecting, quick disconnect will only half-work in the first moments
             checkLaunchSteam();
+            checkVolumeChange();
             
 
             toggleTouchpad(inputData[8], inputData[9], cState.TouchButton);
@@ -341,6 +343,47 @@ namespace ScpControl
                 
             }
         }
+
+        private byte lastRX, lastRY;
+        private void checkVolumeChange()
+        {
+
+            if (cState.Share && ((cState.RX < 40 || cState.RX > 200) || (cState.RY < 40 || cState.RY > 200))) //deadzone check
+            {
+                //Console.WriteLine("X:" + cState.RX + ";Y:" + cState.RY);
+
+                if (lastRX == 127 && lastRY == 127)
+                {
+                    lastRX = cState.RX;
+                    lastRY = cState.RY;
+                }
+                else if (((Math.Abs(cState.RX - lastRX) > 26 && Math.Abs(cState.RX - lastRX) < 50) || (Math.Abs(cState.RY - lastRY) > 26 && Math.Abs(cState.RY - lastRY) < 50))) //distance check
+                {
+
+                    Console.WriteLine("Result :" + (((lastRX - 127) * (cState.RY - 127)) - ((lastRY - 127) * (cState.RX - 127))));
+                    keybd_event((byte)((((lastRX - 127) * (cState.RY - 127)) - ((lastRY - 127) * (cState.RX - 127))) > 0 ? Keys.VolumeUp : Keys.VolumeDown), 0, 0, 0);
+
+                    lastRX = cState.RX;
+                    lastRY = cState.RY;
+                }
+            }
+            else 
+            {
+                if (lastRX != 127)
+                {
+                    lastRX = 127;
+
+                }
+
+                if (lastRY != 127)
+                {
+                    lastRY = 127;
+                }
+            }
+        }
+
+        [DllImport("user32.dll")]
+        static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, int dwExtraInfo);
 
         private byte[] ConvertTo360()
         {
